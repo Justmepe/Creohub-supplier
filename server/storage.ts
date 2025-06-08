@@ -92,7 +92,10 @@ export class MemStorage implements IStorage {
     const id = this.currentUserId++;
     const user: User = { 
       ...insertUser, 
-      id, 
+      id,
+      fullName: insertUser.fullName || null,
+      bio: insertUser.bio || null,
+      avatar: insertUser.avatar || null,
       isCreator: false,
       createdAt: new Date() 
     };
@@ -179,12 +182,25 @@ export class MemStorage implements IStorage {
     const product: Product = { 
       ...insertProduct, 
       id,
-      currency: insertProduct.currency || "KES",
+      description: insertProduct.description || null,
+      category: insertProduct.category || null,
+      digitalFile: insertProduct.digitalFile || null,
+      stock: insertProduct.stock || null,
+      currency: insertProduct.currency || "USD",
       images: insertProduct.images || [],
       isActive: true,
       createdAt: new Date() 
     };
     this.products.set(id, product);
+    
+    // Update creator's product count
+    const creator = await this.getCreator(insertProduct.creatorId);
+    if (creator) {
+      await this.updateCreator(creator.id, { 
+        productCount: (creator.productCount || 0) + 1 
+      });
+    }
+    
     return product;
   }
 
@@ -215,9 +231,13 @@ export class MemStorage implements IStorage {
     const order: Order = { 
       ...insertOrder, 
       id,
-      currency: insertOrder.currency || "KES",
+      customerName: insertOrder.customerName || null,
+      customerPhone: insertOrder.customerPhone || null,
+      currency: insertOrder.currency || "USD",
+      paymentMethod: insertOrder.paymentMethod || null,
       paymentStatus: "pending",
       orderStatus: "processing",
+      shippingAddress: insertOrder.shippingAddress || null,
       createdAt: new Date() 
     };
     this.orders.set(id, order);
@@ -239,6 +259,7 @@ export class MemStorage implements IStorage {
     const analytics: Analytics = { 
       ...insertAnalytics, 
       id,
+      productId: insertAnalytics.productId || null,
       eventData: insertAnalytics.eventData || {},
       createdAt: new Date() 
     };

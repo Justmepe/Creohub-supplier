@@ -28,8 +28,8 @@ if (!PAYPAL_CLIENT_SECRET && process.env.NODE_ENV === "production") {
 }
 const client = new Client({
   clientCredentialsAuthCredentials: {
-    oAuthClientId: PAYPAL_CLIENT_ID,
-    oAuthClientSecret: PAYPAL_CLIENT_SECRET,
+    oAuthClientId: PAYPAL_CLIENT_ID || 'dummy_client_id',
+    oAuthClientSecret: PAYPAL_CLIENT_SECRET || 'dummy_client_secret',
   },
   timeout: 0,
   environment:
