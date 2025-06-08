@@ -76,7 +76,7 @@ export default function Navbar() {
                     </Button>
                   </Link>
                 ))}
-                
+
                 <Button variant="outline" asChild>
                   <Link href={`/storefront/${creator.storeHandle}`}>
                     <Eye className="mr-2 h-4 w-4" />

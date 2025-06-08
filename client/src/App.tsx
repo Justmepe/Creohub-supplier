@@ -1,48 +1,54 @@
+
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
-import Storefront from "@/pages/storefront";
 import Products from "@/pages/products";
 import Orders from "@/pages/orders";
 import Settings from "@/pages/settings";
-import CreatorProfile from "@/pages/creator-profile";
-import Checkout from "@/pages/checkout";
 import Pricing from "@/pages/pricing";
+import Checkout from "@/pages/checkout";
+import Storefront from "@/pages/storefront";
+import CreatorProfile from "@/pages/creator-profile";
+import Testing from "@/pages/testing";
 import NotFound from "@/pages/not-found";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/storefront/:handle" component={Storefront} />
-      <Route path="/products" component={Products} />
-      <Route path="/orders" component={Orders} />
-      <Route path="/settings" component={Settings} />
-      <Route path="/creator-profile" component={CreatorProfile} />
-      <Route path="/checkout/:creatorId" component={Checkout} />
-      <Route path="/pricing" component={Pricing} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+    },
+  },
+});
 
 function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <TooltipProvider>
+          <div className="min-h-screen bg-background">
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/products" component={Products} />
+              <Route path="/orders" component={Orders} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/checkout/:creatorId" component={Checkout} />
+              <Route path="/storefront/:handle" component={Storefront} />
+              <Route path="/profile" component={CreatorProfile} />
+              <Route path="/testing" component={Testing} />
+              <Route component={NotFound} />
+            </Switch>
+          </div>
           <Toaster />
-          <Router />
         </TooltipProvider>
-      </QueryClientProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
