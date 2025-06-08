@@ -24,7 +24,13 @@ export const creators = pgTable("creators", {
   storeColors: jsonb("store_colors").default({}),
   customDomain: text("custom_domain"),
   isActive: boolean("is_active").default(true),
-  planType: text("plan_type").default("free"), // free, pro
+  planType: text("plan_type").default("free"), // free, starter, pro
+  subscriptionStatus: text("subscription_status").default("trial"), // trial, active, cancelled, expired
+  trialEndsAt: timestamp("trial_ends_at"),
+  subscriptionEndsAt: timestamp("subscription_ends_at"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  productCount: integer("product_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

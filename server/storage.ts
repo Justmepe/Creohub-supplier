@@ -124,13 +124,24 @@ export class MemStorage implements IStorage {
 
   async createCreator(insertCreator: InsertCreator): Promise<Creator> {
     const id = this.currentCreatorId++;
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30); // 30-day trial
+    
     const creator: Creator = { 
       ...insertCreator, 
       id,
+      storeDescription: insertCreator.storeDescription || null,
       storeTheme: insertCreator.storeTheme || "minimal",
       storeColors: insertCreator.storeColors || {},
+      customDomain: insertCreator.customDomain || null,
       isActive: true,
       planType: "free",
+      subscriptionStatus: "trial",
+      trialEndsAt,
+      subscriptionEndsAt: null,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      productCount: 0,
       createdAt: new Date() 
     };
     this.creators.set(id, creator);
