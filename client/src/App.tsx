@@ -65,14 +65,14 @@ function App() {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={authValue}>
+    <AuthContext.Provider value={authValue}>
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Router />
         </TooltipProvider>
-      </AuthContext.Provider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthContext.Provider>
   );
 }
 
