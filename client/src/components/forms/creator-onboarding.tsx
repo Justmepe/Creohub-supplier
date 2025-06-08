@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import { ArrowRight, ArrowLeft, User, Store, Palette, CheckCircle } from "lucide-react";
 

@@ -3,8 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useState, createContext, useContext } from "react";
-import type { User, Creator } from "@shared/schema";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
@@ -16,24 +15,6 @@ import CreatorProfile from "@/pages/creator-profile";
 import Checkout from "@/pages/checkout";
 import Pricing from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
-
-interface AuthContextType {
-  user: User | null;
-  creator: Creator | null;
-  setUser: (user: User | null) => void;
-  setCreator: (creator: Creator | null) => void;
-  isAuthenticated: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
 
 function Router() {
   return (
@@ -53,26 +34,15 @@ function Router() {
 }
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [creator, setCreator] = useState<Creator | null>(null);
-
-  const authValue: AuthContextType = {
-    user,
-    creator,
-    setUser,
-    setCreator,
-    isAuthenticated: user !== null,
-  };
-
   return (
-    <AuthContext.Provider value={authValue}>
+    <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Router />
         </TooltipProvider>
       </QueryClientProvider>
-    </AuthContext.Provider>
+    </AuthProvider>
   );
 }
 

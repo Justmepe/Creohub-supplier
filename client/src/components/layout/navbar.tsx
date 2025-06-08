@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Menu, 
   Home, 
