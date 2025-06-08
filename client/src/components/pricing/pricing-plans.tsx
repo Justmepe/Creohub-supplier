@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Zap } from 'lucide-react';
 import { PRICING_PLANS, type PricingPlan } from '@/../../shared/pricing';
 import { detectCurrencyFromBrowser, formatCurrency, convertCurrency } from '@/../../shared/currency';
-import { useAuth } from '@/App';
+import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
