@@ -1,436 +1,422 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Navbar from "@/components/layout/navbar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
-  Store, 
-  ShoppingCart, 
   Crown, 
-  TestTube, 
-  Database,
-  Plus,
+  ShoppingCart, 
+  Settings,
   Eye,
-  Settings
+  BarChart3,
+  Package,
+  Users,
+  Store,
+  Laptop,
+  Smartphone
 } from "lucide-react";
-import { Link } from "wouter";
 
 export default function Testing() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { setUser, setCreator, user, creator } = useAuth();
-  const { toast } = useToast();
+  const { setUser, setCreator } = useAuth();
+  const [testMode, setTestMode] = useState<"creator" | "customer" | "admin" | null>(null);
 
-  // Sample test data
-  const testUsers = [
-    {
-      username: "creator1",
-      email: "creator1@test.com",
-      password: "password123",
-      fullName: "John Creator",
-      bio: "Digital artist and content creator",
-      role: "creator"
+  const mockCreator = {
+    id: "test-creator-1",
+    userId: "test-user-1",
+    businessName: "Sarah's Digital Store",
+    storeHandle: "sarahs-store",
+    bio: "Digital marketing expert and course creator",
+    website: "https://sarahsstore.com",
+    socialLinks: {
+      instagram: "@sarahsstore",
+      twitter: "@sarahdigital",
+      linkedin: "sarah-digital"
     },
-    {
-      username: "creator2", 
-      email: "creator2@test.com",
-      password: "password123",
-      fullName: "Sarah Designer",
-      bio: "UI/UX designer and course creator",
-      role: "creator"
-    },
-    {
-      username: "customer1",
-      email: "customer1@test.com", 
-      password: "password123",
-      fullName: "Mike Customer",
-      bio: "Tech enthusiast",
-      role: "customer"
-    },
-    {
-      username: "admin1",
-      email: "admin1@test.com",
-      password: "password123", 
-      fullName: "Admin User",
-      bio: "Platform administrator",
-      role: "admin"
-    }
-  ];
-
-  const testCreators = [
-    {
-      storeHandle: "john-designs",
-      storeName: "John's Design Studio", 
-      storeDescription: "Premium digital designs and templates",
-      storeTheme: "creative"
-    },
-    {
-      storeHandle: "sarah-courses",
-      storeName: "Sarah's UX Academy",
-      storeDescription: "Learn UX design from industry experts", 
-      storeTheme: "professional"
-    }
-  ];
-
-  const createTestData = async () => {
-    setIsLoading(true);
-    try {
-      // Create test users and creators
-      for (let i = 0; i < testUsers.length; i++) {
-        const userData = testUsers[i];
-        
-        // Create user
-        const userResponse = await apiRequest("POST", "/api/auth/register", userData);
-        const userResult = await userResponse.json();
-        
-        // If it's a creator, create creator profile
-        if (userData.role === "creator" && i < testCreators.length) {
-          const creatorData = {
-            ...testCreators[i],
-            userId: userResult.user.id
-          };
-          
-          await apiRequest("POST", "/api/creators", creatorData);
-          
-          // Add some sample products for creators
-          const sampleProducts = [
-            {
-              name: "Premium Logo Pack",
-              description: "High-quality logo templates for businesses",
-              price: 49.99,
-              type: "digital",
-              category: "Design",
-              creatorId: userResult.user.id
-            },
-            {
-              name: "UX Design Consultation",
-              description: "1-hour UX design consultation session",
-              price: 120.00,
-              type: "service", 
-              category: "Consulting",
-              creatorId: userResult.user.id
-            }
-          ];
-          
-          for (const product of sampleProducts) {
-            await apiRequest("POST", "/api/products", product);
-          }
-        }
-      }
-      
-      toast({
-        title: "Test data created successfully!",
-        description: "You can now test all interfaces with sample data.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error creating test data",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    profileImage: "https://images.unsplash.com/photo-1494790108755-2616b69beb23?w=150",
+    bannerImage: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800",
+    createdAt: new Date(),
+    updatedAt: new Date()
   };
 
-  const loginAsTestUser = async (testUser: any) => {
-    try {
-      const response = await apiRequest("POST", "/api/auth/login", {
-        email: testUser.email,
-        password: testUser.password
-      });
-      const result = await response.json();
-      setUser(result.user);
-      
-      // If user is a creator, get creator profile
-      if (testUser.role === "creator") {
-        const creatorHandle = testUser.username === "creator1" ? "john-designs" : "sarah-courses";
-        const creatorResponse = await apiRequest("GET", `/api/creators/${creatorHandle}`);
-        const creatorResult = await creatorResponse.json();
-        setCreator(creatorResult);
-      }
-      
-      toast({
-        title: "Logged in successfully!",
-        description: `Welcome ${testUser.fullName}`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const mockUser = {
+    id: "test-user-1",
+    email: "sarah@example.com",
+    name: "Sarah Johnson",
+    role: "creator" as const,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+
+  const mockCustomerUser = {
+    id: "test-customer-1",
+    email: "customer@example.com",
+    name: "John Customer",
+    role: "customer" as const,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+
+  const mockAdminUser = {
+    id: "test-admin-1",
+    email: "admin@creohub.com",
+    name: "Admin User",
+    role: "admin" as const,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+
+  const loginAsCreator = () => {
+    setUser(mockUser);
+    setCreator(mockCreator);
+    setTestMode("creator");
+  };
+
+  const loginAsCustomer = () => {
+    setUser(mockCustomerUser);
+    setCreator(null);
+    setTestMode("customer");
+  };
+
+  const loginAsAdmin = () => {
+    setUser(mockAdminUser);
+    setCreator(null);
+    setTestMode("admin");
+  };
+
+  const logout = () => {
+    setUser(null);
+    setCreator(null);
+    setTestMode(null);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            <TestTube className="inline mr-2 h-8 w-8" />
-            Testing Interface
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Creohub Testing Interface
           </h1>
-          <p className="text-gray-600">
-            Test all interfaces: Creator Dashboard, Customer Store Views, and Admin Controls
+          <p className="text-xl text-gray-600 mb-6">
+            Test all user interfaces: Creators, Customers, and Admins
           </p>
+          
+          {testMode && (
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <Badge variant="secondary" className="text-lg px-4 py-2">
+                Currently testing as: {testMode}
+              </Badge>
+              <Button onClick={logout} variant="outline">
+                Logout & Reset
+              </Button>
+            </div>
+          )}
         </div>
 
-        {user && (
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Currently logged in as: <strong>{user.fullName}</strong></p>
-                  <p className="text-sm text-gray-600">{user.email}</p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setUser(null);
-                    setCreator(null);
-                  }}
-                >
-                  Logout
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <Tabs defaultValue="setup" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="setup">Setup Test Data</TabsTrigger>
-            <TabsTrigger value="creator">Creator Interface</TabsTrigger>
-            <TabsTrigger value="customer">Customer Interface</TabsTrigger>
-            <TabsTrigger value="admin">Admin Interface</TabsTrigger>
+        <Tabs defaultValue="interfaces" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="interfaces">User Interfaces</TabsTrigger>
+            <TabsTrigger value="features">Feature Testing</TabsTrigger>
+            <TabsTrigger value="data">Test Data</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="setup">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Test Data Setup
-                </CardTitle>
-                <CardDescription>
-                  Create sample users, creators, and products for testing
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-semibold mb-3">Test Users</h3>
+          <TabsContent value="interfaces" className="space-y-8">
+            {/* User Type Selection */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Creator Interface */}
+              <Card className="border-2 hover:border-primary transition-colors">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Crown className="h-8 w-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">Creator Interface</CardTitle>
+                  <CardDescription>
+                    Test the creator dashboard, product management, and store customization
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button onClick={loginAsCreator} className="w-full" size="lg">
+                    Login as Creator
+                  </Button>
+                  
+                  {testMode === "creator" && (
                     <div className="space-y-2">
-                      {testUsers.map((user, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div>
-                            <p className="font-medium">{user.fullName}</p>
-                            <p className="text-sm text-gray-600">{user.email}</p>
-                            <Badge variant="outline">{user.role}</Badge>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => loginAsTestUser(user)}
-                          >
-                            Login
-                          </Button>
-                        </div>
-                      ))}
+                      <h4 className="font-semibold text-sm">Quick Links:</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/dashboard">Dashboard</Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/products">Products</Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/orders">Orders</Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/settings">Settings</Link>
+                        </Button>
+                      </div>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Customer Interface */}
+              <Card className="border-2 hover:border-secondary transition-colors">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShoppingCart className="h-8 w-8 text-secondary" />
                   </div>
+                  <CardTitle className="text-xl">Customer Interface</CardTitle>
+                  <CardDescription>
+                    Test the shopping experience, checkout process, and customer features
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button onClick={loginAsCustomer} className="w-full" size="lg" variant="secondary">
+                    Login as Customer
+                  </Button>
                   
-                  <div>
-                    <h3 className="font-semibold mb-3">Test Stores</h3>
+                  {testMode === "customer" && (
                     <div className="space-y-2">
-                      {testCreators.map((creator, index) => (
-                        <div key={index} className="p-3 border rounded-lg">
-                          <p className="font-medium">{creator.storeName}</p>
-                          <p className="text-sm text-gray-600">{creator.storeDescription}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary">{creator.storeTheme}</Badge>
-                            <Button size="sm" variant="outline" asChild>
-                              <Link href={`/storefront/${creator.storeHandle}`}>
-                                <Eye className="mr-1 h-3 w-3" />
-                                View
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                      <h4 className="font-semibold text-sm">Quick Links:</h4>
+                      <div className="grid grid-cols-1 gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/storefront/sarahs-store">View Store</Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/checkout/test-creator-1">Checkout</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Admin Interface */}
+              <Card className="border-2 hover:border-accent transition-colors">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Settings className="h-8 w-8 text-accent" />
+                  </div>
+                  <CardTitle className="text-xl">Admin Interface</CardTitle>
+                  <CardDescription>
+                    Test admin controls, user management, and platform analytics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button onClick={loginAsAdmin} className="w-full" size="lg" variant="destructive">
+                    Login as Admin
+                  </Button>
+                  
+                  {testMode === "admin" && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-sm">Quick Links:</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/dashboard">Admin Panel</Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/settings">Platform Settings</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Current Status */}
+            {testMode && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5" />
+                    Current Testing Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">User Type</Label>
+                      <p className="font-semibold capitalize">{testMode}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">User Name</Label>
+                      <p className="font-semibold">
+                        {testMode === "creator" && "Sarah Johnson"}
+                        {testMode === "customer" && "John Customer"}
+                        {testMode === "admin" && "Admin User"}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Available Features</Label>
+                      <p className="font-semibold">
+                        {testMode === "creator" && "Dashboard, Products, Orders, Settings"}
+                        {testMode === "customer" && "Browse, Purchase, Checkout"}
+                        {testMode === "admin" && "User Management, Analytics, Platform Settings"}
+                      </p>
                     </div>
                   </div>
-                </div>
-                
-                <Button 
-                  onClick={createTestData} 
-                  disabled={isLoading}
-                  className="w-full"
-                >
-                  {isLoading ? "Creating..." : "Create All Test Data"}
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          <TabsContent value="creator">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Store className="h-5 w-5" />
-                  Creator Interface Testing
-                </CardTitle>
-                <CardDescription>
-                  Test creator dashboard, product management, and store customization
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/dashboard">
-                      <div className="text-center">
-                        <Store className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">Creator Dashboard</p>
-                        <p className="text-sm text-gray-600">Analytics, orders, overview</p>
-                      </div>
-                    </Link>
+          <TabsContent value="features" className="space-y-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Creator Features */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Creator Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/products">Product Management</Link>
                   </Button>
-                  
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/products">
-                      <div className="text-center">
-                        <Plus className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">Product Management</p>
-                        <p className="text-sm text-gray-600">Add, edit, manage products</p>
-                      </div>
-                    </Link>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/orders">Order Processing</Link>
                   </Button>
-                  
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/orders">
-                      <div className="text-center">
-                        <ShoppingCart className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">Order Management</p>
-                        <p className="text-sm text-gray-600">View and manage orders</p>
-                      </div>
-                    </Link>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/dashboard">Analytics Dashboard</Link>
                   </Button>
-                  
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/settings">
-                      <div className="text-center">
-                        <Settings className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">Store Settings</p>
-                        <p className="text-sm text-gray-600">Customize store appearance</p>
-                      </div>
-                    </Link>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/settings">Store Customization</Link>
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Customer Features */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Store className="h-5 w-5" />
+                    Customer Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/storefront/sarahs-store">Browse Products</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/checkout/test-creator-1">Checkout Process</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/pricing">View Pricing</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Admin Features */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Admin Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/dashboard">Platform Analytics</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href="/settings">User Management</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" disabled>
+                    Transaction Monitoring
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" disabled>
+                    Platform Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
-          <TabsContent value="customer">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Customer Interface Testing
-                </CardTitle>
-                <CardDescription>
-                  Test customer store browsing, product viewing, and checkout process
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/storefront/john-designs">
-                      <div className="text-center">
-                        <Eye className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">John's Design Studio</p>
-                        <p className="text-sm text-gray-600">Creative theme storefront</p>
-                      </div>
-                    </Link>
-                  </Button>
-                  
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/storefront/sarah-courses">
-                      <div className="text-center">
-                        <Eye className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">Sarah's UX Academy</p>
-                        <p className="text-sm text-gray-600">Professional theme storefront</p>
-                      </div>
-                    </Link>
-                  </Button>
-                  
-                  <Button asChild variant="outline" className="h-auto p-4">
-                    <Link href="/pricing">
-                      <div className="text-center">
-                        <Crown className="h-6 w-6 mx-auto mb-2" />
-                        <p className="font-medium">Pricing Plans</p>
-                        <p className="text-sm text-gray-600">View subscription options</p>
-                      </div>
-                    </Link>
-                  </Button>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-center">
-                      <ShoppingCart className="h-6 w-6 mx-auto mb-2" />
-                      <p className="font-medium">Checkout Process</p>
-                      <p className="text-sm text-gray-600">Test from any storefront</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="admin">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="h-5 w-5" />
-                  Admin Interface Testing
-                </CardTitle>
-                <CardDescription>
-                  Test admin features, user management, and platform analytics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg bg-yellow-50 border-yellow-200">
-                    <h3 className="font-semibold text-yellow-800 mb-2">Admin Features Coming Soon</h3>
-                    <p className="text-sm text-yellow-700">
-                      Admin interface features will include:
-                    </p>
-                    <ul className="list-disc list-inside text-sm text-yellow-700 mt-2 space-y-1">
-                      <li>User management and verification</li>
-                      <li>Platform analytics and revenue tracking</li>
-                      <li>Creator approval and moderation</li>
-                      <li>Content moderation tools</li>
-                      <li>Support ticket management</li>
+          <TabsContent value="data" className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mock Data Information</CardTitle>
+                  <CardDescription>
+                    Test data being used for different user types
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Creator Data:</h4>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Business: Sarah's Digital Store</li>
+                      <li>• Handle: sarahs-store</li>
+                      <li>• Email: sarah@example.com</li>
+                      <li>• Products: Digital courses, consultations</li>
                     </ul>
                   </div>
                   
-                  <div className="text-center py-8">
-                    <Crown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">Admin interface in development</p>
+                  <div>
+                    <h4 className="font-semibold mb-2">Customer Data:</h4>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Name: John Customer</li>
+                      <li>• Email: customer@example.com</li>
+                      <li>• Role: Regular customer</li>
+                    </ul>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  <div>
+                    <h4 className="font-semibold mb-2">Admin Data:</h4>
+                    <ul className="text-sm space-y-1 text-gray-600">
+                      <li>• Name: Admin User</li>
+                      <li>• Email: admin@creohub.com</li>
+                      <li>• Role: Platform administrator</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Device Testing</CardTitle>
+                  <CardDescription>
+                    Test responsive design across devices
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Laptop className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium">Desktop View</p>
+                      <p className="text-sm text-gray-600">Full feature set</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Smartphone className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium">Mobile View</p>
+                      <p className="text-sm text-gray-600">Responsive design</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
+
+        {/* Quick Actions */}
+        <div className="mt-8 text-center">
+          <Button asChild variant="outline">
+            <Link href="/">Return to Home</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -136,10 +136,10 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
-                  <Link href="/">Sign In</Link>
+                  <Link href="/testing">Sign In</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/">Get Started</Link>
+                  <Link href="/testing">Get Started</Link>
                 </Button>
               </div>
             )}
@@ -207,10 +207,10 @@ export default function Navbar() {
                   {!user && (
                     <div className="space-y-2">
                       <Button variant="ghost" asChild className="w-full">
-                        <Link href="/">Sign In</Link>
+                        <Link href="/testing">Sign In</Link>
                       </Button>
                       <Button asChild className="w-full">
-                        <Link href="/">Get Started</Link>
+                        <Link href="/testing">Get Started</Link>
                       </Button>
                     </div>
                   )}
