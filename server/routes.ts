@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Order routes
+  // Order routes with transaction fee calculation
   app.post("/api/orders", async (req: Request, res: Response) => {
     try {
       const orderData = insertOrderSchema.parse({
@@ -315,7 +315,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         creatorId: parseInt(req.body.creatorId),
       });
 
-      const order = await storage.createOrder(orderData);
+      // Get creator to determine transaction fee
+      const creator = await storage.getCreator(orderData.creatorId);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+      
+      // Calculate transaction fee based on creator's plan
+      const orderAmount = parseFloat(orderData.totalAmount);
+      const transactionFee = calculateTransactionFee(orderAmount, creator.planType || 'free');
+      const creatorEarnings = orderAmount - transactionFee;
+      
+      // Auto-detect currency if not provided
+      const orderCurrency = orderData.currency || 'USD';
+
+      const order = await storage.createOrder({
+        ...orderData,
+        currency: orderCurrency
+      });
       
       // Track purchase analytics
       await storage.createAnalytics({
@@ -323,12 +340,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         eventType: "purchase",
         eventData: {
           orderId: order.id,
-          amount: order.totalAmount,
-          paymentMethod: order.paymentMethod,
-        },
+          amount: orderAmount,
+          currency: orderCurrency,
+          transactionFee,
+          creatorEarnings,
+          planType: creator.planType
+        }
       });
-
-      res.json(order);
+      
+      res.json({
+        ...order,
+        transactionFee,
+        creatorEarnings,
+        feePercentage: getPlanById(creator.planType || 'free')?.transactionFee || 0
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

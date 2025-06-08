@@ -14,6 +14,7 @@ import Orders from "@/pages/orders";
 import Settings from "@/pages/settings";
 import CreatorProfile from "@/pages/creator-profile";
 import Checkout from "@/pages/checkout";
+import Pricing from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
 
 interface AuthContextType {
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/creator-profile" component={CreatorProfile} />
       <Route path="/checkout/:creatorId" component={Checkout} />
+      <Route path="/pricing" component={Pricing} />
       <Route component={NotFound} />
     </Switch>
   );
