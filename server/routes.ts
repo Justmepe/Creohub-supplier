@@ -8,6 +8,8 @@ import {
   insertOrderSchema,
   insertAnalyticsSchema 
 } from "@shared/schema";
+import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
+import { detectCurrencyFromBrowser } from "@shared/currency";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 import multer from "multer";
 import path from "path";
@@ -38,6 +40,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/paypal/order/:orderID/capture", async (req, res) => {
     await capturePaypalOrder(req, res);
+  });
+
+  // Pricing and subscription routes
+  app.get("/api/pricing/plans", async (req: Request, res: Response) => {
+    res.json(PRICING_PLANS);
+  });
+
+  app.post("/api/subscription/upgrade", async (req: Request, res: Response) => {
+    try {
+      const { planId } = req.body;
+      const { creatorId } = req.body;
+
+      if (!creatorId) {
+        return res.status(400).json({ message: "Creator ID is required" });
+      }
+
+      const plan = getPlanById(planId);
+      if (!plan) {
+        return res.status(400).json({ message: "Invalid plan ID" });
+      }
+
+      const creator = await storage.getCreator(creatorId);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      // Update creator's plan
+      const subscriptionEndsAt = new Date();
+      subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1); // 1 month subscription
+
+      const updatedCreator = await storage.updateCreator(creatorId, {
+        planType: planId,
+        subscriptionStatus: planId === 'free' ? 'trial' : 'active',
+        subscriptionEndsAt: planId === 'free' ? null : subscriptionEndsAt,
+      });
+
+      res.json({ 
+        success: true, 
+        creator: updatedCreator,
+        plan: plan
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/subscription/status/:creatorId", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.creatorId);
+      const creator = await storage.getCreator(creatorId);
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      const plan = getPlanById(creator.planType);
+      const trialExpired = creator.trialEndsAt ? isTrialExpired(creator.trialEndsAt) : false;
+      const subscriptionActive = isSubscriptionActive(creator.subscriptionStatus, creator.subscriptionEndsAt);
+
+      res.json({
+        planType: creator.planType,
+        subscriptionStatus: creator.subscriptionStatus,
+        trialEndsAt: creator.trialEndsAt,
+        subscriptionEndsAt: creator.subscriptionEndsAt,
+        productCount: creator.productCount,
+        trialExpired,
+        subscriptionActive,
+        planDetails: plan,
+        canAddProducts: plan ? canAddProduct(creator.productCount || 0, creator.planType) : false
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
   });
 
   // Serve uploaded files
@@ -135,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Product routes
+  // Product routes with plan validation
   app.post("/api/products", upload.single("digitalFile"), async (req: Request, res: Response) => {
     try {
       const productData = insertProductSchema.parse({
@@ -144,6 +219,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         creatorId: parseInt(req.body.creatorId),
         stock: req.body.stock ? parseInt(req.body.stock) : null,
       });
+
+      // Check if creator can add more products based on their plan
+      const creator = await storage.getCreator(productData.creatorId);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+      
+      // Validate plan limits
+      if (!canAddProduct(creator.productCount || 0, creator.planType)) {
+        const plan = getPlanById(creator.planType);
+        return res.status(403).json({ 
+          message: `Product limit reached. Your ${plan?.name || creator.planType} plan allows up to ${plan?.productLimit} products. Upgrade to add more.`,
+          planLimit: plan?.productLimit,
+          currentCount: creator.productCount
+        });
+      }
+      
+      // Check if trial has expired for free users
+      if (creator.planType === 'free' && creator.trialEndsAt && isTrialExpired(creator.trialEndsAt)) {
+        return res.status(403).json({ 
+          message: "Your free trial has expired. Please upgrade to continue adding products.",
+          trialExpired: true
+        });
+      }
 
       // If a file was uploaded, save the file path
       if (req.file) {
