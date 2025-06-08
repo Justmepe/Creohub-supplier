@@ -168,7 +168,7 @@ export default function Home() {
                   Sell digital products, physical merchandise, and services from one powerful link. Built for African creators, designed for global success.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
                   <DialogTrigger asChild>
@@ -320,7 +320,7 @@ export default function Home() {
                   alt="Modern creator workspace" 
                   className="w-full h-48 object-cover rounded-lg mb-6"
                 />
-                
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-primary/20 p-4 rounded-lg">
@@ -332,7 +332,7 @@ export default function Home() {
                       <div className="text-sm text-gray-300">Total Orders</div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-gray-700 p-4 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-white font-medium">Top Products</span>
@@ -450,7 +450,7 @@ export default function Home() {
                   Most Popular
                 </Badge>
               </div>
-              
+
               <CardHeader className="pb-6">
                 <CardTitle className="text-2xl">Pro Plan</CardTitle>
                 <div className="mb-4">
@@ -540,7 +540,7 @@ export default function Home() {
             <p className="text-xl lg:text-2xl opacity-90 max-w-2xl mx-auto">
               Join the creator economy revolution. Start selling your products, services, and expertise today.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
               <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
                 <DialogTrigger asChild>
