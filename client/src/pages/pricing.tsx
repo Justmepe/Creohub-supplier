@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Globe, CreditCard, TrendingUp } from 'lucide-react';
 import PricingPlans from '@/components/pricing/pricing-plans';
 import { detectCurrencyFromBrowser, SUPPORTED_CURRENCIES } from '@/../../shared/currency';
-import { useAuth } from '@/App';
+import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
 
 export default function Pricing() {
@@ -56,7 +56,7 @@ export default function Pricing() {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Start with our free 30-day trial and scale your creator business with transparent pricing that grows with you.
           </p>
-          
+
           {currencyInfo && (
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-sm border">
               <Globe className="w-4 h-4 text-blue-500" />
@@ -92,7 +92,7 @@ export default function Pricing() {
         {/* FAQ Section */}
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-          
+
           <div className="grid gap-6">
             <Card>
               <CardHeader>

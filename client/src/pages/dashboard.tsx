@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/layout/navbar";
 import AnalyticsCards from "@/components/dashboard/analytics-cards";
 import ProductUpload from "@/components/dashboard/product-upload";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Plus, 
   TrendingUp, 

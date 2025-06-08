@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Navbar from "@/components/layout/navbar";
 import ProductUpload from "@/components/dashboard/product-upload";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 

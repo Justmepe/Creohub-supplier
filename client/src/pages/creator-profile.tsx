@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/layout/navbar";
-import { useAuth } from "@/App";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Calendar, 
   MapPin, 
