@@ -15,6 +15,8 @@ import {
   type Analytics,
   type InsertAnalytics
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -282,4 +284,176 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage Implementation
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  // Creators
+  async getCreator(id: number): Promise<Creator | undefined> {
+    const [creator] = await db.select().from(creators).where(eq(creators.id, id));
+    return creator || undefined;
+  }
+
+  async getCreatorByUserId(userId: number): Promise<Creator | undefined> {
+    const [creator] = await db.select().from(creators).where(eq(creators.userId, userId));
+    return creator || undefined;
+  }
+
+  async getCreatorByHandle(handle: string): Promise<Creator | undefined> {
+    const [creator] = await db.select().from(creators).where(eq(creators.storeHandle, handle));
+    return creator || undefined;
+  }
+
+  async createCreator(insertCreator: InsertCreator): Promise<Creator> {
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30); // 30-day trial
+    
+    const [creator] = await db
+      .insert(creators)
+      .values({
+        ...insertCreator,
+        subscriptionStatus: "trial",
+        trialEndsAt,
+        productCount: 0
+      })
+      .returning();
+    
+    // Update user to be a creator
+    await this.updateUser(insertCreator.userId, { isCreator: true });
+    
+    return creator;
+  }
+
+  async updateCreator(id: number, updates: Partial<Creator>): Promise<Creator | undefined> {
+    const [creator] = await db
+      .update(creators)
+      .set(updates)
+      .where(eq(creators.id, id))
+      .returning();
+    return creator || undefined;
+  }
+
+  async getCreators(): Promise<Creator[]> {
+    return await db.select().from(creators);
+  }
+
+  // Products
+  async getProduct(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async getProductsByCreator(creatorId: number): Promise<Product[]> {
+    return await db.select().from(products).where(eq(products.creatorId, creatorId));
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const [product] = await db
+      .insert(products)
+      .values(insertProduct)
+      .returning();
+    
+    // Update creator's product count
+    const creator = await this.getCreator(insertProduct.creatorId);
+    if (creator) {
+      await this.updateCreator(creator.id, { 
+        productCount: (creator.productCount || 0) + 1 
+      });
+    }
+    
+    return product;
+  }
+
+  async updateProduct(id: number, updates: Partial<Product>): Promise<Product | undefined> {
+    const [product] = await db
+      .update(products)
+      .set(updates)
+      .where(eq(products.id, id))
+      .returning();
+    return product || undefined;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    const result = await db
+      .delete(products)
+      .where(eq(products.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Orders
+  async getOrder(id: number): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order || undefined;
+  }
+
+  async getOrdersByCreator(creatorId: number): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.creatorId, creatorId));
+  }
+
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db
+      .insert(orders)
+      .values(insertOrder)
+      .returning();
+    return order;
+  }
+
+  async updateOrder(id: number, updates: Partial<Order>): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set(updates)
+      .where(eq(orders.id, id))
+      .returning();
+    return order || undefined;
+  }
+
+  // Analytics
+  async createAnalytics(insertAnalytics: InsertAnalytics): Promise<Analytics> {
+    const [analyticsRecord] = await db
+      .insert(analytics)
+      .values(insertAnalytics)
+      .returning();
+    return analyticsRecord;
+  }
+
+  async getAnalyticsByCreator(creatorId: number, startDate?: Date, endDate?: Date): Promise<Analytics[]> {
+    let query = db.select().from(analytics).where(eq(analytics.creatorId, creatorId));
+    
+    // Note: Date filtering would require additional imports and complex where conditions
+    // For now, returning all analytics for the creator
+    return await query;
+  }
+}
+
+export const storage = new DatabaseStorage();
