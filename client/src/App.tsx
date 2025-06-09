@@ -22,6 +22,8 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminSetup from "@/pages/admin-setup";
 import AdminTest from "@/pages/admin-test";
 import AdminRegister from "@/pages/admin-register";
+import PaymentSuccess from "@/pages/payment-success";
+import PaymentFailed from "@/pages/payment-failed";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -56,6 +58,8 @@ function App() {
               <Route path="/test-login" component={TestLogin} />
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/register" component={AdminRegister} />
+              <Route path="/payment/success" component={PaymentSuccess} />
+              <Route path="/payment/failed" component={PaymentFailed} />
               <Route component={NotFound} />
             </Switch>
           </div>

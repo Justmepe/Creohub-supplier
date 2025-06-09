@@ -42,7 +42,7 @@ class PesapalService {
       consumerKey: process.env.PESAPAL_CONSUMER_KEY || 'test_consumer_key',
       consumerSecret: process.env.PESAPAL_CONSUMER_SECRET || 'test_consumer_secret',
       environment: (process.env.PESAPAL_ENVIRONMENT as 'sandbox' | 'live') || 'sandbox',
-      ipnUrl: process.env.PESAPAL_IPN_URL || 'https://your-domain.com/api/payments/customer/pesapal/ipn',
+      ipnUrl: process.env.PESAPAL_IPN_URL || 'http://localhost:5000/api/payments/customer/pesapal/ipn',
       callbackUrl: process.env.PESAPAL_CALLBACK_URL || 'https://your-domain.com/payment/success'
     };
   }
