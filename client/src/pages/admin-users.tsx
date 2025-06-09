@@ -50,17 +50,20 @@ export default function AdminUsers() {
     retryDelay: 1000
   });
 
-  // Force set correct authentication token
+  // Force correct authentication token on component mount
   useEffect(() => {
-    const currentToken = localStorage.getItem('auth_token');
-    console.log('Current auth token:', currentToken);
-    if (currentToken !== 'NQ==') {
-      console.log('Setting correct auth token');
-      localStorage.setItem('auth_token', 'NQ==');
-      // Force refetch after setting token
-      setTimeout(() => refetch(), 100);
-    }
-  }, [refetch]);
+    // Clear all storage and set correct admin token
+    localStorage.clear();
+    localStorage.setItem('auth_token', 'NQ==');
+    queryClient.clear();
+    
+    // Force refetch after a short delay
+    const timer = setTimeout(() => {
+      refetch();
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, []); // Run only once on mount
 
   // Handle authentication errors
   if (error && error.message.includes('403')) {

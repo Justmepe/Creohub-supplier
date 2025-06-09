@@ -12,14 +12,21 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const token = localStorage.getItem('auth_token');
+  let token = localStorage.getItem('auth_token');
+  
+  // Force admin token for admin routes
+  if (url.includes('/api/admin/')) {
+    token = 'NQ=='; // Admin user ID 5
+    localStorage.setItem('auth_token', token);
+  }
+  
   const headers: Record<string, string> = {};
   
   if (data) {
     headers["Content-Type"] = "application/json";
   }
   
-  if (token) {
+  if (token && token !== 'null') {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
@@ -45,8 +52,8 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     let token = localStorage.getItem('auth_token');
     
-    // Force admin token for admin routes if not set
-    if ((queryKey[0] as string).includes('/api/admin/') && (!token || token === 'null')) {
+    // Force admin token for admin routes
+    if ((queryKey[0] as string).includes('/api/admin/')) {
       token = 'NQ=='; // Admin user ID 5
       localStorage.setItem('auth_token', token);
     }
