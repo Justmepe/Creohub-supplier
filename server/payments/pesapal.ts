@@ -182,6 +182,14 @@ export async function initiatePesapalPayment(req: Request, res: Response) {
       });
     }
 
+    // Validate credentials are provided
+    if (!process.env.PESAPAL_CONSUMER_KEY || !process.env.PESAPAL_CONSUMER_SECRET) {
+      return res.status(500).json({
+        error: 'Pesapal credentials not configured',
+        message: 'Please configure PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET'
+      });
+    }
+
     // Register IPN if not already done (you may want to cache this)
     let notificationId;
     try {
