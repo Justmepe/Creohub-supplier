@@ -58,6 +58,7 @@ function App() {
               <Route path="/testing" component={Testing} />
               <Route path="/test-login" component={TestLogin} />
               <Route path="/admin" component={AdminDashboard} />
+              <Route path="/admin/users" component={AdminUsers} />
               <Route path="/admin/register" component={AdminRegister} />
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/payment/failed" component={PaymentFailed} />
