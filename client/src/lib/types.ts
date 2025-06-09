@@ -17,7 +17,7 @@ export interface ShippingAddress {
 }
 
 export interface PaymentMethod {
-  type: 'mpesa' | 'paypal' | 'stripe';
+  type: 'mpesa' | 'paypal' | 'stripe' | 'flutterwave_card' | 'flutterwave_bank' | 'flutterwave_mobile';
   label: string;
   icon: string;
   enabled: boolean;

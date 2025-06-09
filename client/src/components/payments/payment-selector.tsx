@@ -320,8 +320,8 @@ export default function PaymentSelector({
               </div>
 
               <Button 
-                onClick={handleStripePayment}
-                disabled={isProcessingPayment || !stripeToken}
+                onClick={() => handleFlutterwavePayment('flutterwave_card')}
+                disabled={isProcessingPayment}
                 className="w-full"
               >
                 {isProcessingPayment ? (
@@ -331,6 +331,137 @@ export default function PaymentSelector({
                   </>
                 ) : (
                   `Pay ${currency} ${parseFloat(amount).toLocaleString()}`
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      case "flutterwave_card":
+        return (
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                Credit/Debit Card
+              </CardTitle>
+              <CardDescription>
+                Pay with Visa, Mastercard, or Verve cards
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 text-blue-700">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    Secure payment powered by Flutterwave
+                  </span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => handleFlutterwavePayment('flutterwave_card')}
+                disabled={isProcessingPayment}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Pay ${currency} ${parseFloat(amount).toLocaleString()} with Card`
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      case "flutterwave_bank":
+        return (
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-green-600" />
+                Bank Transfer
+              </CardTitle>
+              <CardDescription>
+                Direct bank transfer from your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                  <div className="text-sm text-green-700">
+                    <p className="font-medium">How bank transfer works:</p>
+                    <ol className="list-decimal list-inside mt-1 space-y-1">
+                      <li>Select your bank from the list</li>
+                      <li>You'll be redirected to your bank's website</li>
+                      <li>Complete the payment using your online banking</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => handleFlutterwavePayment('flutterwave_bank')}
+                disabled={isProcessingPayment}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Pay ${currency} ${parseFloat(amount).toLocaleString()} via Bank Transfer`
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      case "flutterwave_mobile":
+        return (
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Smartphone className="h-5 w-5 text-purple-600" />
+                Mobile Money
+              </CardTitle>
+              <CardDescription>
+                Pay with MTN, Airtel, or other mobile money services
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-purple-600 mt-0.5" />
+                  <div className="text-sm text-purple-700">
+                    <p className="font-medium">Supported mobile money services:</p>
+                    <ul className="list-disc list-inside mt-1 space-y-1">
+                      <li>MTN Mobile Money</li>
+                      <li>Airtel Money</li>
+                      <li>Tigo Cash</li>
+                      <li>And other regional services</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => handleFlutterwavePayment('flutterwave_mobile')}
+                disabled={isProcessingPayment}
+                className="w-full bg-purple-600 hover:bg-purple-700"
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Pay ${currency} ${parseFloat(amount).toLocaleString()} via Mobile Money`
                 )}
               </Button>
             </CardContent>
