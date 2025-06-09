@@ -747,6 +747,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin registration endpoint for new admin accounts
+  app.post("/api/admin/register", async (req: Request, res: Response) => {
+    try {
+      const { username, email, password, inviteCode } = req.body;
+      
+      // Validate input
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "Username, email, and password are required" });
+      }
+
+      // Check invite code (simple security measure)
+      const validInviteCode = "ADMIN2025"; // In production, this should be dynamic
+      if (inviteCode !== validInviteCode) {
+        return res.status(403).json({ message: "Invalid invite code" });
+      }
+
+      // Check if username or email already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+
+      // Create new admin-only account
+      const adminUser = await storage.createUser({
+        username,
+        email,
+        password,
+        isAdmin: true,
+        role: "admin",
+        isCreator: false // Admin accounts are not creators
+      });
+
+      res.json({ 
+        message: "Admin account created successfully",
+        user: { ...adminUser, password: undefined }
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin setup endpoint for testing
   app.post("/api/admin/setup", async (req: Request, res: Response) => {
     try {

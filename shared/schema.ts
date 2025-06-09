@@ -85,6 +85,9 @@ export const insertUserSchema = createInsertSchema(users).pick({
   fullName: true,
   bio: true,
   avatar: true,
+  isAdmin: true,
+  role: true,
+  isCreator: true,
 });
 
 export const insertCreatorSchema = createInsertSchema(creators).pick({
