@@ -26,10 +26,12 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import CreatorOnboarding from "@/components/forms/creator-onboarding";
+import PlatformDemo from "@/components/demo/platform-demo";
 import { detectCurrencyFromBrowser, formatCurrency, convertCurrency } from "@/../../shared/currency";
 
 export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
   const [detectedCurrency, setDetectedCurrency] = useState('USD');
 
   useEffect(() => {
@@ -198,7 +200,11 @@ export default function Home() {
                     </Button>
                   </DialogTrigger>
                 </Dialog>
-                <Button variant="outline" className="border-2 border-neutral text-neutral hover:bg-neutral hover:text-white px-8 py-4 rounded-xl font-semibold text-lg h-auto">
+                <Button 
+                  variant="outline" 
+                  className="border-2 border-neutral text-neutral hover:bg-neutral hover:text-white px-8 py-4 rounded-xl font-semibold text-lg h-auto"
+                  onClick={() => setShowDemo(true)}
+                >
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
                 </Button>
@@ -696,6 +702,11 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Modal */}
+      {showDemo && (
+        <PlatformDemo onClose={() => setShowDemo(false)} />
+      )}
     </div>
   );
 }
