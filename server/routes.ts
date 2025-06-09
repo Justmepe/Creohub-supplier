@@ -745,6 +745,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create admin test account endpoint
+  app.post("/api/admin/create-test-account", async (req: Request, res: Response) => {
+    try {
+      // Create a dedicated admin test user
+      const adminTestUser = {
+        username: "admintest",
+        email: "admin@test.com",
+        password: "admin123"
+      };
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(adminTestUser.username);
+      if (existingUser) {
+        // Update existing user to admin
+        const updatedUser = await storage.updateUser(existingUser.id, {
+          isAdmin: true,
+          role: 'admin'
+        });
+        return res.json({ message: "Existing admin test account updated", user: updatedUser });
+      }
+
+      // Create new admin user
+      const newUser = await storage.createUser(adminTestUser);
+      const adminUser = await storage.updateUser(newUser.id, {
+        isAdmin: true,
+        role: 'admin'
+      });
+
+      res.json({ 
+        message: "Admin test account created", 
+        user: adminUser,
+        credentials: {
+          username: "admintest",
+          password: "admin123"
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Legacy Stripe endpoint for compatibility
   app.post("/api/payments/stripe", async (req: Request, res: Response) => {
     try {
