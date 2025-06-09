@@ -22,6 +22,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminSetup from "@/pages/admin-setup";
 import AdminTest from "@/pages/admin-test";
 import AdminRegister from "@/pages/admin-register";
+import AdminUsers from "@/pages/admin-users";
 import PaymentSuccess from "@/pages/payment-success";
 import PaymentFailed from "@/pages/payment-failed";
 import NotFound from "@/pages/not-found";
