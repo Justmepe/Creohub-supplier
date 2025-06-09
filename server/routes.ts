@@ -257,9 +257,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/creators/:id/products", async (req: Request, res: Response) => {
     try {
       const creatorId = parseInt(req.params.id);
+      console.log('Products API called for creator:', creatorId, 'Headers:', req.headers.authorization);
       const products = await storage.getProductsByCreator(creatorId);
+      console.log('Products found:', products.length, 'items');
       res.json(products);
     } catch (error: any) {
+      console.error('Products API error:', error.message);
       res.status(400).json({ message: error.message });
     }
   });
