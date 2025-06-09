@@ -48,7 +48,15 @@ export default function Dashboard() {
 
   // Debug logging
   React.useEffect(() => {
-    console.log('Dashboard debug:', { products, productsLoading, creator, creatorProfile, activeCreator });
+    console.log('Dashboard debug:', { 
+      products, 
+      productsLoading, 
+      creator, 
+      creatorProfile, 
+      activeCreator,
+      activeCreatorId: activeCreator?.id,
+      queryEnabled: !!activeCreator?.id 
+    });
   }, [products, productsLoading, creator, creatorProfile, activeCreator]);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
