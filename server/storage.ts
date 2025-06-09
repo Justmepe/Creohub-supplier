@@ -378,17 +378,14 @@ export class DatabaseStorage implements IStorage {
     // Delete associated creator and their data if exists
     const creator = await this.getCreatorByUserId(id);
     if (creator) {
-      // Delete all analytics records for this creator
+      // Delete ALL analytics records for this creator (including those with null product_id)
       await db.delete(analytics).where(eq(analytics.creatorId, creator.id));
       
       // Delete all orders for this creator
       await db.delete(orders).where(eq(orders.creatorId, creator.id));
       
-      // Delete all products by this creator
-      const creatorProducts = await this.getProductsByCreator(creator.id);
-      for (const product of creatorProducts) {
-        await this.deleteProduct(product.id);
-      }
+      // Now delete products without worrying about analytics constraints
+      await db.delete(products).where(eq(products.creatorId, creator.id));
       
       // Delete creator
       await db.delete(creators).where(eq(creators.id, creator.id));
@@ -489,6 +486,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProduct(id: number): Promise<boolean> {
+    // Delete analytics records that reference this product
+    await db.delete(analytics).where(eq(analytics.productId, id));
+    
     const result = await db
       .delete(products)
       .where(eq(products.id, id))
