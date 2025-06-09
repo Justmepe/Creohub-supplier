@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 import Home from "@/pages/home";
 import Auth from "@/pages/auth";
@@ -31,7 +32,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
+        <CurrencyProvider>
+          <TooltipProvider>
           <div className="min-h-screen bg-background">
             <Switch>
               <Route path="/" component={Home} />
@@ -52,7 +54,8 @@ function App() {
             </Switch>
           </div>
           <Toaster />
-        </TooltipProvider>
+          </TooltipProvider>
+        </CurrencyProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

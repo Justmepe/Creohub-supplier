@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
+import { CurrencySelector } from "@/components/ui/currency-selector";
 import { 
   Menu, 
   Home, 
@@ -86,6 +87,9 @@ export default function Navbar() {
                 </Button>
               </>
             )}
+
+            {/* Currency Selector */}
+            <CurrencySelector />
 
             {/* User Menu */}
             {user ? (
