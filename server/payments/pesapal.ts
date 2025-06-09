@@ -61,6 +61,12 @@ class PesapalService {
 
     const url = `${this.getBaseUrl()}/api/Auth/RequestToken`;
     
+    console.log('Requesting Pesapal token from:', url);
+    console.log('Using credentials:', { 
+      consumer_key: this.config.consumerKey?.substring(0, 10) + '...', 
+      consumer_secret: this.config.consumerSecret?.substring(0, 10) + '...' 
+    });
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -73,16 +79,27 @@ class PesapalService {
       })
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log('Pesapal response status:', response.status);
+    console.log('Pesapal response:', responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(`Invalid JSON response from Pesapal: ${responseText}`);
+    }
     
     if (data.token) {
       this.accessToken = data.token;
       // Token expires in 5 minutes, refresh 1 minute early
       this.tokenExpiry = new Date(Date.now() + (4 * 60 * 1000));
+      console.log('Successfully obtained Pesapal token');
       return this.accessToken;
     }
 
-    throw new Error('Failed to get Pesapal access token');
+    console.error('Pesapal token request failed:', data);
+    throw new Error(`Failed to get Pesapal access token: ${data.error || data.message || 'Unknown error'}`);
   }
 
   async registerIPN(): Promise<string> {
