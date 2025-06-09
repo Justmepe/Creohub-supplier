@@ -23,7 +23,7 @@ import {
 import { Link } from "wouter";
 
 export default function Dashboard() {
-  const { user, creator, setCreator } = useAuth();
+  const { user, creator, setCreator, isHydrated } = useAuth();
 
   // Check if user has a creator profile
   const { data: creatorProfile, isLoading: creatorLoading } = useQuery({
