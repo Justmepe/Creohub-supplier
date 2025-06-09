@@ -1,25 +1,40 @@
 # Pesapal Payment Gateway Setup Guide
 
-## Overview
-Pesapal is the unified payment gateway for your creator commerce platform, supporting:
-- M-Pesa payments (Kenya, Tanzania, Uganda)
-- Credit/Debit card payments (Visa, Mastercard)
-- Bank transfers and mobile money
-- Multi-currency support (KES, UGX, TZS, USD, etc.)
+## Quick Start - Get Your Pesapal Credentials
 
-## Getting Pesapal Credentials
+### Step 1: Create Pesapal Business Account
+1. Visit **https://www.pesapal.com/merchant-registration**
+2. Click "Get Started" and fill in your business details:
+   - Business name and registration details
+   - Contact information
+   - Business type (select "E-commerce" or "Digital Services")
+3. Submit required documents (business certificate, ID, bank details)
+4. Wait for account approval (typically 1-3 business days)
 
-### 1. Create Pesapal Account
-1. Visit [Pesapal Developer Portal](https://developer.pesapal.com/)
-2. Sign up for a developer account
-3. Verify your email and complete account setup
+### Step 2: Access Developer Credentials
+1. Once approved, login to **https://www.pesapal.com/merchant**
+2. Navigate to **"Settings" → "API Configuration"**
+3. Generate your API credentials:
+   - **Consumer Key** (starts with letters/numbers)
+   - **Consumer Secret** (long string)
+   - **IPN ID** (for webhook notifications)
 
-### 2. Get API Credentials
-1. Login to your Pesapal dashboard
-2. Navigate to "API Keys" section
-3. Generate your credentials:
-   - **Consumer Key** → `PESAPAL_CONSUMER_KEY`
-   - **Consumer Secret** → `PESAPAL_CONSUMER_SECRET`
+### Step 3: Configure Environment
+Add these exact credentials to your environment:
+```env
+PESAPAL_CONSUMER_KEY=your_actual_consumer_key_here
+PESAPAL_CONSUMER_SECRET=your_actual_consumer_secret_here
+PESAPAL_ENVIRONMENT=sandbox  # Use 'live' for production
+```
+
+## Why Pesapal is Perfect for African Creators
+
+Pesapal provides a unified gateway supporting:
+- **M-Pesa** (Kenya, Tanzania, Uganda) - Mobile money payments
+- **Credit/Debit Cards** (Visa, Mastercard, American Express)
+- **Bank Transfers** - Direct bank account payments
+- **Mobile Money** - Airtel Money, MTN Mobile Money
+- **Multi-currency** - KES, UGX, TZS, USD, EUR
 
 ### 3. Environment Configuration
 Add these to your `.env` file:

@@ -176,8 +176,19 @@ export default function PesapalPayment({
   };
 
   const handlePayment = () => {
+    // Validate required fields before payment
+    if (!customerEmail || !customerName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in your name and email address before proceeding with payment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const [firstName, ...lastNameParts] = customerName.trim().split(' ');
     const lastName = lastNameParts.join(' ') || 'User';
+    const phone = customerPhone || '+254700000000'; // Default phone if not provided
 
     setIsProcessing(true);
     setPaymentStatus('processing');
@@ -186,7 +197,7 @@ export default function PesapalPayment({
       amount,
       currency,
       email: customerEmail,
-      phone: customerPhone,
+      phone,
       firstName,
       lastName,
       productId,
