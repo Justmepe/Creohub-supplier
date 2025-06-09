@@ -73,7 +73,7 @@ export default function PaymentSelector({
     setIsProcessingPayment(true);
     
     try {
-      const response = await apiRequest("POST", "/api/payments/mpesa", {
+      const response = await apiRequest("POST", "/api/payments/customer/mpesa", {
         amount: parseFloat(amount),
         phoneNumber: mpesaPhone,
         orderId: 1, // This would be the actual order ID
@@ -114,7 +114,7 @@ export default function PaymentSelector({
     setIsProcessingPayment(true);
     
     try {
-      const response = await apiRequest("POST", "/api/payments/stripe", {
+      const response = await apiRequest("POST", "/api/payments/customer/stripe/payment-intent", {
         amount: parseFloat(amount),
         token: stripeToken,
         orderId: 1, // This would be the actual order ID

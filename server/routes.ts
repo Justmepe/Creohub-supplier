@@ -520,41 +520,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // M-Pesa payment routes
-  app.post("/api/payments/mpesa", async (req: Request, res: Response) => {
+  // CUSTOMER PAYMENT ROUTES (for purchasing creator products)
+  // M-Pesa payment routes for product purchases
+  app.post("/api/payments/customer/mpesa", async (req: Request, res: Response) => {
     const { initiateMpesaPayment } = await import("./payments/mpesa");
     await initiateMpesaPayment(req, res);
   });
 
-  app.get("/api/payments/mpesa/status/:checkoutRequestId", async (req: Request, res: Response) => {
+  app.get("/api/payments/customer/mpesa/status/:checkoutRequestId", async (req: Request, res: Response) => {
     const { checkMpesaStatus } = await import("./payments/mpesa");
     await checkMpesaStatus(req, res);
   });
 
-  app.post("/api/payments/mpesa/callback", async (req: Request, res: Response) => {
+  app.post("/api/payments/customer/mpesa/callback", async (req: Request, res: Response) => {
     const { mpesaCallback } = await import("./payments/mpesa");
     await mpesaCallback(req, res);
   });
 
-  // Stripe payment routes
-  app.post("/api/payments/stripe/payment-intent", async (req: Request, res: Response) => {
+  // Customer product purchase routes (Stripe)
+  app.post("/api/payments/customer/stripe/payment-intent", async (req: Request, res: Response) => {
     const { createPaymentIntent } = await import("./payments/stripe");
     await createPaymentIntent(req, res);
   });
 
-  app.post("/api/payments/stripe/subscription", async (req: Request, res: Response) => {
+  app.post("/api/payments/customer/stripe/webhook", async (req: Request, res: Response) => {
+    const { stripeWebhook } = await import("./payments/stripe");
+    await stripeWebhook(req, res);
+  });
+
+  // CREATOR SUBSCRIPTION PAYMENT ROUTES (for platform fees)
+  app.post("/api/payments/creator/subscription", async (req: Request, res: Response) => {
     const { createSubscription } = await import("./payments/stripe");
     await createSubscription(req, res);
   });
 
-  app.post("/api/payments/stripe/customer", async (req: Request, res: Response) => {
+  app.post("/api/payments/creator/stripe/customer", async (req: Request, res: Response) => {
     const { createCustomer } = await import("./payments/stripe");
     await createCustomer(req, res);
-  });
-
-  app.post("/api/payments/stripe/webhook", async (req: Request, res: Response) => {
-    const { stripeWebhook } = await import("./payments/stripe");
-    await stripeWebhook(req, res);
   });
 
   // Bank transfer routes
