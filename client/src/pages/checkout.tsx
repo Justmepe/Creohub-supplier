@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
+import logoPath from "@assets/Logo_1749474304178.png";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -198,7 +199,14 @@ export default function Checkout() {
                 </Link>
               </Button>
               <Separator orientation="vertical" className="h-6" />
-              <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+              <div className="flex items-center space-x-2">
+                <img 
+                  src={logoPath} 
+                  alt="Creohub" 
+                  className="h-6 w-6"
+                />
+                <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+              </div>
             </div>
             <div className="text-sm text-gray-600">
               {creator.storeName}
