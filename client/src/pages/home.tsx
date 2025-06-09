@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import logoPath from "@assets/Logo_1749474304178.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -135,7 +136,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-primary">Creohub</h1>
+              <div className="flex items-center space-x-2">
+                <img 
+                  src={logoPath} 
+                  alt="Creohub" 
+                  className="h-8 w-8"
+                />
+                <h1 className="text-2xl font-bold text-primary">Creohub</h1>
+              </div>
               <div className="hidden md:flex items-baseline space-x-4 ml-10">
                 <a href="#features" className="text-neutral hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Features</a>
                 <a href="#pricing" className="text-neutral hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Pricing</a>
