@@ -601,6 +601,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     await bankTransferWebhook(req, res);
   });
 
+  // Pesapal routes
+  app.post("/api/payments/customer/pesapal", async (req: Request, res: Response) => {
+    const { initiatePesapalPayment } = await import("./payments/pesapal");
+    await initiatePesapalPayment(req, res);
+  });
+
+  app.get("/api/payments/customer/pesapal/status/:orderTrackingId", async (req: Request, res: Response) => {
+    const { checkPesapalStatus } = await import("./payments/pesapal");
+    await checkPesapalStatus(req, res);
+  });
+
+  app.get("/api/payments/customer/pesapal/ipn", async (req: Request, res: Response) => {
+    const { pesapalIPN } = await import("./payments/pesapal");
+    await pesapalIPN(req, res);
+  });
+
+  app.get("/api/payments/customer/pesapal/callback", async (req: Request, res: Response) => {
+    const { pesapalCallback } = await import("./payments/pesapal");
+    await pesapalCallback(req, res);
+  });
+
   // PayPal routes
   app.get("/api/paypal/setup", async (req: Request, res: Response) => {
     const { loadPaypalDefault } = await import("./paypal");

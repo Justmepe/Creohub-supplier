@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Smartphone, CreditCard, Building2, Globe } from "lucide-react";
+import { Smartphone, CreditCard, Building2, Globe, Banknote } from "lucide-react";
 import MpesaPayment from "./MpesaPayment";
-import FlutterwavePayment from "./FlutterwavePayment";
+import PesapalPayment from "./PesapalPayment";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface PaymentSelectorProps {
@@ -32,31 +32,31 @@ export default function PaymentSelector({
 
   const paymentMethods = [
     {
+      id: 'pesapal',
+      name: 'Pesapal',
+      description: 'Unified payment - Mobile money, cards, and bank transfers',
+      icon: Banknote,
+      available: isAfricanCurrency,
+      popular: isAfricanCurrency,
+      fees: 'Standard processing fees apply'
+    },
+    {
       id: 'mpesa',
       name: 'M-Pesa',
       description: 'Pay with your Safaricom M-Pesa account',
       icon: Smartphone,
       available: isKenyanShilling,
-      popular: isKenyanShilling,
+      popular: false,
       fees: 'No additional fees'
     },
     {
-      id: 'flutterwave',
+      id: 'card',
       name: 'Card Payment',
       description: 'Pay with Visa, Mastercard, or local cards',
       icon: CreditCard,
       available: true,
-      popular: !isKenyanShilling,
+      popular: !isAfricanCurrency,
       fees: 'Standard processing fees apply'
-    },
-    {
-      id: 'bank',
-      name: 'Bank Transfer',
-      description: 'Direct bank transfer (manual verification)',
-      icon: Building2,
-      available: isAfricanCurrency,
-      popular: false,
-      fees: 'No platform fees'
     },
     {
       id: 'paypal',
@@ -81,13 +81,13 @@ export default function PaymentSelector({
     );
   }
 
-  if (selectedMethod === 'flutterwave') {
+  if (selectedMethod === 'pesapal') {
     return (
-      <FlutterwavePayment
+      <PesapalPayment
         amount={amount}
         productId={productId}
         productName={productName}
-        onSuccess={(transactionId) => onSuccess?.(transactionId, 'flutterwave')}
+        onSuccess={(transactionId) => onSuccess?.(transactionId, 'pesapal')}
         onCancel={() => setSelectedMethod(null)}
       />
     );
