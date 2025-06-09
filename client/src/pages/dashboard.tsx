@@ -41,19 +41,24 @@ export default function Dashboard() {
   // Use creatorProfile directly for products query if creator context is null
   const activeCreator = creator || creatorProfile;
   
-  const { data: products, isLoading: productsLoading } = useQuery({
+  const { data: products, isLoading: productsLoading, error: productsError } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/products`],
-    enabled: !!activeCreator?.id,
+    enabled: !!activeCreator?.id && isHydrated,
+    retry: 3,
+    retryDelay: 1000,
   });
   
   // Force debug the query state
   console.log('Products query state:', {
     activeCreatorId: activeCreator?.id,
-    queryEnabled: !!activeCreator?.id,
+    queryEnabled: !!activeCreator?.id && isHydrated,
     queryKey: `/api/creators/${activeCreator?.id}/products`,
     products,
     productsLoading,
-    isQueryEnabled: !!activeCreator?.id
+    productsError,
+    isHydrated,
+    hasActiveCreator: !!activeCreator,
+    activeCreatorFull: activeCreator
   });
 
   // Debug logging
@@ -80,6 +85,36 @@ export default function Dashboard() {
       console.log('Products result:', products);
     }
   }, [isHydrated, user, products, productsLoading, creator, creatorProfile, creatorLoading, activeCreator]);
+
+  // Manual test fetch to verify API connection
+  React.useEffect(() => {
+    if (activeCreator?.id && isHydrated) {
+      const testFetch = async () => {
+        try {
+          const token = localStorage.getItem('auth_token');
+          console.log('Starting manual test fetch for creator:', activeCreator.id);
+          const response = await fetch(`/api/creators/${activeCreator.id}/products`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          console.log('Manual fetch test result:', {
+            url: `/api/creators/${activeCreator.id}/products`,
+            status: response.status,
+            ok: response.ok
+          });
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Manual fetch returned data:', data);
+          }
+        } catch (error) {
+          console.error('Manual fetch error:', error);
+        }
+      };
+      
+      testFetch();
+    }
+  }, [activeCreator?.id, isHydrated]);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/orders`],
