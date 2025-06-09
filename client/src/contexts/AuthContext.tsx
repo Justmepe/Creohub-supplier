@@ -31,32 +31,52 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydrate from localStorage after component mounts
+  // Check for existing session and hydrate from localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('user');
-      const savedCreator = localStorage.getItem('creator');
-      
-      if (savedUser) {
+    const checkAuth = async () => {
+      if (typeof window !== 'undefined') {
         try {
-          setUser(JSON.parse(savedUser));
+          // First check if there's an active session on the server
+          const response = await fetch('/api/auth/me', {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          } else {
+            // No active session, try localStorage as fallback
+            const savedUser = localStorage.getItem('user');
+            if (savedUser) {
+              try {
+                setUser(JSON.parse(savedUser));
+              } catch (error) {
+                console.error('Failed to parse saved user:', error);
+                localStorage.removeItem('user');
+              }
+            }
+          }
+          
+          // Load creator profile from localStorage
+          const savedCreator = localStorage.getItem('creator');
+          if (savedCreator) {
+            try {
+              setCreator(JSON.parse(savedCreator));
+            } catch (error) {
+              console.error('Failed to parse saved creator:', error);
+              localStorage.removeItem('creator');
+            }
+          }
         } catch (error) {
-          console.error('Failed to parse saved user:', error);
-          localStorage.removeItem('user');
+          console.error('Error checking authentication:', error);
+        } finally {
+          setIsHydrated(true);
         }
       }
-      
-      if (savedCreator) {
-        try {
-          setCreator(JSON.parse(savedCreator));
-        } catch (error) {
-          console.error('Failed to parse saved creator:', error);
-          localStorage.removeItem('creator');
-        }
-      }
-      
-      setIsHydrated(true);
-    }
+    };
+
+    checkAuth();
   }, []);
 
   const handleSetUser = (user: User | null) => {

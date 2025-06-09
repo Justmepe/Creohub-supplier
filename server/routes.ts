@@ -1,5 +1,12 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+
+// Extend Express session interface
+declare module "express-session" {
+  interface SessionData {
+    userId?: number;
+  }
+}
 import { storage } from "./storage";
 import { 
   insertUserSchema, 
@@ -152,10 +159,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      // Store user ID in session
+      req.session.userId = user.id;
+
       res.json({ user: { ...user, password: undefined } });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
+  });
+
+  // Add route to check authentication status
+  app.get("/api/auth/me", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      res.json({ user: { ...user, password: undefined } });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req: Request, res: Response) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
   });
 
   // Creator routes
