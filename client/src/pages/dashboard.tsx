@@ -52,8 +52,9 @@ export default function Dashboard() {
       isHydrated,
       user: user ? { id: user.id, username: user.username } : null,
       authToken: typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
-      products, 
+      products: products || 'undefined/null', 
       productsLoading, 
+      productsArray: Array.isArray(products) ? products.length : 'not array',
       creator, 
       creatorProfile, 
       creatorLoading,
@@ -62,6 +63,12 @@ export default function Dashboard() {
       queryEnabled: !!activeCreator?.id,
       queryKey: `/api/creators/${activeCreator?.id}/products`
     });
+
+    // Also log products fetch attempt
+    if (activeCreator?.id && !productsLoading) {
+      console.log('Products fetch completed for creator:', activeCreator.id);
+      console.log('Products result:', products);
+    }
   }, [isHydrated, user, products, productsLoading, creator, creatorProfile, creatorLoading, activeCreator]);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({

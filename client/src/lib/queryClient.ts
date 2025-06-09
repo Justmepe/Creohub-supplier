@@ -23,11 +23,15 @@ export async function apiRequest(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  console.log('Making API request:', { method, url, headers: Object.keys(headers), hasToken: !!token });
+
   const res = await fetch(url, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
   });
+
+  console.log('API response:', { url, status: res.status, ok: res.ok });
 
   await throwIfResNotOk(res);
   return res;
@@ -46,16 +50,22 @@ export const getQueryFn: <T>(options: {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
+    console.log('Query fetch:', { url: queryKey[0], hasToken: !!token });
+
     const res = await fetch(queryKey[0] as string, {
       headers,
     });
+
+    console.log('Query response:', { url: queryKey[0], status: res.status, ok: res.ok });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    const data = await res.json();
+    console.log('Query data:', { url: queryKey[0], data });
+    return data;
   };
 
 export const queryClient = new QueryClient({
