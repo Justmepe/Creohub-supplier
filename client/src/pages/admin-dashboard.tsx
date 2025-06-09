@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useContext } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { apiRequest } from "@/lib/queryClient";
+import { AuthContext } from "@/contexts/AuthContext";
 import {
   Users,
   DollarSign,
@@ -13,7 +16,8 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
 
 interface AdminStats {
@@ -26,10 +30,31 @@ interface AdminStats {
 }
 
 export default function AdminDashboard() {
+  const authContext = useContext(AuthContext);
+  const [, setLocation] = useLocation();
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (authContext?.user && !authContext.user.isAdmin) {
+      setLocation("/auth");
+    }
+  }, [authContext?.user, setLocation]);
+
+  const handleLogout = () => {
+    authContext?.logout();
+    setLocation("/auth");
+  };
+
   const { data: adminStats, isLoading } = useQuery({
     queryKey: ['/api/admin/dashboard'],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/admin/dashboard");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          setLocation("/auth");
+          throw new Error("Admin access required");
+        }
+      }
       return response.json() as Promise<AdminStats>;
     }
   });

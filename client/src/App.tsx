@@ -55,9 +55,7 @@ function App() {
               <Route path="/testing" component={Testing} />
               <Route path="/test-login" component={TestLogin} />
               <Route path="/admin" component={AdminDashboard} />
-              <Route path="/admin-setup" component={AdminSetup} />
-              <Route path="/admin-test" component={AdminTest} />
-              <Route path="/admin-register" component={AdminRegister} />
+              <Route path="/admin/register" component={AdminRegister} />
               <Route component={NotFound} />
             </Switch>
           </div>
