@@ -61,6 +61,10 @@ export default function Products() {
   const { data: products, isLoading, error } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
     enabled: !!creator?.id,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${creator?.id}/products`);
+      return response.json();
+    }
   });
 
   // Debug products query
