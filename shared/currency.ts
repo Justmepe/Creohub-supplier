@@ -76,6 +76,62 @@ export const SUPPORTED_CURRENCIES: Record<string, CurrencyInfo> = {
     name: 'Australian Dollar',
     countries: ['AU'],
     exchangeRate: 1.52
+  },
+  XOF: {
+    code: 'XOF',
+    symbol: 'CFA',
+    name: 'West African CFA Franc',
+    countries: ['SN', 'CI', 'BF', 'ML', 'NE', 'TG', 'BJ', 'GW'],
+    exchangeRate: 600
+  },
+  XAF: {
+    code: 'XAF',
+    symbol: 'FCFA',
+    name: 'Central African CFA Franc',
+    countries: ['CM', 'CF', 'TD', 'CG', 'GQ', 'GA'],
+    exchangeRate: 600
+  },
+  MAD: {
+    code: 'MAD',
+    symbol: 'DH',
+    name: 'Moroccan Dirham',
+    countries: ['MA'],
+    exchangeRate: 10
+  },
+  TND: {
+    code: 'TND',
+    symbol: 'د.ت',
+    name: 'Tunisian Dinar',
+    countries: ['TN'],
+    exchangeRate: 3.1
+  },
+  ETB: {
+    code: 'ETB',
+    symbol: 'Br',
+    name: 'Ethiopian Birr',
+    countries: ['ET'],
+    exchangeRate: 55
+  },
+  UGX: {
+    code: 'UGX',
+    symbol: 'USh',
+    name: 'Ugandan Shilling',
+    countries: ['UG'],
+    exchangeRate: 3700
+  },
+  TZS: {
+    code: 'TZS',
+    symbol: 'TSh',
+    name: 'Tanzanian Shilling',
+    countries: ['TZ'],
+    exchangeRate: 2500
+  },
+  RWF: {
+    code: 'RWF',
+    symbol: 'RF',
+    name: 'Rwandan Franc',
+    countries: ['RW'],
+    exchangeRate: 1300
   }
 };
 
@@ -87,10 +143,26 @@ const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   'ZA': 'ZAR', // South Africa
   'GH': 'GHS', // Ghana
   'EG': 'EGP', // Egypt
-  'TZ': 'USD', // Tanzania (USD commonly used)
-  'UG': 'USD', // Uganda (USD commonly used)
-  'RW': 'USD', // Rwanda (USD commonly used)
-  'ET': 'USD', // Ethiopia (USD commonly used)
+  'TZ': 'TZS', // Tanzania
+  'UG': 'UGX', // Uganda
+  'RW': 'RWF', // Rwanda
+  'ET': 'ETB', // Ethiopia
+  'MA': 'MAD', // Morocco
+  'TN': 'TND', // Tunisia
+  'SN': 'XOF', // Senegal
+  'CI': 'XOF', // Côte d'Ivoire
+  'BF': 'XOF', // Burkina Faso
+  'ML': 'XOF', // Mali
+  'NE': 'XOF', // Niger
+  'TG': 'XOF', // Togo
+  'BJ': 'XOF', // Benin
+  'GW': 'XOF', // Guinea-Bissau
+  'CM': 'XAF', // Cameroon
+  'CF': 'XAF', // Central African Republic
+  'TD': 'XAF', // Chad
+  'CG': 'XAF', // Republic of the Congo
+  'GQ': 'XAF', // Equatorial Guinea
+  'GA': 'XAF', // Gabon
   
   // North America
   'US': 'USD',

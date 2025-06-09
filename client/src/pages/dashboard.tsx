@@ -10,6 +10,7 @@ import ProductUpload from "@/components/dashboard/product-upload";
 import CreateCreatorProfile from "@/components/dashboard/create-creator-profile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { PriceDisplay } from "@/components/ui/price-display";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Plus, 
@@ -368,7 +369,11 @@ export default function Dashboard() {
                             <p className="text-sm text-gray-600 capitalize">{product.type}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">{formatPrice(convertPrice(parseFloat(product.price), product.currency))}</p>
+                            <PriceDisplay
+                              originalPrice={parseFloat(product.price)}
+                              originalCurrency={product.currency}
+                              size="sm"
+                            />
                             <Badge variant="outline">{product.category || 'Uncategorized'}</Badge>
                           </div>
                         </div>

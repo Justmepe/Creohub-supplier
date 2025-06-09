@@ -28,6 +28,7 @@ import Navbar from "@/components/layout/navbar";
 import ProductUpload from "@/components/dashboard/product-upload";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { PriceDisplay } from "@/components/ui/price-display";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -361,9 +362,11 @@ export default function Products() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-lg font-bold text-gray-900">
-                          {formatPrice(convertPrice(parseFloat(product.price), product.currency))}
-                        </span>
+                        <PriceDisplay
+                          originalPrice={parseFloat(product.price)}
+                          originalCurrency={product.currency}
+                          size="md"
+                        />
                         {product.type === "physical" && product.stock !== null && (
                           <span className="text-xs text-gray-500">
                             {product.stock} in stock
