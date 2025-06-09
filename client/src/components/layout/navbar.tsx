@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import logoPath from "@assets/Logo_1749474304178.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +53,12 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/">
+            <Link href="/" className="flex items-center space-x-2">
+              <img 
+                src={logoPath} 
+                alt="Creohub" 
+                className="h-8 w-8"
+              />
               <h1 className="text-2xl font-bold text-primary cursor-pointer">Creohub</h1>
             </Link>
             {creator && (
@@ -158,6 +164,14 @@ export default function Navbar() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
+                <div className="flex items-center space-x-2 p-4 border-b">
+                  <img 
+                    src={logoPath} 
+                    alt="Creohub" 
+                    className="h-6 w-6"
+                  />
+                  <h2 className="text-lg font-bold text-primary">Creohub</h2>
+                </div>
                 <div className="flex flex-col space-y-4 mt-4">
                   {user && creator && (
                     <>
