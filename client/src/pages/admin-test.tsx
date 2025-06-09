@@ -10,8 +10,8 @@ import { Shield, User, Key, LogIn } from "lucide-react";
 
 export default function AdminTest() {
   const [loginData, setLoginData] = useState({
-    username: "admintest",
-    password: "admin123"
+    username: "testerpeter",
+    password: "password123"
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
@@ -124,8 +124,9 @@ export default function AdminTest() {
 
             <div className="text-center text-sm text-gray-600">
               <p><strong>Admin Credentials:</strong></p>
-              <p>Username: admintest</p>
-              <p>Password: admin123</p>
+              <p>Username: testerpeter</p>
+              <p>Password: password123</p>
+              <p className="text-xs text-blue-600 mt-2">Note: This user has both creator and admin privileges</p>
             </div>
           </CardContent>
         </Card>

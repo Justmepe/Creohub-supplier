@@ -620,12 +620,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ADMIN ROUTES (for platform management)
   app.get("/api/admin/dashboard", async (req: Request, res: Response) => {
     try {
-      // Check admin authorization
-      if (!req.session?.userId) {
+      // Check admin authorization using token
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      const user = await storage.getUser(userId);
+      
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -654,11 +658,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/creators", async (req: Request, res: Response) => {
     try {
-      if (!req.session?.userId) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      const user = await storage.getUser(userId);
+      
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -672,11 +680,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/creators/:id", async (req: Request, res: Response) => {
     try {
-      if (!req.session?.userId) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      const user = await storage.getUser(userId);
+      
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
