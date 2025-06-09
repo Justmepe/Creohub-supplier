@@ -3,6 +3,7 @@ import { SUPPORTED_CURRENCIES, detectCurrencyFromBrowser, formatCurrency, conver
 
 interface CurrencyContextType {
   currentCurrency: string;
+  currency: string; // Alias for currentCurrency
   setCurrency: (currency: string) => void;
   formatPrice: (amount: number, currency?: string) => string;
   convertPrice: (amount: number, fromCurrency: string, toCurrency?: string) => number;
@@ -100,6 +101,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
 
   const value: CurrencyContextType = {
     currentCurrency,
+    currency: currentCurrency, // Alias for compatibility
     setCurrency,
     formatPrice,
     convertPrice,

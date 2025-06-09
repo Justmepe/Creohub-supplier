@@ -13,12 +13,13 @@ class MpesaService {
   private config: MpesaConfig;
 
   constructor() {
+    // Use sandbox credentials as fallback for testing
     this.config = {
-      consumerKey: process.env.MPESA_CONSUMER_KEY || '',
-      consumerSecret: process.env.MPESA_CONSUMER_SECRET || '',
-      businessShortCode: process.env.MPESA_BUSINESS_SHORT_CODE || '',
-      passkey: process.env.MPESA_PASSKEY || '',
-      callbackUrl: process.env.MPESA_CALLBACK_URL || '',
+      consumerKey: process.env.MPESA_CONSUMER_KEY || 'sandbox_consumer_key',
+      consumerSecret: process.env.MPESA_CONSUMER_SECRET || 'sandbox_consumer_secret',
+      businessShortCode: process.env.MPESA_BUSINESS_SHORT_CODE || '174379',
+      passkey: process.env.MPESA_PASSKEY || 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
+      callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://your-domain.com/api/payments/customer/mpesa/callback',
       environment: (process.env.MPESA_ENVIRONMENT as 'sandbox' | 'production') || 'sandbox'
     };
   }
