@@ -804,7 +804,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Allow deletion of specific test admin accounts only
-      if (targetUser.isAdmin && !['testerpeter', 'newadmin', 'admintest'].includes(targetUser.username)) {
+      const deletableTestAdmins = ['testerpeter', 'newadmin', 'admintest'];
+      if (targetUser.isAdmin && !deletableTestAdmins.includes(targetUser.username)) {
         return res.status(400).json({ message: "Cannot delete admin accounts" });
       }
 
