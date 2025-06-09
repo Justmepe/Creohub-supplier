@@ -13,6 +13,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PriceDisplay } from "@/components/ui/price-display";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import {
   ShoppingCart,
   Package,
@@ -34,6 +35,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, creatorId, variant = "default" }: ProductCardProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const addToCart = async () => {
@@ -270,11 +272,18 @@ export default function ProductCard({ product, creatorId, variant = "default" }:
               {isAddingToCart ? "Adding..." : "Add to Cart"}
             </Button>
             
-            <Link href={`/checkout/${creatorId}`}>
-              <Button variant="outline">
-                Buy Now
-              </Button>
-            </Link>
+            <Button 
+              variant="outline"
+              onClick={async () => {
+                // Add to cart first
+                await addToCart();
+                // Then navigate to checkout using wouter
+                setLocation(`/checkout/${creatorId}`);
+              }}
+              disabled={isAddingToCart}
+            >
+              Buy Now
+            </Button>
           </div>
         </div>
       </CardContent>
