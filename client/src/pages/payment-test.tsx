@@ -49,15 +49,12 @@ export default function PaymentTest() {
       return await apiRequest("POST", "/api/payments/customer/pesapal", {
         amount: testData.amount,
         currency: testData.currency,
-        orderTrackingId: testData.orderReference,
-        description: "Test payment via Pesapal",
-        billingAddress: {
-          email_address: testData.email,
-          phone_number: testData.phoneNumber,
-          country_code: "KE",
-          first_name: "Test",
-          last_name: "User"
-        }
+        email: testData.email,
+        phone: testData.phoneNumber,
+        firstName: "Test",
+        lastName: "User",
+        productId: "TEST001",
+        productName: "Test Product Payment"
       });
     },
     onSuccess: (data) => {

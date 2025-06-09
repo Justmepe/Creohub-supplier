@@ -88,7 +88,8 @@ export default function PaymentSelector({
       const response = await apiRequest("POST", "/api/payments/customer/mpesa", {
         amount: parseFloat(amount),
         phoneNumber: mpesaPhone,
-        orderId: 1, // This would be the actual order ID
+        accountReference: `ORDER_${Date.now()}`,
+        transactionDesc: `Payment for order - ${currency} ${amount}`,
       });
 
       const result = await response.json();
