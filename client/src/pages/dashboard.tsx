@@ -43,6 +43,11 @@ export default function Dashboard() {
     enabled: !!creator?.id,
   });
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Dashboard debug:', { products, productsLoading, creator });
+  }, [products, productsLoading, creator]);
+
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/orders`],
     enabled: !!creator?.id,
