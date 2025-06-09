@@ -368,7 +368,7 @@ export default function Dashboard() {
                             <p className="text-sm text-gray-600 capitalize">{product.type}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">KES {parseFloat(product.price).toLocaleString()}</p>
+                            <p className="font-semibold">{formatPrice(convertPrice(parseFloat(product.price), product.currency))}</p>
                             <Badge variant="outline">{product.category || 'Uncategorized'}</Badge>
                           </div>
                         </div>
