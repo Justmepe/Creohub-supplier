@@ -51,7 +51,7 @@ export default function Dashboard() {
     console.log('Dashboard debug:', { 
       isHydrated,
       user: user ? { id: user.id, username: user.username } : null,
-      userFromLocalStorage: typeof window !== 'undefined' ? localStorage.getItem('user') : null,
+      authToken: typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
       products, 
       productsLoading, 
       creator, 
@@ -59,7 +59,8 @@ export default function Dashboard() {
       creatorLoading,
       activeCreator,
       activeCreatorId: activeCreator?.id,
-      queryEnabled: !!activeCreator?.id 
+      queryEnabled: !!activeCreator?.id,
+      queryKey: `/api/creators/${activeCreator?.id}/products`
     });
   }, [isHydrated, user, products, productsLoading, creator, creatorProfile, creatorLoading, activeCreator]);
 
