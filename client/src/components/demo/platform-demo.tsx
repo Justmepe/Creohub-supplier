@@ -128,7 +128,7 @@ export default function PlatformDemo({ onClose }: PlatformDemoProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <Card className="w-full max-w-4xl max-h-[85vh] overflow-hidden">
         <CardContent className="p-0">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b bg-white">
@@ -147,7 +147,7 @@ export default function PlatformDemo({ onClose }: PlatformDemoProps) {
           </div>
 
           {/* Demo Content */}
-          <div className="grid md:grid-cols-2 h-[600px]">
+          <div className="grid md:grid-cols-2 h-[500px]">
             {/* Video/Screenshot Area */}
             <div className="bg-gray-100 flex items-center justify-center relative">
               <div className="text-8xl">{currentStepData.screenshot}</div>
@@ -175,8 +175,8 @@ export default function PlatformDemo({ onClose }: PlatformDemoProps) {
             </div>
 
             {/* Content Area */}
-            <div className="p-6 flex flex-col justify-between">
-              <div className="space-y-6">
+            <div className="p-4 flex flex-col justify-between">
+              <div className="space-y-4">
                 {/* Step Info */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
@@ -200,14 +200,14 @@ export default function PlatformDemo({ onClose }: PlatformDemoProps) {
                 </div>
 
                 {/* Feature Highlights */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h4 className="font-semibold text-gray-900">Key Features:</h4>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {currentStep === 0 && (
                       <>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
-                          <span>Custom store handle (yourname.creohub.com)</span>
+                          <span>Custom store handle</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
@@ -219,7 +219,7 @@ export default function PlatformDemo({ onClose }: PlatformDemoProps) {
                       <>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
-                          <span>Digital downloads & physical products</span>
+                          <span>Digital & physical products</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />

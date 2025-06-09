@@ -203,11 +203,7 @@ export default function Home() {
                 <Button 
                   variant="outline" 
                   className="border-2 border-neutral text-neutral hover:bg-neutral hover:text-white px-8 py-4 rounded-xl font-semibold text-lg h-auto"
-                  onClick={() => {
-                    console.log('Watch Demo clicked!');
-                    alert('Demo button clicked!');
-                    setShowDemo(true);
-                  }}
+                  onClick={() => setShowDemo(true)}
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
@@ -709,16 +705,8 @@ export default function Home() {
 
       {/* Demo Modal */}
       {showDemo && (
-        <PlatformDemo onClose={() => {
-          console.log('Demo closed');
-          setShowDemo(false);
-        }} />
+        <PlatformDemo onClose={() => setShowDemo(false)} />
       )}
-      
-      {/* Debug info */}
-      <div style={{ position: 'fixed', top: '10px', right: '10px', background: 'red', color: 'white', padding: '5px', zIndex: 9999 }}>
-        Demo: {showDemo ? 'ON' : 'OFF'}
-      </div>
     </div>
   );
 }
