@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import PaymentSelector from "@/components/payments/payment-selector";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { PriceDisplay } from "@/components/ui/price-display";
 import { apiRequest } from "@/lib/queryClient";
 import type { OrderItem, ShippingAddress } from "@/lib/types";
 import {
@@ -47,6 +49,7 @@ export default function Checkout() {
   const { creatorId } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { currentCurrency } = useCurrency();
   const [cartItems, setCartItems] = useState<OrderItem[]>([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
   const [step, setStep] = useState(1); // 1: Items, 2: Details, 3: Payment, 4: Success
@@ -292,12 +295,19 @@ export default function Checkout() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">
-                        KES {(item.price * item.quantity).toLocaleString()}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        KES {item.price.toLocaleString()} each
-                      </p>
+                      <PriceDisplay
+                        originalPrice={item.price * item.quantity}
+                        originalCurrency="KES"
+                        size="sm"
+                        className="font-semibold"
+                      />
+                      <div className="text-sm text-gray-500">
+                        <PriceDisplay
+                          originalPrice={item.price}
+                          originalCurrency="KES"
+                          size="sm"
+                        /> each
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -307,7 +317,11 @@ export default function Checkout() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>KES {totalAmount.toLocaleString()}</span>
+                    <PriceDisplay
+                      originalPrice={totalAmount}
+                      originalCurrency="KES"
+                      size="sm"
+                    />
                   </div>
                   {hasPhysicalItems && (
                     <div className="flex justify-between text-sm text-gray-600">
@@ -318,7 +332,12 @@ export default function Checkout() {
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>KES {totalAmount.toLocaleString()}</span>
+                    <PriceDisplay
+                      originalPrice={totalAmount}
+                      originalCurrency="KES"
+                      size="lg"
+                      className="font-semibold"
+                    />
                   </div>
                 </div>
               </CardContent>
