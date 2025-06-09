@@ -718,6 +718,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin setup endpoint for testing
+  app.post("/api/admin/setup", async (req: Request, res: Response) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username required" });
+      }
+
+      // Find existing user and promote to admin
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updates = {
+        isAdmin: true,
+        role: 'admin'
+      };
+
+      const updatedUser = await storage.updateUser(user.id, updates);
+      res.json({ message: "User promoted to admin", user: updatedUser });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Legacy Stripe endpoint for compatibility
   app.post("/api/payments/stripe", async (req: Request, res: Response) => {
     try {
