@@ -803,8 +803,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Prevent deleting other admins
-      if (targetUser.isAdmin) {
+      // Allow deletion of specific test admin accounts only
+      if (targetUser.isAdmin && !['testerpeter', 'admintest'].includes(targetUser.username)) {
         return res.status(400).json({ message: "Cannot delete admin accounts" });
       }
 
