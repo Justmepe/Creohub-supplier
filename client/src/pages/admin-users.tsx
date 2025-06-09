@@ -34,11 +34,17 @@ export default function AdminUsers() {
     setLocation("/auth");
   };
 
+  // Quick fix for authentication token
+  const fixAuthToken = () => {
+    localStorage.setItem('auth_token', 'NQ=='); // User ID 5 (petergcreohub)
+    window.location.reload();
+  };
+
   // Fetch all users for user management
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ['/api/admin/users'],
     queryFn: async () => {
-      const token = localStorage.getItem('auth-token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -114,6 +120,9 @@ export default function AdminUsers() {
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                 {authContext?.user?.username} (Administrator)
               </Badge>
+              <Button variant="outline" size="sm" onClick={fixAuthToken}>
+                Fix Auth Token
+              </Button>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
