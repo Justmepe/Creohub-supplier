@@ -28,7 +28,7 @@ export default function Dashboard() {
   // Check if user has a creator profile
   const { data: creatorProfile, isLoading: creatorLoading } = useQuery({
     queryKey: [`/api/creators/user/${user?.id}`],
-    enabled: !!user?.id,
+    enabled: !!(user?.id && isHydrated),
   });
 
   // Set creator when profile is loaded
@@ -49,7 +49,9 @@ export default function Dashboard() {
   // Debug logging
   React.useEffect(() => {
     console.log('Dashboard debug:', { 
-      user: user?.id,
+      isHydrated,
+      user: user ? { id: user.id, username: user.username } : null,
+      userFromLocalStorage: typeof window !== 'undefined' ? localStorage.getItem('user') : null,
       products, 
       productsLoading, 
       creator, 
@@ -59,7 +61,7 @@ export default function Dashboard() {
       activeCreatorId: activeCreator?.id,
       queryEnabled: !!activeCreator?.id 
     });
-  }, [user, products, productsLoading, creator, creatorProfile, creatorLoading, activeCreator]);
+  }, [isHydrated, user, products, productsLoading, creator, creatorProfile, creatorLoading, activeCreator]);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/orders`],
