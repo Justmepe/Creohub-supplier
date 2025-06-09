@@ -51,8 +51,7 @@ export default function Checkout() {
   const { toast } = useToast();
   const { currentCurrency } = useCurrency();
   const [cartItems, setCartItems] = useState<OrderItem[]>([]);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
-  const [step, setStep] = useState(1); // 1: Items, 2: Details, 3: Payment, 4: Success
+  const [step, setStep] = useState(1);
   const [orderId, setOrderId] = useState<number | null>(null);
 
   const form = useForm<CheckoutFormData>({
@@ -91,40 +90,13 @@ export default function Checkout() {
     }
   });
 
-  const createOrderMutation = useMutation({
-    mutationFn: (orderData: any) => apiRequest("POST", "/api/orders", orderData),
-    onSuccess: async (response) => {
-      const order = await response.json();
-      setOrderId(order.id);
-      setStep(4);
-      toast({
-        title: "Order created successfully!",
-        description: "Your order has been placed and is being processed.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error creating order",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem(`cart_${creatorId}`);
     if (savedCart) {
       setCartItems(JSON.parse(savedCart));
-    } else {
-      // If no cart, redirect back to storefront
-      setLocation(`/storefront/${creator?.storeHandle || creatorId}`);
-    }
-  }, [creatorId, creator, setLocation]);
-
-  // Mock cart data for demo purposes if no cart exists
-  useEffect(() => {
-    if (products && products.length > 0 && cartItems.length === 0) {
+    } else if (products && products.length > 0) {
+      // Create mock cart item for demo
       const mockItem: OrderItem = {
         productId: products[0].id,
         name: products[0].name,
@@ -134,7 +106,7 @@ export default function Checkout() {
       };
       setCartItems([mockItem]);
     }
-  }, [products, cartItems.length]);
+  }, [creatorId, products]);
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const hasPhysicalItems = cartItems.some(item => item.type === "physical");
@@ -151,28 +123,10 @@ export default function Checkout() {
   };
 
   const onSubmit = (data: CheckoutFormData) => {
-    if (!selectedPaymentMethod) {
-      toast({
-        title: "Payment method required",
-        description: "Please select a payment method to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const orderData = {
-      creatorId: parseInt(creatorId!),
-      customerName: data.customerName,
-      customerEmail: data.customerEmail,
-      customerPhone: data.customerPhone,
-      totalAmount: totalAmount.toString(),
-      currency: "KES",
-      paymentMethod: selectedPaymentMethod,
-      items: cartItems,
-      shippingAddress: hasPhysicalItems ? data.shippingAddress : undefined,
-    };
-
-    createOrderMutation.mutate(orderData);
+    toast({
+      title: "Customer details validated",
+      description: "Please proceed with payment below.",
+    });
   };
 
   if (creatorLoading) {
@@ -505,40 +459,42 @@ export default function Checkout() {
                 )}
 
                 {/* Payment Method */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5" />
-                      Payment Method
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PaymentSelector
-                      amount={totalAmount.toString()}
-                      currency="KES"
-                      onMethodSelect={setSelectedPaymentMethod}
-                      selectedMethod={selectedPaymentMethod}
-                    />
-                  </CardContent>
-                </Card>
+                <PesapalPayment
+                  amount={totalAmount}
+                  currency="KES"
+                  productId={cartItems[0]?.productId.toString() || "ORDER"}
+                  productName={cartItems.map(item => item.name).join(", ")}
+                  customerEmail={form.watch("customerEmail") || ""}
+                  customerPhone={form.watch("customerPhone") || ""}
+                  customerName={form.watch("customerName") || ""}
+                  onSuccess={(data) => {
+                    toast({
+                      title: "Payment Successful",
+                      description: "Your order has been confirmed!",
+                    });
+                    setStep(4);
+                    setOrderId(data.order_id);
+                  }}
+                  onCancel={() => {
+                    toast({
+                      title: "Payment Cancelled",
+                      description: "You can try again when ready.",
+                    });
+                  }}
+                />
 
-                {/* Submit Button */}
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 text-lg"
-                  disabled={createOrderMutation.isPending || !selectedPaymentMethod}
-                >
-                  {createOrderMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processing Order...
-                    </>
-                  ) : (
-                    <>
-                      Complete Order - KES {totalAmount.toLocaleString()}
-                    </>
-                  )}
-                </Button>
+                {/* Order Total Display */}
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-medium">Total Order Value:</span>
+                    <span className="text-2xl font-bold text-primary">
+                      KES {totalAmount.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Payment will be processed securely through Pesapal
+                  </p>
+                </div>
               </form>
             </Form>
           </div>
