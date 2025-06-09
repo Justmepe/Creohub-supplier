@@ -23,6 +23,7 @@ import AdminSetup from "@/pages/admin-setup";
 import AdminTest from "@/pages/admin-test";
 import AdminRegister from "@/pages/admin-register";
 import AdminUsers from "@/pages/admin-users";
+import PaymentTest from "@/pages/payment-test";
 import PaymentSuccess from "@/pages/payment-success";
 import PaymentFailed from "@/pages/payment-failed";
 import NotFound from "@/pages/not-found";
@@ -60,6 +61,7 @@ function App() {
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/users" component={AdminUsers} />
               <Route path="/admin/register" component={AdminRegister} />
+              <Route path="/payment-test" component={PaymentTest} />
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/payment/failed" component={PaymentFailed} />
               <Route component={NotFound} />
