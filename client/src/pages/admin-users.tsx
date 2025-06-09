@@ -37,7 +37,9 @@ export default function AdminUsers() {
 
   // Quick fix for authentication token
   const fixAuthToken = () => {
+    localStorage.clear(); // Clear all local storage
     localStorage.setItem('auth_token', 'NQ=='); // User ID 5 (petergcreohub)
+    queryClient.clear(); // Clear all cached queries
     window.location.reload();
   };
 
