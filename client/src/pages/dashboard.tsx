@@ -33,22 +33,22 @@ export default function Dashboard() {
 
   // Set creator when profile is loaded
   React.useEffect(() => {
-    if (creatorProfile && !creator) {
-      setCreator(creatorProfile);
+    if (creatorProfile && typeof creatorProfile === 'object' && 'id' in creatorProfile) {
+      setCreator(creatorProfile as any);
     }
-  }, [creatorProfile, creator, setCreator]);
+  }, [creatorProfile, setCreator]);
 
-  const { data: products, isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
     enabled: !!creator?.id,
   });
 
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/orders`],
     enabled: !!creator?.id,
   });
 
-  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+  const { data: analytics = [], isLoading: analyticsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/analytics`],
     enabled: !!creator?.id,
   });
@@ -68,6 +68,14 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+      </div>
+    );
+  }
+
+  if (creatorLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
