@@ -42,9 +42,24 @@ export default function AdminUsers() {
   };
 
   // Fetch all users for user management
-  const { data: allUsers, isLoading } = useQuery({
-    queryKey: ['/api/admin/users']
+  const { data: allUsers, isLoading, error, refetch } = useQuery({
+    queryKey: ['/api/admin/users'],
+    retry: 3,
+    retryDelay: 1000
   });
+
+  // Handle authentication errors
+  if (error && error.message.includes('403')) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold">Authentication Required</h2>
+          <p>Your session may have expired. Please refresh your authentication.</p>
+          <Button onClick={fixAuthToken}>Refresh Authentication</Button>
+        </div>
+      </div>
+    );
+  }
 
   // User deletion mutation
   const deleteUserMutation = useMutation({
