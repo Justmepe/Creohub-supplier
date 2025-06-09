@@ -147,6 +147,16 @@ export default function AdminUsers() {
     <div className="p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              onClick={() => setLocation('/admin')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Admin Dashboard
+            </Button>
+          </div>
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
             <Users className="h-8 w-8" />
             User Management

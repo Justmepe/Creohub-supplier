@@ -158,7 +158,9 @@ export default function PaymentTest() {
     queryKey: ['/api/payments/config'],
     queryFn: async () => {
       try {
-        return await apiRequest("GET", "/api/payments/config");
+        const response = await fetch("/api/payments/config");
+        const data = await response.json();
+        return data as { configured: string[], missing: string[] };
       } catch (error) {
         return { configured: [], missing: [] };
       }
@@ -322,7 +324,7 @@ export default function PaymentTest() {
                 <div>
                   <h4 className="font-medium mb-2 text-green-600 dark:text-green-400">Configured Methods</h4>
                   <div className="space-y-1">
-                    {paymentConfig.configured?.map((method: string) => (
+                    {paymentConfig?.configured?.map((method: string) => (
                       <Badge key={method} variant="secondary" className="mr-2">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         {method}
@@ -333,7 +335,7 @@ export default function PaymentTest() {
                 <div>
                   <h4 className="font-medium mb-2 text-yellow-600 dark:text-yellow-400">Missing Configuration</h4>
                   <div className="space-y-1">
-                    {paymentConfig.missing?.map((method: string) => (
+                    {paymentConfig?.missing?.map((method: string) => (
                       <Badge key={method} variant="outline" className="mr-2">
                         <XCircle className="w-3 h-3 mr-1" />
                         {method}

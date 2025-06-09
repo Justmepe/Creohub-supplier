@@ -520,6 +520,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment configuration status
+  app.get("/api/payments/config", async (req: Request, res: Response) => {
+    try {
+      const configured = [];
+      const missing = [];
+
+      // Check Pesapal
+      if (process.env.PESAPAL_CONSUMER_KEY && process.env.PESAPAL_CONSUMER_SECRET) {
+        configured.push('Pesapal');
+      } else {
+        missing.push('Pesapal');
+      }
+
+      // Check Stripe
+      if (process.env.STRIPE_SECRET_KEY && process.env.VITE_STRIPE_PUBLIC_KEY) {
+        configured.push('Stripe');
+      } else {
+        missing.push('Stripe');
+      }
+
+      // Check PayPal
+      if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
+        configured.push('PayPal');
+      } else {
+        missing.push('PayPal');
+      }
+
+      // Check M-Pesa
+      if (process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET) {
+        configured.push('M-Pesa');
+      } else {
+        missing.push('M-Pesa');
+      }
+
+      res.json({ configured, missing });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // CUSTOMER PAYMENT ROUTES (for purchasing creator products)
   // M-Pesa payment routes for product purchases
   app.post("/api/payments/customer/mpesa", async (req: Request, res: Response) => {
