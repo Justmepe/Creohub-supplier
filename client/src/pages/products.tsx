@@ -58,9 +58,20 @@ export default function Products() {
   const [selectedType, setSelectedType] = useState("all");
   const [showUploadDialog, setShowUploadDialog] = useState(false);
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
     enabled: !!creator?.id,
+  });
+
+  // Debug products query
+  console.log('Products page debug:', {
+    creator: creator,
+    creatorId: creator?.id,
+    queryEnabled: !!creator?.id,
+    products: products,
+    isLoading: isLoading,
+    error: error,
+    queryKey: `/api/creators/${creator?.id}/products`
   });
 
   const deleteProductMutation = useMutation({
