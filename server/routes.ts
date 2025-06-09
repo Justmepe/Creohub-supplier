@@ -784,6 +784,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const token = authHeader.substring(7);
       const userId = parseInt(Buffer.from(token, 'base64').toString());
+      console.log(`Delete request - Current user ID: ${userId}, Target user ID: ${req.params.id}`);
+      
       const user = await storage.getUser(userId);
       
       if (!user || !user.isAdmin) {
@@ -794,6 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Prevent admin from deleting themselves
       if (targetUserId === userId) {
+        console.log(`Self-deletion prevented: ${userId} === ${targetUserId}`);
         return res.status(400).json({ message: "Cannot delete your own account" });
       }
 
