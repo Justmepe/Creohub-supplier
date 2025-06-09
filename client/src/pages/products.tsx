@@ -27,6 +27,7 @@ import {
 import Navbar from "@/components/layout/navbar";
 import ProductUpload from "@/components/dashboard/product-upload";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -52,6 +53,7 @@ import {
 
 export default function Products() {
   const { creator } = useAuth();
+  const { formatPrice, convertPrice } = useCurrency();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -161,9 +163,7 @@ export default function Products() {
     }
   };
 
-  const formatPrice = (price: string, currency: string = "KES") => {
-    return `${currency} ${parseFloat(price).toLocaleString()}`;
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -362,7 +362,7 @@ export default function Products() {
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className="text-lg font-bold text-gray-900">
-                          {formatPrice(product.price, product.currency)}
+                          {formatPrice(convertPrice(parseFloat(product.price), product.currency))}
                         </span>
                         {product.type === "physical" && product.stock !== null && (
                           <span className="text-xs text-gray-500">

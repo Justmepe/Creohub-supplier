@@ -9,6 +9,7 @@ import AnalyticsCards from "@/components/dashboard/analytics-cards";
 import ProductUpload from "@/components/dashboard/product-upload";
 import CreateCreatorProfile from "@/components/dashboard/create-creator-profile";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Plus, 
@@ -25,6 +26,7 @@ import { Link } from "wouter";
 
 export default function Dashboard() {
   const { user, creator, setCreator, isHydrated } = useAuth();
+  const { formatPrice, convertPrice } = useCurrency();
 
   // Check if user has a creator profile
   const { data: creatorProfile, isLoading: creatorLoading } = useQuery({
