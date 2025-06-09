@@ -190,7 +190,7 @@ export default function AdminRegister() {
             <div className="mt-6 text-center space-y-2">
               <p className="text-sm text-gray-600">
                 Already have an admin account?{" "}
-                <Link href="/admin-test" className="text-blue-600 hover:underline">
+                <Link href="/auth" className="text-blue-600 hover:underline">
                   Login here
                 </Link>
               </p>

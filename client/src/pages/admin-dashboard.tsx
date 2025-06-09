@@ -100,9 +100,15 @@ export default function AdminDashboard() {
               </h1>
               <p className="text-gray-600">Platform management and analytics</p>
             </div>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              Administrator
-            </Badge>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                {authContext?.user?.username} (Administrator)
+              </Badge>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>

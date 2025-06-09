@@ -1,7 +1,19 @@
 # Creohub Admin System Guide
 
 ## Overview
-Creohub's admin system provides comprehensive platform management capabilities through a secure, role-based access control system. Admins are dedicated accounts separate from creator accounts to avoid data conflicts.
+Creohub's streamlined admin system provides comprehensive platform management capabilities through a secure, role-based access control system. Admins are dedicated accounts separate from creator accounts to avoid data conflicts and ensure clean separation of responsibilities.
+
+## Streamlined Access Flow
+
+### For New Admins
+1. **Registration**: Visit `/admin/register` with invite code
+2. **Login**: Use standard login at `/auth` with admin credentials
+3. **Dashboard**: Automatically redirected to `/admin` upon successful admin login
+
+### For Existing Admins
+1. **Login**: Visit `/auth` and login with admin credentials
+2. **Dashboard**: Access full admin dashboard at `/admin`
+3. **Logout**: Use logout button in admin dashboard header
 
 ## Admin Roles and Capabilities
 
