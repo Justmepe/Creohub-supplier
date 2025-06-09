@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useContext, useState } from "react";
 import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,33 +43,13 @@ export default function AdminUsers() {
 
   // Fetch all users for user management
   const { data: allUsers, isLoading } = useQuery({
-    queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/admin/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    }
+    queryKey: ['/api/admin/users']
   });
 
   // User deletion mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      const token = localStorage.getItem('auth-token');
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to delete user');
-      }
+      const response = await apiRequest('DELETE', `/api/admin/users/${userId}`);
       return response.json();
     },
     onSuccess: (data) => {
