@@ -171,7 +171,7 @@ export default function AdminUsers() {
                       {user.isAdmin ? 'Administrator' : 'Regular User'}
                     </Badge>
                     
-                    {!user.isAdmin && (
+                    {(!user.isAdmin || ['testerpeter', 'newadmin', 'admintest'].includes(user.username)) && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button 
@@ -216,7 +216,7 @@ export default function AdminUsers() {
                       </AlertDialog>
                     )}
                     
-                    {user.isAdmin && (
+                    {user.isAdmin && !['testerpeter', 'newadmin', 'admintest'].includes(user.username) && (
                       <Badge variant="outline" className="text-gray-500">
                         Protected Account
                       </Badge>
