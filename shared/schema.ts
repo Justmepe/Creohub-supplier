@@ -11,6 +11,8 @@ export const users = pgTable("users", {
   bio: text("bio"),
   avatar: text("avatar"),
   isCreator: boolean("is_creator").default(false),
+  isAdmin: boolean("is_admin").default(false),
+  role: text("role").default("user"), // user, creator, admin
   createdAt: timestamp("created_at").defaultNow(),
 });
 

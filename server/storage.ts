@@ -99,6 +99,8 @@ export class MemStorage implements IStorage {
       bio: insertUser.bio || null,
       avatar: insertUser.avatar || null,
       isCreator: false,
+      isAdmin: false,
+      role: 'user',
       createdAt: new Date() 
     };
     this.users.set(id, user);

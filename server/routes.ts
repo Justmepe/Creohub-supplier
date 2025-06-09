@@ -617,6 +617,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     await capturePaypalOrder(req, res);
   });
 
+  // ADMIN ROUTES (for platform management)
+  app.get("/api/admin/dashboard", async (req: Request, res: Response) => {
+    try {
+      // Check admin authorization
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Get platform statistics
+      const allCreators = await storage.getCreators();
+      const totalCreators = allCreators.length;
+      const activeCreators = allCreators.filter(c => c.isActive).length;
+      const paidCreators = allCreators.filter(c => c.planType !== 'free').length;
+
+      // Calculate total platform revenue (simplified)
+      const platformRevenue = paidCreators * 20; // Approximate based on plan types
+
+      res.json({
+        totalCreators,
+        activeCreators,
+        paidCreators,
+        platformRevenue,
+        creators: allCreators.slice(0, 10), // Recent creators
+        recentActivity: [] // Would contain recent platform activity
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/creators", async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const creators = await storage.getCreators();
+      res.json(creators);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.put("/api/admin/creators/:id", async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const creatorId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedCreator = await storage.updateCreator(creatorId, updates);
+      res.json(updatedCreator);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/promote-user", async (req: Request, res: Response) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const adminUser = await storage.getUser(req.session.userId);
+      if (!adminUser || !adminUser.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { userId, role } = req.body;
+      const updates: any = { role };
+      
+      if (role === 'admin') {
+        updates.isAdmin = true;
+      } else if (role === 'creator') {
+        updates.isCreator = true;
+      }
+
+      const updatedUser = await storage.updateUser(userId, updates);
+      res.json(updatedUser);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Legacy Stripe endpoint for compatibility
   app.post("/api/payments/stripe", async (req: Request, res: Response) => {
     try {

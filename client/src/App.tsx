@@ -18,6 +18,7 @@ import Storefront from "@/pages/storefront";
 import CreatorProfile from "@/pages/creator-profile";
 import Testing from "@/pages/testing";
 import TestLogin from "@/pages/test-login";
+import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ function App() {
               <Route path="/profile" component={CreatorProfile} />
               <Route path="/testing" component={Testing} />
               <Route path="/test-login" component={TestLogin} />
+              <Route path="/admin" component={AdminDashboard} />
               <Route component={NotFound} />
             </Switch>
           </div>
