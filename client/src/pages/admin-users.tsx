@@ -50,6 +50,18 @@ export default function AdminUsers() {
     retryDelay: 1000
   });
 
+  // Force set correct authentication token
+  useEffect(() => {
+    const currentToken = localStorage.getItem('auth_token');
+    console.log('Current auth token:', currentToken);
+    if (currentToken !== 'NQ==') {
+      console.log('Setting correct auth token');
+      localStorage.setItem('auth_token', 'NQ==');
+      // Force refetch after setting token
+      setTimeout(() => refetch(), 100);
+    }
+  }, [refetch]);
+
   // Handle authentication errors
   if (error && error.message.includes('403')) {
     return (

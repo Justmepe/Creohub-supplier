@@ -755,13 +755,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/users", async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers.authorization;
+      console.log(`Admin users request - Auth header: ${authHeader}`);
+      
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       const token = authHeader.substring(7);
       const userId = parseInt(Buffer.from(token, 'base64').toString());
+      console.log(`Admin users request - Parsed user ID: ${userId}`);
+      
       const user = await storage.getUser(userId);
+      console.log(`Admin users request - User found: ${user ? user.username : 'none'}, isAdmin: ${user?.isAdmin}`);
       
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
@@ -770,6 +775,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allUsers = await storage.getAllUsers();
       res.json(allUsers);
     } catch (error: any) {
+      console.log(`Admin users request error: ${error.message}`);
       res.status(500).json({ message: error.message });
     }
   });
