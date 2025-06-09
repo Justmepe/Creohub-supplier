@@ -25,6 +25,8 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+  getAllUsers(): Promise<User[]>;
 
   // Creators
   getCreator(id: number): Promise<Creator | undefined>;
@@ -137,6 +139,32 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...updates };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const user = this.users.get(id);
+    if (!user) return false;
+
+    // Also delete associated creator if exists
+    const creator = await this.getCreatorByUserId(id);
+    if (creator) {
+      // Delete all products by this creator
+      const products = await this.getProductsByCreator(creator.id);
+      for (const product of products) {
+        await this.deleteProduct(product.id);
+      }
+      
+      // Delete creator
+      this.creators.delete(creator.id);
+    }
+
+    // Delete user
+    this.users.delete(id);
+    return true;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 
   // Creators
@@ -341,6 +369,32 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user || undefined;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) return false;
+
+    // Delete associated creator and their data if exists
+    const creator = await this.getCreatorByUserId(id);
+    if (creator) {
+      // Delete all products by this creator
+      const creatorProducts = await this.getProductsByCreator(creator.id);
+      for (const product of creatorProducts) {
+        await this.deleteProduct(product.id);
+      }
+      
+      // Delete creator
+      await db.delete(creators).where(eq(creators.id, creator.id));
+    }
+
+    // Delete user
+    await db.delete(users).where(eq(users.id, id));
+    return true;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   // Creators

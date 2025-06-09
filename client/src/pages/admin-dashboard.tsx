@@ -1,12 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useContext } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useContext, useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { AuthContext } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import {
   Users,
   DollarSign,
@@ -17,7 +20,9 @@ import {
   CheckCircle,
   XCircle,
   Settings,
-  LogOut
+  LogOut,
+  Trash2,
+  UserX
 } from "lucide-react";
 
 interface AdminStats {

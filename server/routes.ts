@@ -751,6 +751,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to get all users
+  app.get("/api/admin/users", async (req: Request, res: Response) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const allUsers = await storage.getAllUsers();
+      res.json(allUsers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin route to delete a user
+  app.delete("/api/admin/users/:id", async (req: Request, res: Response) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const targetUserId = parseInt(req.params.id);
+      
+      // Prevent admin from deleting themselves
+      if (targetUserId === userId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      // Check if target user exists
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Prevent deleting other admins
+      if (targetUser.isAdmin) {
+        return res.status(400).json({ message: "Cannot delete admin accounts" });
+      }
+
+      const deleted = await storage.deleteUser(targetUserId);
+      if (deleted) {
+        res.json({ message: "User deleted successfully", userId: targetUserId });
+      } else {
+        res.status(500).json({ message: "Failed to delete user" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Debug endpoint to check users
   app.get("/api/debug/users", async (req: Request, res: Response) => {
     try {
