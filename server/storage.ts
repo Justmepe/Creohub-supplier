@@ -378,6 +378,12 @@ export class DatabaseStorage implements IStorage {
     // Delete associated creator and their data if exists
     const creator = await this.getCreatorByUserId(id);
     if (creator) {
+      // Delete all analytics records for this creator
+      await db.delete(analytics).where(eq(analytics.creatorId, creator.id));
+      
+      // Delete all orders for this creator
+      await db.delete(orders).where(eq(orders.creatorId, creator.id));
+      
       // Delete all products by this creator
       const creatorProducts = await this.getProductsByCreator(creator.id);
       for (const product of creatorProducts) {
