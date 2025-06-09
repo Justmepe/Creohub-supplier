@@ -38,17 +38,17 @@ export default function Dashboard() {
     }
   }, [creatorProfile, setCreator]);
 
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
     enabled: !!creator?.id,
   });
 
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+  const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/orders`],
     enabled: !!creator?.id,
   });
 
-  const { data: analytics = [], isLoading: analyticsLoading } = useQuery({
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/analytics`],
     enabled: !!creator?.id,
   });
@@ -97,13 +97,13 @@ export default function Dashboard() {
     );
   }
 
-  const totalProducts = products?.length || 0;
-  const totalOrders = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum: number, order: any) => sum + parseFloat(order.totalAmount), 0) || 0;
-  const viewsCount = analytics?.filter((event: any) => event.eventType === 'view')?.length || 0;
+  const totalProducts = Array.isArray(products) ? products.length : 0;
+  const totalOrders = Array.isArray(orders) ? orders.length : 0;
+  const totalRevenue = Array.isArray(orders) ? orders.reduce((sum: number, order: any) => sum + parseFloat(order.totalAmount), 0) : 0;
+  const viewsCount = Array.isArray(analytics) ? analytics.filter((event: any) => event.eventType === 'view').length : 0;
 
-  const recentOrders = orders?.slice(0, 5) || [];
-  const topProducts = products?.slice(0, 3) || [];
+  const recentOrders = Array.isArray(orders) ? orders.slice(0, 5) : [];
+  const topProducts = Array.isArray(products) ? products.slice(0, 3) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -367,7 +367,7 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                ) : orders && orders.length > 0 ? (
+                ) : Array.isArray(orders) && orders.length > 0 ? (
                   <div className="space-y-4">
                     {orders.map((order: any) => (
                       <div key={order.id} className="border rounded-lg p-4">
