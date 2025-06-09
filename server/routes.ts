@@ -191,6 +191,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/creators/user/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const creator = await storage.getCreatorByUserId(userId);
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      res.json(creator);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   app.get("/api/creators/:id/products", async (req: Request, res: Response) => {
     try {
       const creatorId = parseInt(req.params.id);

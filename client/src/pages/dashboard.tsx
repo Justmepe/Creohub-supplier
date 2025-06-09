@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/layout/navbar";
 import AnalyticsCards from "@/components/dashboard/analytics-cards";
 import ProductUpload from "@/components/dashboard/product-upload";
+import CreateCreatorProfile from "@/components/dashboard/create-creator-profile";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Plus, 
@@ -21,7 +23,20 @@ import {
 import { Link } from "wouter";
 
 export default function Dashboard() {
-  const { user, creator } = useAuth();
+  const { user, creator, setCreator } = useAuth();
+
+  // Check if user has a creator profile
+  const { data: creatorProfile, isLoading: creatorLoading } = useQuery({
+    queryKey: [`/api/creators/user/${user?.id}`],
+    enabled: !!user?.id && !creator,
+  });
+
+  // Set creator when profile is loaded
+  React.useEffect(() => {
+    if (creatorProfile && !creator) {
+      setCreator(creatorProfile);
+    }
+  }, [creatorProfile, creator, setCreator]);
 
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
@@ -38,7 +53,7 @@ export default function Dashboard() {
     enabled: !!creator?.id,
   });
 
-  if (!user || !creator) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -48,8 +63,25 @@ export default function Dashboard() {
               <h3 className="text-lg font-semibold mb-2">Welcome to Creohub</h3>
               <p className="text-gray-600 mb-4">Please sign in to access your dashboard.</p>
               <Button asChild>
-                <Link href="/">Go to Home</Link>
+                <Link href="/auth">Sign In</Link>
               </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!creator) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="pt-6 text-center">
+              <h3 className="text-lg font-semibold mb-2">Welcome {user.username}!</h3>
+              <p className="text-gray-600 mb-4">Create your creator profile to start selling products.</p>
+              <CreateCreatorProfile userId={user.id} />
             </CardContent>
           </Card>
         </div>
