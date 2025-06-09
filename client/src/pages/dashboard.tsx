@@ -28,7 +28,7 @@ export default function Dashboard() {
   // Check if user has a creator profile
   const { data: creatorProfile, isLoading: creatorLoading } = useQuery({
     queryKey: [`/api/creators/user/${user?.id}`],
-    enabled: !!user?.id && !creator,
+    enabled: !!user?.id,
   });
 
   // Set creator when profile is loaded
@@ -38,24 +38,27 @@ export default function Dashboard() {
     }
   }, [creatorProfile, setCreator]);
 
+  // Use creatorProfile directly for products query if creator context is null
+  const activeCreator = creator || creatorProfile;
+  
   const { data: products, isLoading: productsLoading } = useQuery({
-    queryKey: [`/api/creators/${creator?.id}/products`],
-    enabled: !!creator?.id,
+    queryKey: [`/api/creators/${activeCreator?.id}/products`],
+    enabled: !!activeCreator?.id,
   });
 
   // Debug logging
   React.useEffect(() => {
-    console.log('Dashboard debug:', { products, productsLoading, creator });
-  }, [products, productsLoading, creator]);
+    console.log('Dashboard debug:', { products, productsLoading, creator, creatorProfile, activeCreator });
+  }, [products, productsLoading, creator, creatorProfile, activeCreator]);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: [`/api/creators/${creator?.id}/orders`],
-    enabled: !!creator?.id,
+    queryKey: [`/api/creators/${activeCreator?.id}/orders`],
+    enabled: !!activeCreator?.id,
   });
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
-    queryKey: [`/api/creators/${creator?.id}/analytics`],
-    enabled: !!creator?.id,
+    queryKey: [`/api/creators/${activeCreator?.id}/analytics`],
+    enabled: !!activeCreator?.id,
   });
 
   if (!user) {
@@ -85,7 +88,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!creator) {
+  if (!activeCreator) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
