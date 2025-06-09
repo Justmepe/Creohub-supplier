@@ -73,6 +73,9 @@ export default function ProductCard({ product, creatorId, variant = "default" }:
     
     localStorage.setItem(cartKey, JSON.stringify(existingCart));
     
+    // Dispatch custom event for cart updates
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import ProductCard from "@/components/storefront/product-card";
+import CartDrawer from "@/components/cart/cart-drawer";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -143,16 +144,15 @@ export default function Storefront() {
             </div>
 
             <div className="flex justify-center gap-4">
-              <Button 
-                variant="secondary" 
-                className="bg-white text-gray-900 hover:bg-gray-100"
-                asChild
-              >
-                <Link href={`/checkout/${creator.id}`}>
+              <CartDrawer creatorId={creator.id} trigger={
+                <Button 
+                  variant="secondary" 
+                  className="bg-white text-gray-900 hover:bg-gray-100"
+                >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  Shop Now
-                </Link>
-              </Button>
+                  View Cart
+                </Button>
+              } />
               <Button variant="outline" className="border-white text-white hover:bg-white/10">
                 <Heart className="mr-2 h-4 w-4" />
                 Follow
