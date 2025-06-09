@@ -61,6 +61,11 @@ export default function Auth() {
       return response.json();
     },
     onSuccess: async (data) => {
+      // Store the authentication token
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+      
       setUser(data.user);
       
       // Try to load creator profile

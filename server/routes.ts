@@ -159,10 +159,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Store user ID in session
-      req.session.userId = user.id;
+      // Create a simple token (user ID encoded)
+      const token = Buffer.from(user.id.toString()).toString('base64');
 
-      res.json({ user: { ...user, password: undefined } });
+      res.json({ 
+        user: { ...user, password: undefined },
+        token: token
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -171,11 +174,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add route to check authentication status
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
-      if (!req.session.userId) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
       }

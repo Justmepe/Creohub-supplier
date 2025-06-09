@@ -31,22 +31,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Check for existing session and hydrate from localStorage
+  // Check for existing token and hydrate from localStorage
   useEffect(() => {
     const checkAuth = async () => {
       if (typeof window !== 'undefined') {
         try {
-          // First check if there's an active session on the server
-          const response = await fetch('/api/auth/me', {
-            credentials: 'include'
-          });
+          const token = localStorage.getItem('auth_token');
           
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
+          if (token) {
+            // Check if token is valid
+            const response = await fetch('/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              setUser(data.user);
+              localStorage.setItem('user', JSON.stringify(data.user));
+            } else {
+              // Token is invalid, remove it
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('user');
+            }
           } else {
-            // No active session, try localStorage as fallback
+            // No token, try localStorage user as fallback
             const savedUser = localStorage.getItem('user');
             if (savedUser) {
               try {
@@ -105,6 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setCreator(null);
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       localStorage.removeItem('creator');
     }
