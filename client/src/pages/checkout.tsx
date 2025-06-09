@@ -73,11 +73,19 @@ export default function Checkout() {
   const { data: creator, isLoading: creatorLoading } = useQuery({
     queryKey: [`/api/creators/${creatorId}`],
     enabled: !!creatorId,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${creatorId}`);
+      return response.json();
+    }
   });
 
   const { data: products } = useQuery({
     queryKey: [`/api/creators/${creatorId}/products`],
     enabled: !!creatorId,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${creatorId}/products`);
+      return response.json();
+    }
   });
 
   const createOrderMutation = useMutation({

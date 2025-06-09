@@ -224,10 +224,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/creators/:handle", async (req: Request, res: Response) => {
+  app.get("/api/creators/user/:userId", async (req: Request, res: Response) => {
     try {
-      const { handle } = req.params;
-      const creator = await storage.getCreatorByHandle(handle);
+      const userId = parseInt(req.params.userId);
+      const creator = await storage.getCreatorByUserId(userId);
       
       if (!creator) {
         return res.status(404).json({ message: "Creator not found" });
@@ -239,10 +239,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/creators/user/:userId", async (req: Request, res: Response) => {
+  // Get creator by ID (numeric)
+  app.get("/api/creators/:id(\\d+)", async (req: Request, res: Response) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const creator = await storage.getCreatorByUserId(userId);
+      const creatorId = parseInt(req.params.id);
+      const creator = await storage.getCreator(creatorId);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+      res.json(creator);
+    } catch (error: any) {
+      console.error("Error fetching creator:", error);
+      res.status(500).json({ message: "Error fetching creator", error: error.message });
+    }
+  });
+
+  // Get creator by handle (string)
+  app.get("/api/creators/:handle", async (req: Request, res: Response) => {
+    try {
+      const { handle } = req.params;
+      const creator = await storage.getCreatorByHandle(handle);
       
       if (!creator) {
         return res.status(404).json({ message: "Creator not found" });
