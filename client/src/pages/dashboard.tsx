@@ -9,6 +9,7 @@ import AnalyticsCards from "@/components/dashboard/analytics-cards";
 import ProductUpload from "@/components/dashboard/product-upload";
 import CreateCreatorProfile from "@/components/dashboard/create-creator-profile";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Plus, 
   TrendingUp, 
@@ -44,8 +45,10 @@ export default function Dashboard() {
   const { data: products, isLoading: productsLoading, error: productsError } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/products`],
     enabled: !!activeCreator?.id && isHydrated,
-    retry: 3,
-    retryDelay: 1000,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${activeCreator?.id}/products`);
+      return response.json();
+    }
   });
   
   // Force debug the query state
@@ -119,11 +122,19 @@ export default function Dashboard() {
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/orders`],
     enabled: !!activeCreator?.id,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${activeCreator?.id}/orders`);
+      return response.json();
+    }
   });
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/analytics`],
     enabled: !!activeCreator?.id,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${activeCreator?.id}/analytics`);
+      return response.json();
+    }
   });
 
   if (!user) {
