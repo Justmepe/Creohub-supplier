@@ -761,7 +761,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const token = authHeader.substring(7);
-      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      let userIdString;
+      let userId;
+      
+      try {
+        userIdString = Buffer.from(token, 'base64').toString();
+        userId = parseInt(userIdString);
+        
+        if (isNaN(userId) || userIdString.trim() === '') {
+          console.log(`Invalid user ID parsed: "${userIdString}" from token: "${token}"`);
+          return res.status(401).json({ message: "Invalid token format" });
+        }
+      } catch (error) {
+        console.log(`Token decode error: ${error.message} from token: "${token}"`);
+        return res.status(401).json({ message: "Malformed token" });
+      }
       
       const user = await storage.getUser(userId);
       
@@ -772,6 +786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allUsers = await storage.getAllUsers();
       res.json(allUsers);
     } catch (error: any) {
+      console.log(`Admin users error: ${error.message}`);
       res.status(500).json({ message: error.message });
     }
   });
