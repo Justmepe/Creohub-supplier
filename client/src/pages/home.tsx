@@ -143,7 +143,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/dashboard">
+              <Link href="/auth">
                 <Button variant="ghost" className="text-neutral hover:text-primary font-medium">
                   Sign In
                 </Button>

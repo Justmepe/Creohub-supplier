@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 import Home from "@/pages/home";
+import Auth from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import Products from "@/pages/products";
 import Orders from "@/pages/orders";
@@ -33,6 +34,9 @@ function App() {
           <div className="min-h-screen bg-background">
             <Switch>
               <Route path="/" component={Home} />
+              <Route path="/auth" component={Auth} />
+              <Route path="/login" component={Auth} />
+              <Route path="/signup" component={Auth} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/products" component={Products} />
               <Route path="/orders" component={Orders} />
