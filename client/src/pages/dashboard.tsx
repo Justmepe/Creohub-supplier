@@ -45,6 +45,16 @@ export default function Dashboard() {
     queryKey: [`/api/creators/${activeCreator?.id}/products`],
     enabled: !!activeCreator?.id,
   });
+  
+  // Force debug the query state
+  console.log('Products query state:', {
+    activeCreatorId: activeCreator?.id,
+    queryEnabled: !!activeCreator?.id,
+    queryKey: `/api/creators/${activeCreator?.id}/products`,
+    products,
+    productsLoading,
+    isQueryEnabled: !!activeCreator?.id
+  });
 
   // Debug logging
   React.useEffect(() => {
