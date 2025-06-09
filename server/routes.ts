@@ -718,6 +718,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint to check users
+  app.get("/api/debug/users", async (req: Request, res: Response) => {
+    try {
+      // Get all users for debugging
+      const testUser = await storage.getUserByUsername("testerpeter");
+      const adminUser = await storage.getUserByUsername("admintest");
+      
+      res.json({
+        testUser: testUser ? { ...testUser, password: "***" } : null,
+        adminUser: adminUser ? { ...adminUser, password: "***" } : null,
+        totalUsers: "Cannot get count in this storage implementation"
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin setup endpoint for testing
   app.post("/api/admin/setup", async (req: Request, res: Response) => {
     try {

@@ -75,6 +75,29 @@ export class MemStorage implements IStorage {
     this.currentProductId = 1;
     this.currentOrderId = 1;
     this.currentAnalyticsId = 1;
+    
+    // Initialize with admin test account immediately
+    this.initializeAdminAccount();
+  }
+
+  private initializeAdminAccount() {
+    // Create admin test user
+    const adminUser: User = {
+      id: this.currentUserId++,
+      username: "admintest",
+      email: "admin@test.com",
+      password: "admin123",
+      fullName: null,
+      bio: null,
+      avatar: null,
+      isCreator: false,
+      isAdmin: true,
+      role: 'admin',
+      createdAt: new Date()
+    };
+    this.users.set(adminUser.id, adminUser);
+    
+    console.log(`Admin user created: ${adminUser.username} with ID: ${adminUser.id}`);
   }
 
   // Users
