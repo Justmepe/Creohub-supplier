@@ -34,7 +34,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function Auth() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { setUser } = useAuth();
+  const { setUser, setCreator } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
 
   const loginForm = useForm<LoginFormData>({
@@ -60,8 +60,20 @@ export default function Auth() {
       const response = await apiRequest("POST", "/api/auth/login", data);
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setUser(data.user);
+      
+      // Try to load creator profile
+      try {
+        const creatorResponse = await apiRequest("GET", `/api/creators/user/${data.user.id}`);
+        if (creatorResponse.ok) {
+          const creatorData = await creatorResponse.json();
+          setCreator(creatorData);
+        }
+      } catch (error) {
+        // Creator profile doesn't exist, user will need to create one
+      }
+      
       toast({
         title: "Login Successful",
         description: "Welcome back!",
@@ -82,8 +94,20 @@ export default function Auth() {
       const response = await apiRequest("POST", "/api/auth/register", data);
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setUser(data.user);
+      
+      // Try to load creator profile (in case it exists)
+      try {
+        const creatorResponse = await apiRequest("GET", `/api/creators/user/${data.user.id}`);
+        if (creatorResponse.ok) {
+          const creatorData = await creatorResponse.json();
+          setCreator(creatorData);
+        }
+      } catch (error) {
+        // Creator profile doesn't exist yet
+      }
+      
       toast({
         title: "Registration Successful",
         description: "Welcome to Creohub!",
