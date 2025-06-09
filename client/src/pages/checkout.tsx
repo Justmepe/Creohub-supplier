@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import PaymentSelector from "@/components/payments/payment-selector";
+import PesapalPayment from "@/components/payments/PesapalPayment";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { PriceDisplay } from "@/components/ui/price-display";
