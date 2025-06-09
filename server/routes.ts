@@ -431,31 +431,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock M-Pesa payment endpoint
+  // M-Pesa payment routes
   app.post("/api/payments/mpesa", async (req: Request, res: Response) => {
-    try {
-      const { amount, phoneNumber, orderId } = req.body;
-      
-      // Simulate M-Pesa processing
-      setTimeout(async () => {
-        // Update order status
-        await storage.updateOrder(parseInt(orderId), {
-          paymentStatus: "completed",
-          paymentMethod: "mpesa",
-        });
-      }, 2000);
-
-      res.json({
-        success: true,
-        transactionId: `MP${Date.now()}`,
-        message: "M-Pesa payment initiated. Please check your phone for the payment prompt.",
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
+    const { initiateMpesaPayment } = await import("./payments/mpesa");
+    await initiateMpesaPayment(req, res);
   });
 
-  // Mock Stripe payment endpoint
+  app.get("/api/payments/mpesa/status/:checkoutRequestId", async (req: Request, res: Response) => {
+    const { checkMpesaStatus } = await import("./payments/mpesa");
+    await checkMpesaStatus(req, res);
+  });
+
+  app.post("/api/payments/mpesa/callback", async (req: Request, res: Response) => {
+    const { mpesaCallback } = await import("./payments/mpesa");
+    await mpesaCallback(req, res);
+  });
+
+  // Stripe payment routes
+  app.post("/api/payments/stripe/payment-intent", async (req: Request, res: Response) => {
+    const { createPaymentIntent } = await import("./payments/stripe");
+    await createPaymentIntent(req, res);
+  });
+
+  app.post("/api/payments/stripe/subscription", async (req: Request, res: Response) => {
+    const { createSubscription } = await import("./payments/stripe");
+    await createSubscription(req, res);
+  });
+
+  app.post("/api/payments/stripe/customer", async (req: Request, res: Response) => {
+    const { createCustomer } = await import("./payments/stripe");
+    await createCustomer(req, res);
+  });
+
+  app.post("/api/payments/stripe/webhook", async (req: Request, res: Response) => {
+    const { stripeWebhook } = await import("./payments/stripe");
+    await stripeWebhook(req, res);
+  });
+
+  // Bank transfer routes
+  app.post("/api/payments/bank-transfer", async (req: Request, res: Response) => {
+    const { initiateBankTransfer } = await import("./payments/bank-transfer");
+    await initiateBankTransfer(req, res);
+  });
+
+  app.get("/api/payments/bank-accounts", async (req: Request, res: Response) => {
+    const { getBankAccounts } = await import("./payments/bank-transfer");
+    await getBankAccounts(req, res);
+  });
+
+  app.post("/api/payments/bank-transfer/:transferId/verify", async (req: Request, res: Response) => {
+    const { verifyBankTransfer } = await import("./payments/bank-transfer");
+    await verifyBankTransfer(req, res);
+  });
+
+  app.post("/api/payments/bank-transfer/webhook", async (req: Request, res: Response) => {
+    const { bankTransferWebhook } = await import("./payments/bank-transfer");
+    await bankTransferWebhook(req, res);
+  });
+
+  // PayPal routes
+  app.get("/api/paypal/setup", async (req: Request, res: Response) => {
+    const { loadPaypalDefault } = await import("./paypal");
+    await loadPaypalDefault(req, res);
+  });
+
+  app.post("/api/paypal/order", async (req: Request, res: Response) => {
+    const { createPaypalOrder } = await import("./paypal");
+    await createPaypalOrder(req, res);
+  });
+
+  app.post("/api/paypal/order/:orderID/capture", async (req: Request, res: Response) => {
+    const { capturePaypalOrder } = await import("./paypal");
+    await capturePaypalOrder(req, res);
+  });
+
+  // Legacy Stripe endpoint for compatibility
   app.post("/api/payments/stripe", async (req: Request, res: Response) => {
     try {
       const { amount, token, orderId } = req.body;

@@ -8,7 +8,7 @@ class StripeService {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (secretKey) {
       this.stripe = new Stripe(secretKey, {
-        apiVersion: '2023-10-16',
+        apiVersion: '2025-05-28.basil',
       });
     }
   }
@@ -111,9 +111,12 @@ export async function createSubscription(req: Request, res: Response) {
 
     const subscription = await stripeService.createSubscription(customerId, priceId);
     
+    const invoice = subscription.latest_invoice as any;
+    const paymentIntent = invoice?.payment_intent;
+    
     res.json({
       subscriptionId: subscription.id,
-      clientSecret: (subscription.latest_invoice as Stripe.Invoice)?.payment_intent?.client_secret,
+      clientSecret: paymentIntent?.client_secret,
     });
   } catch (error: any) {
     console.error('Stripe subscription error:', error);
