@@ -20,6 +20,7 @@ import Testing from "@/pages/testing";
 import TestLogin from "@/pages/test-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminSetup from "@/pages/admin-setup";
+import AdminTest from "@/pages/admin-test";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -54,6 +55,7 @@ function App() {
               <Route path="/test-login" component={TestLogin} />
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin-setup" component={AdminSetup} />
+              <Route path="/admin-test" component={AdminTest} />
               <Route component={NotFound} />
             </Switch>
           </div>
