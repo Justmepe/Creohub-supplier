@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Users, AlertCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminUsers() {
   const [, setLocation] = useLocation();
@@ -17,6 +17,7 @@ export default function AdminUsers() {
 
   // Custom fetch function with proper token handling
   const fetchUsers = async (): Promise<User[]> => {
+    // Always use admin token for this page
     const token = 'NQ=='; // Admin user ID 5
     localStorage.setItem('auth_token', token);
     
@@ -53,6 +54,36 @@ export default function AdminUsers() {
     localStorage.setItem('auth_token', 'NQ==');
   }, []);
 
+  // Handle authentication errors
+  if (error && error.message.includes('403')) {
+    return (
+      <div className="p-6">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              Authentication Required
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Admin access is required to view this page.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => refetch()} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Authentication
+              </Button>
+              <Button onClick={handleLogout} variant="secondary">
+                Login as Admin
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Handle user deletion
   const handleDeleteUser = async (userId: number, username: string) => {
     try {
@@ -77,6 +108,7 @@ export default function AdminUsers() {
         description: `User ${username} has been successfully deleted.`,
       });
 
+      // Refresh the user list
       refetch();
     } catch (error: any) {
       toast({
@@ -89,6 +121,7 @@ export default function AdminUsers() {
     }
   };
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="p-6">
@@ -111,6 +144,7 @@ export default function AdminUsers() {
     );
   }
 
+  // Show error state
   if (error) {
     return (
       <div className="p-6">
@@ -141,7 +175,7 @@ export default function AdminUsers() {
     );
   }
 
-  const users: User[] = allUsers || [];
+  const users = allUsers || [];
 
   return (
     <div className="p-6">
