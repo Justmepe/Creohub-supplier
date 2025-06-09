@@ -548,6 +548,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     await stripeWebhook(req, res);
   });
 
+  // Flutterwave payment routes (Cards, Mobile Money, Bank Transfer for Africa)
+  app.post("/api/payments/customer/flutterwave", async (req: Request, res: Response) => {
+    const { initiateFlutterwavePayment } = await import("./payments/flutterwave");
+    await initiateFlutterwavePayment(req, res);
+  });
+
+  app.get("/api/payments/customer/flutterwave/verify/:transactionId", async (req: Request, res: Response) => {
+    const { verifyFlutterwavePayment } = await import("./payments/flutterwave");
+    await verifyFlutterwavePayment(req, res);
+  });
+
+  app.post("/api/payments/customer/flutterwave/webhook", async (req: Request, res: Response) => {
+    const { flutterwaveWebhook } = await import("./payments/flutterwave");
+    await flutterwaveWebhook(req, res);
+  });
+
+  app.get("/api/payments/banks/:country?", async (req: Request, res: Response) => {
+    const { getFlutterwaveBanks } = await import("./payments/flutterwave");
+    await getFlutterwaveBanks(req, res);
+  });
+
   // CREATOR SUBSCRIPTION PAYMENT ROUTES (for platform fees)
   app.post("/api/payments/creator/subscription", async (req: Request, res: Response) => {
     const { createSubscription } = await import("./payments/stripe");

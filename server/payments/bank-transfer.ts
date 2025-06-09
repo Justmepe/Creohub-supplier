@@ -29,7 +29,29 @@ class BankTransferService {
   }
 
   private parseBankAccounts(): BankAccount[] {
-    const accountsJson = process.env.BANK_ACCOUNTS || '[]';
+    const accountsJson = process.env.BANK_ACCOUNTS || JSON.stringify([
+      {
+        bankName: "Equity Bank Kenya",
+        accountNumber: "0123456789",
+        accountName: "Creohub Limited",
+        branch: "Westlands Branch",
+        swiftCode: "EQBLKENA"
+      },
+      {
+        bankName: "KCB Bank Kenya",
+        accountNumber: "1234567890",
+        accountName: "Creohub Limited", 
+        branch: "CBD Branch",
+        swiftCode: "KCBLKENX"
+      },
+      {
+        bankName: "Standard Chartered Bank",
+        accountNumber: "8901234567",
+        accountName: "Creohub Limited",
+        branch: "Nairobi Branch", 
+        swiftCode: "SCBLKENX"
+      }
+    ]);
     try {
       return JSON.parse(accountsJson);
     } catch (error) {

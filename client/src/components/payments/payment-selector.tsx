@@ -47,15 +47,27 @@ export default function PaymentSelector({
       enabled: true
     },
     {
-      type: "paypal",
-      label: "PayPal",
-      icon: "🅿️",
+      type: "flutterwave_card",
+      label: "Credit/Debit Card",
+      icon: "💳",
       enabled: true
     },
     {
-      type: "stripe",
-      label: "Credit/Debit Card",
-      icon: "💳",
+      type: "flutterwave_bank",
+      label: "Bank Transfer",
+      icon: "🏦",
+      enabled: true
+    },
+    {
+      type: "flutterwave_mobile",
+      label: "Mobile Money",
+      icon: "📲",
+      enabled: true
+    },
+    {
+      type: "paypal",
+      label: "PayPal",
+      icon: "🅿️",
       enabled: true
     }
   ];
@@ -101,39 +113,54 @@ export default function PaymentSelector({
     }
   };
 
-  const handleStripePayment = async () => {
-    if (!stripeToken) {
-      toast({
-        title: "Card details required",
-        description: "Please enter your card details",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleFlutterwavePayment = async (paymentType: string) => {
     setIsProcessingPayment(true);
     
     try {
-      const response = await apiRequest("POST", "/api/payments/customer/stripe/payment-intent", {
+      let paymentMethods = '';
+      switch (paymentType) {
+        case 'flutterwave_card':
+          paymentMethods = 'card';
+          break;
+        case 'flutterwave_bank':
+          paymentMethods = 'banktransfer';
+          break;
+        case 'flutterwave_mobile':
+          paymentMethods = 'mobilemoney';
+          break;
+        default:
+          paymentMethods = 'card,banktransfer,mobilemoney';
+      }
+
+      const response = await apiRequest("POST", "/api/payments/customer/flutterwave", {
         amount: parseFloat(amount),
-        token: stripeToken,
+        currency: currency,
+        email: "customer@example.com", // This would be the actual customer email
+        name: "Customer Name", // This would be the actual customer name
+        phone: mpesaPhone || "+254700000000",
         orderId: 1, // This would be the actual order ID
+        creatorId: 1, // This would be the actual creator ID
+        paymentMethods: paymentMethods
       });
 
       const result = await response.json();
       
-      if (result.success) {
+      if (result.success && result.paymentLink) {
+        // Redirect to Flutterwave payment page
+        window.open(result.paymentLink, '_blank');
+        
         toast({
-          title: "Payment successful",
-          description: result.message,
+          title: "Payment initiated",
+          description: "You will be redirected to complete your payment",
         });
+        
         onPaymentComplete?.(result);
       } else {
-        throw new Error(result.message || "Payment failed");
+        throw new Error(result.error || "Payment initiation failed");
       }
     } catch (error: any) {
       toast({
-        title: "Card payment failed",
+        title: "Payment failed", 
         description: error.message,
         variant: "destructive",
       });
