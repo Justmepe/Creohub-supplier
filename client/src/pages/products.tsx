@@ -64,13 +64,17 @@ export default function Products() {
   });
 
   // Debug products query
-  console.log('Products page debug:', {
+  console.log('Products page debug (AFTER FIX):', {
     creator: creator,
     creatorId: creator?.id,
     queryEnabled: !!creator?.id,
     products: products,
+    productsType: typeof products,
+    isArray: Array.isArray(products),
+    productsLength: products?.length,
     isLoading: isLoading,
     error: error,
+    errorMessage: error?.message,
     queryKey: `/api/creators/${creator?.id}/products`
   });
 
