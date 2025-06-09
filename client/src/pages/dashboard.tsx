@@ -23,11 +23,19 @@ import {
   ExternalLink,
   Calendar
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Dashboard() {
   const { user, creator, setCreator, isHydrated } = useAuth();
   const { formatPrice, convertPrice } = useCurrency();
+  const [, setLocation] = useLocation();
+
+  // Redirect admin users to admin dashboard
+  React.useEffect(() => {
+    if (user && user.isAdmin && !user.isCreator) {
+      setLocation("/admin");
+    }
+  }, [user, setLocation]);
 
   // Check if user has a creator profile
   const { data: creatorProfile, isLoading: creatorLoading } = useQuery({

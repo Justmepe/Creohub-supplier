@@ -83,7 +83,13 @@ export default function Auth() {
         title: "Login Successful",
         description: "Welcome back!",
       });
-      setLocation("/dashboard");
+      
+      // Redirect based on user role
+      if (data.user.isAdmin) {
+        setLocation("/admin");
+      } else {
+        setLocation("/dashboard");
+      }
     },
     onError: (error: any) => {
       toast({
@@ -117,7 +123,13 @@ export default function Auth() {
         title: "Registration Successful",
         description: "Welcome to Creohub!",
       });
-      setLocation("/dashboard");
+      
+      // Redirect based on user role
+      if (data.user.isAdmin) {
+        setLocation("/admin");
+      } else {
+        setLocation("/dashboard");
+      }
     },
     onError: (error: any) => {
       toast({
