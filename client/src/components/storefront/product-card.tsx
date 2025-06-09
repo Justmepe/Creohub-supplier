@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { PriceDisplay } from "@/components/ui/price-display";
 import { apiRequest } from "@/lib/queryClient";
 import {
   ShoppingCart,
@@ -109,7 +110,11 @@ export default function ProductCard({ product, creatorId, variant = "default" }:
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-medium truncate">{product.name}</h4>
-          <p className="text-sm text-gray-600">{formatPrice(product.price, product.currency)}</p>
+          <PriceDisplay
+            originalPrice={parseFloat(product.price)}
+            originalCurrency={product.currency}
+            size="sm"
+          />
         </div>
         <Button size="sm" onClick={addToCart} disabled={isAddingToCart}>
           <ShoppingCart className="h-3 w-3" />
@@ -160,9 +165,11 @@ export default function ProductCard({ product, creatorId, variant = "default" }:
                   
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold">
-                        {formatPrice(product.price, product.currency)}
-                      </span>
+                      <PriceDisplay
+                        originalPrice={parseFloat(product.price)}
+                        originalCurrency={product.currency}
+                        size="lg"
+                      />
                       <Badge className={getTypeColor(product.type)}>
                         {product.type}
                       </Badge>
@@ -233,9 +240,11 @@ export default function ProductCard({ product, creatorId, variant = "default" }:
 
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xl font-bold text-gray-900">
-                {formatPrice(product.price, product.currency)}
-              </span>
+              <PriceDisplay
+                originalPrice={parseFloat(product.price)}
+                originalCurrency={product.currency}
+                size="lg"
+              />
               {product.type === "physical" && product.stock !== null && (
                 <p className="text-xs text-gray-500 mt-1">
                   {product.stock} in stock

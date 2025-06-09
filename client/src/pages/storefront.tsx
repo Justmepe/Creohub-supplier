@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import ProductCard from "@/components/storefront/product-card";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Globe, 
@@ -25,11 +26,19 @@ export default function Storefront() {
   const { data: creator, isLoading: creatorLoading, error: creatorError } = useQuery({
     queryKey: [`/api/creators/${handle}`],
     enabled: !!handle,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${handle}`);
+      return response.json();
+    }
   });
 
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
     enabled: !!creator?.id,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${creator?.id}/products`);
+      return response.json();
+    }
   });
 
   // Track storefront view
