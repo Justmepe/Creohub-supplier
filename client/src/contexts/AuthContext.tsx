@@ -7,6 +7,7 @@ interface AuthContextType {
   creator: Creator | null;
   setUser: (user: User | null) => void;
   setCreator: (creator: Creator | null) => void;
+  logout: () => void;
   isAuthenticated: boolean;
 }
 
@@ -25,14 +26,46 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [creator, setCreator] = useState<Creator | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [creator, setCreator] = useState<Creator | null>(() => {
+    const savedCreator = localStorage.getItem('creator');
+    return savedCreator ? JSON.parse(savedCreator) : null;
+  });
+
+  const handleSetUser = (user: User | null) => {
+    setUser(user);
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  };
+
+  const handleSetCreator = (creator: Creator | null) => {
+    setCreator(creator);
+    if (creator) {
+      localStorage.setItem('creator', JSON.stringify(creator));
+    } else {
+      localStorage.removeItem('creator');
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setCreator(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('creator');
+  };
 
   const authValue: AuthContextType = {
     user,
     creator,
-    setUser,
-    setCreator,
+    setUser: handleSetUser,
+    setCreator: handleSetCreator,
+    logout,
     isAuthenticated: user !== null,
   };
 
