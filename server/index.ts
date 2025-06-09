@@ -12,10 +12,11 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-key',
   resave: false,
   saveUninitialized: false,
+  name: 'sessionId',
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: false,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: false, // Allow client-side access for development
+    httpOnly: false,
     sameSite: 'lax'
   }
 }));

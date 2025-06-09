@@ -16,6 +16,7 @@ import Checkout from "@/pages/checkout";
 import Storefront from "@/pages/storefront";
 import CreatorProfile from "@/pages/creator-profile";
 import Testing from "@/pages/testing";
+import TestLogin from "@/pages/test-login";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -46,6 +47,7 @@ function App() {
               <Route path="/storefront/:handle" component={Storefront} />
               <Route path="/profile" component={CreatorProfile} />
               <Route path="/testing" component={Testing} />
+              <Route path="/test-login" component={TestLogin} />
               <Route component={NotFound} />
             </Switch>
           </div>
