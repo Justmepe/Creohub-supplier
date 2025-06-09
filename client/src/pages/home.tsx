@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,9 +25,21 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import CreatorOnboarding from "@/components/forms/creator-onboarding";
+import { detectCurrencyFromBrowser, formatCurrency, convertCurrency } from "@/../../shared/currency";
 
 export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [detectedCurrency, setDetectedCurrency] = useState('USD');
+
+  useEffect(() => {
+    const currency = detectCurrencyFromBrowser();
+    setDetectedCurrency(currency);
+  }, []);
+
+  const formatPrice = (usdPrice: number) => {
+    const convertedPrice = convertCurrency(usdPrice, 'USD', detectedCurrency);
+    return formatCurrency(convertedPrice, detectedCurrency);
+  };
 
   const features = [
     {
@@ -409,13 +421,14 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Free Plan */}
             <Card className="border-2 border-gray-200">
               <CardHeader className="pb-6">
-                <CardTitle className="text-2xl">Free Plan</CardTitle>
+                <CardTitle className="text-2xl">Free</CardTitle>
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-neutral">Free</span>
-                  <span className="text-gray-600 ml-2">forever</span>
+                  <span className="text-gray-600 ml-2">30-day trial</span>
                 </div>
                 <CardDescription>Perfect for getting started</CardDescription>
               </CardHeader>
@@ -423,67 +436,123 @@ export default function Home() {
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center space-x-3">
                     <Check className="h-5 w-5 text-secondary" />
-                    <span className="text-gray-700">Basic storefront</span>
+                    <span className="text-gray-700">Basic storefront customization</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Check className="h-5 w-5 text-secondary" />
-                    <span className="text-gray-700">Up to 10 products</span>
+                    <span className="text-gray-700">Up to 3 products</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Check className="h-5 w-5 text-secondary" />
-                    <span className="text-gray-700">Payment processing</span>
+                    <span className="text-gray-700">Accept payments</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-secondary" />
+                    <span className="text-gray-700">Basic analytics</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-secondary" />
+                    <span className="text-gray-700">M-Pesa + card payments</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <X className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-500">5-10% transaction fee</span>
+                    <span className="text-gray-500">10% transaction fee</span>
                   </li>
                 </ul>
                 <Button variant="outline" className="w-full">
-                  Get Started Free
+                  Start Free Trial
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-primary relative gradient-primary text-white">
+            {/* Starter Plan */}
+            <Card className="border-2 border-primary relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-accent text-white">
+                <Badge className="bg-primary text-white">
                   Most Popular
                 </Badge>
               </div>
 
               <CardHeader className="pb-6">
-                <CardTitle className="text-2xl">Pro Plan</CardTitle>
+                <CardTitle className="text-2xl">Starter</CardTitle>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold">KES 1,500</span>
-                  <span className="ml-2 opacity-80">/month</span>
+                  <span className="text-4xl font-bold text-neutral">{formatPrice(14.99)}</span>
+                  <span className="text-gray-600 ml-2">/month</span>
                 </div>
-                <CardDescription className="text-white/90">For serious creators</CardDescription>
+                <CardDescription>For growing creators</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-white" />
-                    <span>Unlimited products</span>
+                    <Check className="h-5 w-5 text-primary" />
+                    <span className="text-gray-700">Up to 25 products</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-white" />
-                    <span>Custom branding</span>
+                    <Check className="h-5 w-5 text-primary" />
+                    <span className="text-gray-700">Email capture & basic CRM</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-white" />
-                    <span>Advanced analytics</span>
+                    <Check className="h-5 w-5 text-primary" />
+                    <span className="text-gray-700">Custom domain support</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-white" />
-                    <span>0% transaction fees</span>
+                    <Check className="h-5 w-5 text-primary" />
+                    <span className="text-gray-700">Enhanced analytics</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-white" />
-                    <span>Email marketing tools</span>
+                    <Check className="h-5 w-5 text-primary" />
+                    <span className="text-gray-700">Limited marketing tools</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <X className="h-5 w-5 text-gray-400" />
+                    <span className="text-gray-500">5% transaction fee</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-white text-primary hover:bg-gray-100">
-                  Start Pro Trial
+                <Button className="w-full">
+                  Upgrade to Starter
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
+            <Card className="border-2 border-purple-200">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl">Pro</CardTitle>
+                <div className="mb-4">
+                  <span className="text-4xl font-bold text-neutral">{formatPrice(29.99)}</span>
+                  <span className="text-gray-600 ml-2">/month</span>
+                </div>
+                <CardDescription>For professional creators</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700">Unlimited products</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700">Advanced analytics & reports</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700">Full marketing suite</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700">Priority support</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700">Multi-currency pricing</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="h-5 w-5 text-purple-600" />
+                    <span className="text-gray-700 font-semibold">0% transaction fees</span>
+                  </li>
+                </ul>
+                <Button variant="outline" className="w-full border-purple-200 text-purple-600 hover:bg-purple-50">
+                  Upgrade to Pro
                 </Button>
               </CardContent>
             </Card>
