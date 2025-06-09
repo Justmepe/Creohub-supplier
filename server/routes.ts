@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const productData = insertProductSchema.parse({
         ...req.body,
-        price: parseFloat(req.body.price),
+        price: req.body.price.toString(), // Convert to string for decimal type
         creatorId: parseInt(req.body.creatorId),
         stock: req.body.stock ? parseInt(req.body.stock) : null,
       });
