@@ -49,7 +49,7 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey, signal }) => {
+  async ({ queryKey }) => {
     let token = localStorage.getItem('auth_token');
     
     // Force admin token for admin routes or if token is invalid
@@ -58,45 +58,22 @@ export const getQueryFn: <T>(options: {
       localStorage.setItem('auth_token', token);
     }
     
-    const headers: Record<string, string> = {
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache'
-    };
+    const headers: Record<string, string> = {};
     
     if (token && token !== 'null' && token !== 'undefined') {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    console.log('Query fetch:', { url: queryKey[0], hasToken: !!token, actualToken: token });
+    const res = await fetch(queryKey[0] as string, {
+      headers,
+    });
 
-    // Add timeout and abort signal for Replit environment
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    try {
-      const res = await fetch(queryKey[0] as string, {
-        headers,
-        signal: signal || controller.signal,
-        cache: 'no-cache',
-        credentials: 'same-origin'
-      });
-
-      clearTimeout(timeoutId);
-      console.log('Query response:', { url: queryKey[0], status: res.status, ok: res.ok });
-
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        return null;
-      }
-
-      await throwIfResNotOk(res);
-      const data = await res.json();
-      console.log('Query data:', { url: queryKey[0], data });
-      return data;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.error('Query fetch error:', { url: queryKey[0], error });
-      throw error;
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
     }
+
+    await throwIfResNotOk(res);
+    return res.json();
   };
 
 export const queryClient = new QueryClient({
@@ -105,19 +82,11 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 30 * 1000, // 30 seconds for Replit environment
-      retry: (failureCount, error) => {
-        console.log('Query retry attempt:', { failureCount, error });
-        return failureCount < 2;
-      },
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 3000),
-      networkMode: 'always', // Force queries even with poor network
-      refetchOnMount: true,
-      refetchOnReconnect: true,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 2,
     },
     mutations: {
-      retry: 1,
-      networkMode: 'always',
+      retry: false,
     },
   },
 });
