@@ -4,6 +4,9 @@ import {
   products, 
   orders, 
   analytics,
+  affiliateLinks,
+  commissions,
+  productSettings,
   type User, 
   type InsertUser,
   type Creator,
@@ -13,7 +16,13 @@ import {
   type Order,
   type InsertOrder,
   type Analytics,
-  type InsertAnalytics
+  type InsertAnalytics,
+  type AffiliateLink,
+  type InsertAffiliateLink,
+  type Commission,
+  type InsertCommission,
+  type ProductSettings,
+  type InsertProductSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -52,6 +61,25 @@ export interface IStorage {
   // Analytics
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
   getAnalyticsByCreator(creatorId: number, startDate?: Date, endDate?: Date): Promise<Analytics[]>;
+
+  // Affiliate Links
+  createAffiliateLink(affiliateLink: InsertAffiliateLink): Promise<AffiliateLink>;
+  getAffiliateLinkByCode(linkCode: string): Promise<AffiliateLink | undefined>;
+  getAffiliateLinksByCreator(creatorId: number): Promise<AffiliateLink[]>;
+  getAffiliateLinksByProduct(productId: number): Promise<AffiliateLink[]>;
+  updateAffiliateLinkClicks(linkId: number): Promise<void>;
+  updateAffiliateLinkConversions(linkId: number): Promise<void>;
+
+  // Commissions
+  createCommission(commission: InsertCommission): Promise<Commission>;
+  getCommissionsByAffiliate(affiliateCreatorId: number): Promise<Commission[]>;
+  getCommissionsByCreator(originalCreatorId: number): Promise<Commission[]>;
+  updateCommissionStatus(commissionId: number, status: string, paidAt?: Date): Promise<void>;
+
+  // Product Settings
+  createProductSettings(settings: InsertProductSettings): Promise<ProductSettings>;
+  getProductSettings(productId: number): Promise<ProductSettings | undefined>;
+  updateProductSettings(productId: number, updates: Partial<ProductSettings>): Promise<ProductSettings | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -60,11 +88,17 @@ export class MemStorage implements IStorage {
   private products: Map<number, Product>;
   private orders: Map<number, Order>;
   private analytics: Map<number, Analytics>;
+  private affiliateLinks: Map<number, AffiliateLink>;
+  private commissions: Map<number, Commission>;
+  private productSettings: Map<number, ProductSettings>;
   private currentUserId: number;
   private currentCreatorId: number;
   private currentProductId: number;
   private currentOrderId: number;
   private currentAnalyticsId: number;
+  private currentAffiliateLinkId: number;
+  private currentCommissionId: number;
+  private currentProductSettingsId: number;
 
   constructor() {
     this.users = new Map();
@@ -72,11 +106,17 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.orders = new Map();
     this.analytics = new Map();
+    this.affiliateLinks = new Map();
+    this.commissions = new Map();
+    this.productSettings = new Map();
     this.currentUserId = 1;
     this.currentCreatorId = 1;
     this.currentProductId = 1;
     this.currentOrderId = 1;
     this.currentAnalyticsId = 1;
+    this.currentAffiliateLinkId = 1;
+    this.currentCommissionId = 1;
+    this.currentProductSettingsId = 1;
     
     // Initialize with admin test account immediately
     this.initializeAdminAccount();
@@ -538,6 +578,101 @@ export class DatabaseStorage implements IStorage {
     // Note: Date filtering would require additional imports and complex where conditions
     // For now, returning all analytics for the creator
     return await query;
+  }
+
+  // Affiliate Links
+  async createAffiliateLink(insertAffiliateLink: InsertAffiliateLink): Promise<AffiliateLink> {
+    const [affiliateLink] = await db
+      .insert(affiliateLinks)
+      .values(insertAffiliateLink)
+      .returning();
+    return affiliateLink;
+  }
+
+  async getAffiliateLinkByCode(linkCode: string): Promise<AffiliateLink | undefined> {
+    const [link] = await db.select().from(affiliateLinks).where(eq(affiliateLinks.linkCode, linkCode));
+    return link || undefined;
+  }
+
+  async getAffiliateLinksByCreator(creatorId: number): Promise<AffiliateLink[]> {
+    return await db.select().from(affiliateLinks).where(eq(affiliateLinks.affiliateCreatorId, creatorId));
+  }
+
+  async getAffiliateLinksByProduct(productId: number): Promise<AffiliateLink[]> {
+    return await db.select().from(affiliateLinks).where(eq(affiliateLinks.productId, productId));
+  }
+
+  async updateAffiliateLinkClicks(linkId: number): Promise<void> {
+    // Get current clicks count
+    const [link] = await db.select().from(affiliateLinks).where(eq(affiliateLinks.id, linkId));
+    if (link) {
+      await db
+        .update(affiliateLinks)
+        .set({ clicks: link.clicks + 1 })
+        .where(eq(affiliateLinks.id, linkId));
+    }
+  }
+
+  async updateAffiliateLinkConversions(linkId: number): Promise<void> {
+    // Get current conversions count
+    const [link] = await db.select().from(affiliateLinks).where(eq(affiliateLinks.id, linkId));
+    if (link) {
+      await db
+        .update(affiliateLinks)
+        .set({ conversions: link.conversions + 1 })
+        .where(eq(affiliateLinks.id, linkId));
+    }
+  }
+
+  // Commissions
+  async createCommission(insertCommission: InsertCommission): Promise<Commission> {
+    const [commission] = await db
+      .insert(commissions)
+      .values(insertCommission)
+      .returning();
+    return commission;
+  }
+
+  async getCommissionsByAffiliate(affiliateCreatorId: number): Promise<Commission[]> {
+    return await db.select().from(commissions).where(eq(commissions.affiliateCreatorId, affiliateCreatorId));
+  }
+
+  async getCommissionsByCreator(originalCreatorId: number): Promise<Commission[]> {
+    return await db.select().from(commissions).where(eq(commissions.originalCreatorId, originalCreatorId));
+  }
+
+  async updateCommissionStatus(commissionId: number, status: string, paidAt?: Date): Promise<void> {
+    const updates: any = { status };
+    if (paidAt) {
+      updates.paidAt = paidAt;
+    }
+    await db
+      .update(commissions)
+      .set(updates)
+      .where(eq(commissions.id, commissionId));
+  }
+
+  // Product Settings
+  async createProductSettings(insertSettings: InsertProductSettings): Promise<ProductSettings> {
+    const [settings] = await db
+      .insert(productSettings)
+      .values(insertSettings)
+      .returning();
+    return settings;
+  }
+
+  async getProductSettings(productId: number): Promise<ProductSettings | undefined> {
+    const [settings] = await db.select().from(productSettings).where(eq(productSettings.productId, productId));
+    return settings || undefined;
+  }
+
+  async updateProductSettings(productId: number, updates: Partial<ProductSettings>): Promise<ProductSettings | undefined> {
+    const [settings] = await db
+      .update(productSettings)
+      .set(updates)
+      .where(eq(productSettings.productId, productId))
+      .returning();
+    return settings || undefined;
   }
 }
 
