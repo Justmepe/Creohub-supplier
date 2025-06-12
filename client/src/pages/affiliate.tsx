@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,9 @@ export default function AffiliatePage() {
   });
 
   // Fetch existing affiliate links
-  const { data: affiliateLinks = [], isLoading: linksLoading } = useQuery<AffiliateLink[]>({
+  const { data: affiliateLinks = [], isLoading: linksLoading, refetch: refetchLinks } = useQuery<AffiliateLink[]>({
     queryKey: ["/api/affiliate/links"],
+    staleTime: 0,
   });
 
   // Fetch commissions
@@ -49,7 +50,8 @@ export default function AffiliatePage() {
         title: "Success",
         description: "Affiliate link created successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/affiliate/links"] });
+      setSelectedProduct(null);
+      refetchLinks();
     },
     onError: (error: any) => {
       toast({
