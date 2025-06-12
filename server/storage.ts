@@ -366,14 +366,117 @@ export class MemStorage implements IStorage {
     let results = Array.from(this.analytics.values()).filter(analytics => analytics.creatorId === creatorId);
     
     if (startDate) {
-      results = results.filter(analytics => analytics.createdAt >= startDate);
+      results = results.filter(analytics => analytics.createdAt && analytics.createdAt >= startDate);
     }
     
     if (endDate) {
-      results = results.filter(analytics => analytics.createdAt <= endDate);
+      results = results.filter(analytics => analytics.createdAt && analytics.createdAt <= endDate);
     }
     
     return results;
+  }
+
+  // Affiliate Links
+  async createAffiliateLink(insertAffiliateLink: InsertAffiliateLink): Promise<AffiliateLink> {
+    const id = this.currentAffiliateLinkId++;
+    const affiliateLink: AffiliateLink = { 
+      id, 
+      ...insertAffiliateLink,
+      createdAt: new Date(),
+      clicks: 0,
+      conversions: 0,
+      isActive: true
+    };
+    this.affiliateLinks.set(id, affiliateLink);
+    return affiliateLink;
+  }
+
+  async getAffiliateLinkByCode(linkCode: string): Promise<AffiliateLink | undefined> {
+    return Array.from(this.affiliateLinks.values()).find(link => link.linkCode === linkCode);
+  }
+
+  async getAffiliateLinksByCreator(creatorId: number): Promise<AffiliateLink[]> {
+    return Array.from(this.affiliateLinks.values()).filter(link => link.affiliateCreatorId === creatorId);
+  }
+
+  async getAffiliateLinksByProduct(productId: number): Promise<AffiliateLink[]> {
+    return Array.from(this.affiliateLinks.values()).filter(link => link.productId === productId);
+  }
+
+  async updateAffiliateLinkClicks(linkId: number): Promise<void> {
+    const link = this.affiliateLinks.get(linkId);
+    if (link) {
+      link.clicks = (link.clicks || 0) + 1;
+      this.affiliateLinks.set(linkId, link);
+    }
+  }
+
+  async updateAffiliateLinkConversions(linkId: number): Promise<void> {
+    const link = this.affiliateLinks.get(linkId);
+    if (link) {
+      link.conversions = (link.conversions || 0) + 1;
+      this.affiliateLinks.set(linkId, link);
+    }
+  }
+
+  // Commissions
+  async createCommission(insertCommission: InsertCommission): Promise<Commission> {
+    const id = this.currentCommissionId++;
+    const commission: Commission = { 
+      id, 
+      ...insertCommission,
+      createdAt: new Date(),
+      status: 'pending',
+      paidAt: null
+    };
+    this.commissions.set(id, commission);
+    return commission;
+  }
+
+  async getCommissionsByAffiliate(affiliateCreatorId: number): Promise<Commission[]> {
+    return Array.from(this.commissions.values()).filter(commission => commission.affiliateCreatorId === affiliateCreatorId);
+  }
+
+  async getCommissionsByCreator(originalCreatorId: number): Promise<Commission[]> {
+    return Array.from(this.commissions.values()).filter(commission => commission.originalCreatorId === originalCreatorId);
+  }
+
+  async updateCommissionStatus(commissionId: number, status: string, paidAt?: Date): Promise<void> {
+    const commission = this.commissions.get(commissionId);
+    if (commission) {
+      commission.status = status;
+      if (paidAt) {
+        commission.paidAt = paidAt;
+      }
+      this.commissions.set(commissionId, commission);
+    }
+  }
+
+  // Product Settings
+  async createProductSettings(insertSettings: InsertProductSettings): Promise<ProductSettings> {
+    const id = this.currentProductSettingsId++;
+    const settings: ProductSettings = { 
+      id, 
+      ...insertSettings,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.productSettings.set(id, settings);
+    return settings;
+  }
+
+  async getProductSettings(productId: number): Promise<ProductSettings | undefined> {
+    return Array.from(this.productSettings.values()).find(settings => settings.productId === productId);
+  }
+
+  async updateProductSettings(productId: number, updates: Partial<ProductSettings>): Promise<ProductSettings | undefined> {
+    const settings = Array.from(this.productSettings.values()).find(s => s.productId === productId);
+    if (settings) {
+      const updatedSettings = { ...settings, ...updates, updatedAt: new Date() };
+      this.productSettings.set(settings.id, updatedSettings);
+      return updatedSettings;
+    }
+    return undefined;
   }
 }
 
@@ -608,7 +711,7 @@ export class DatabaseStorage implements IStorage {
     if (link) {
       await db
         .update(affiliateLinks)
-        .set({ clicks: link.clicks + 1 })
+        .set({ clicks: (link.clicks || 0) + 1 })
         .where(eq(affiliateLinks.id, linkId));
     }
   }
@@ -619,7 +722,7 @@ export class DatabaseStorage implements IStorage {
     if (link) {
       await db
         .update(affiliateLinks)
-        .set({ conversions: link.conversions + 1 })
+        .set({ conversions: (link.conversions || 0) + 1 })
         .where(eq(affiliateLinks.id, linkId));
     }
   }

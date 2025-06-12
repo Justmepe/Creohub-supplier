@@ -13,7 +13,10 @@ import {
   insertCreatorSchema, 
   insertProductSchema, 
   insertOrderSchema,
-  insertAnalyticsSchema 
+  insertAnalyticsSchema,
+  insertAffiliateLinkSchema,
+  insertCommissionSchema,
+  insertProductSettingsSchema
 } from "@shared/schema";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
@@ -557,6 +560,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ configured, missing });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  // AFFILIATE ROUTES
+  // Create affiliate link
+  app.post("/api/affiliate/links", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const creator = await storage.getCreatorByUserId(user.id);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator profile not found" });
+      }
+
+      // Generate unique link code
+      const linkCode = `${creator.handle}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      const affiliateLinkData = insertAffiliateLinkSchema.parse({
+        ...req.body,
+        affiliateCreatorId: creator.id,
+        linkCode,
+      });
+
+      const affiliateLink = await storage.createAffiliateLink(affiliateLinkData);
+      res.json(affiliateLink);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get affiliate links for creator
+  app.get("/api/affiliate/links", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const creator = await storage.getCreatorByUserId(user.id);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator profile not found" });
+      }
+
+      const affiliateLinks = await storage.getAffiliateLinksByCreator(creator.id);
+      res.json(affiliateLinks);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Track affiliate link click
+  app.post("/api/affiliate/click/:linkCode", async (req: Request, res: Response) => {
+    try {
+      const { linkCode } = req.params;
+      const affiliateLink = await storage.getAffiliateLinkByCode(linkCode);
+      
+      if (!affiliateLink) {
+        return res.status(404).json({ message: "Affiliate link not found" });
+      }
+
+      await storage.updateAffiliateLinkClicks(affiliateLink.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get commissions for affiliate
+  app.get("/api/affiliate/commissions", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const creator = await storage.getCreatorByUserId(user.id);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator profile not found" });
+      }
+
+      const commissions = await storage.getCommissionsByAffiliate(creator.id);
+      res.json(commissions);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get product settings for affiliate program
+  app.get("/api/products/:id/affiliate-settings", async (req: Request, res: Response) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const settings = await storage.getProductSettings(productId);
+      res.json(settings);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Update product settings for affiliate program
+  app.put("/api/products/:id/affiliate-settings", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const productId = parseInt(req.params.id);
+      const product = await storage.getProduct(productId);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const creator = await storage.getCreatorByUserId(user.id);
+      if (!creator || creator.id !== product.creatorId) {
+        return res.status(403).json({ message: "Not authorized to update this product" });
+      }
+
+      const existingSettings = await storage.getProductSettings(productId);
+      
+      if (existingSettings) {
+        const updatedSettings = await storage.updateProductSettings(productId, req.body);
+        res.json(updatedSettings);
+      } else {
+        const settingsData = insertProductSettingsSchema.parse({
+          ...req.body,
+          productId,
+        });
+        const newSettings = await storage.createProductSettings(settingsData);
+        res.json(newSettings);
+      }
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get affiliate links for a specific product
+  app.get("/api/products/:id/affiliate-links", async (req: Request, res: Response) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const affiliateLinks = await storage.getAffiliateLinksByProduct(productId);
+      res.json(affiliateLinks);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
     }
   });
 
