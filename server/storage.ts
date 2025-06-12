@@ -487,11 +487,61 @@ export class MemStorage implements IStorage {
   async updateProductSettings(productId: number, updates: Partial<ProductSettings>): Promise<ProductSettings | undefined> {
     const settings = Array.from(this.productSettings.values()).find(s => s.productId === productId);
     if (settings) {
-      const updatedSettings = { ...settings, ...updates, updatedAt: new Date() };
+      const updatedSettings = { ...settings, ...updates };
       this.productSettings.set(settings.id, updatedSettings);
       return updatedSettings;
     }
     return undefined;
+  }
+
+  // Color Themes
+  async createColorTheme(insertTheme: InsertColorTheme): Promise<ColorTheme> {
+    const id = this.currentColorThemeId++;
+    const theme: ColorTheme = {
+      id,
+      ...insertTheme,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.colorThemes.set(id, theme);
+    return theme;
+  }
+
+  async getColorThemes(userId: number): Promise<ColorTheme[]> {
+    return Array.from(this.colorThemes.values()).filter(theme => theme.userId === userId);
+  }
+
+  async getActiveColorTheme(userId: number): Promise<ColorTheme | undefined> {
+    return Array.from(this.colorThemes.values()).find(theme => theme.userId === userId && theme.isActive);
+  }
+
+  async updateColorTheme(id: number, updates: Partial<ColorTheme>): Promise<ColorTheme | undefined> {
+    const theme = this.colorThemes.get(id);
+    if (theme) {
+      const updatedTheme = { ...theme, ...updates, updatedAt: new Date() };
+      this.colorThemes.set(id, updatedTheme);
+      return updatedTheme;
+    }
+    return undefined;
+  }
+
+  async deleteColorTheme(id: number): Promise<boolean> {
+    return this.colorThemes.delete(id);
+  }
+
+  async setActiveTheme(userId: number, themeId: number): Promise<void> {
+    // Deactivate all themes for the user
+    for (const [id, theme] of this.colorThemes.entries()) {
+      if (theme.userId === userId && theme.isActive) {
+        this.colorThemes.set(id, { ...theme, isActive: false, updatedAt: new Date() });
+      }
+    }
+    
+    // Activate the selected theme
+    const selectedTheme = this.colorThemes.get(themeId);
+    if (selectedTheme && selectedTheme.userId === userId) {
+      this.colorThemes.set(themeId, { ...selectedTheme, isActive: true, updatedAt: new Date() });
+    }
   }
 }
 
@@ -791,6 +841,58 @@ export class DatabaseStorage implements IStorage {
       .where(eq(productSettings.productId, productId))
       .returning();
     return settings || undefined;
+  }
+
+  // Color Themes
+  async createColorTheme(insertTheme: InsertColorTheme): Promise<ColorTheme> {
+    const [theme] = await db
+      .insert(colorThemes)
+      .values(insertTheme)
+      .returning();
+    return theme;
+  }
+
+  async getColorThemes(userId: number): Promise<ColorTheme[]> {
+    return await db.select().from(colorThemes).where(eq(colorThemes.userId, userId));
+  }
+
+  async getActiveColorTheme(userId: number): Promise<ColorTheme | undefined> {
+    const [theme] = await db
+      .select()
+      .from(colorThemes)
+      .where(eq(colorThemes.userId, userId));
+    return theme || undefined;
+  }
+
+  async updateColorTheme(id: number, updates: Partial<ColorTheme>): Promise<ColorTheme | undefined> {
+    const [theme] = await db
+      .update(colorThemes)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(colorThemes.id, id))
+      .returning();
+    return theme || undefined;
+  }
+
+  async deleteColorTheme(id: number): Promise<boolean> {
+    const result = await db
+      .delete(colorThemes)
+      .where(eq(colorThemes.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async setActiveTheme(userId: number, themeId: number): Promise<void> {
+    // Deactivate all themes for the user
+    await db
+      .update(colorThemes)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(colorThemes.userId, userId));
+    
+    // Activate the selected theme
+    await db
+      .update(colorThemes)
+      .set({ isActive: true, updatedAt: new Date() })
+      .where(eq(colorThemes.id, themeId));
   }
 }
 

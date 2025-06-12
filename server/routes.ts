@@ -16,7 +16,8 @@ import {
   insertAnalyticsSchema,
   insertAffiliateLinkSchema,
   insertCommissionSchema,
-  insertProductSettingsSchema
+  insertProductSettingsSchema,
+  insertColorThemeSchema
 } from "@shared/schema";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
@@ -721,6 +722,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productId = parseInt(req.params.id);
       const affiliateLinks = await storage.getAffiliateLinksByProduct(productId);
       res.json(affiliateLinks);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // COLOR THEME ROUTES
+  // Get user's color themes
+  app.get("/api/themes", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const themes = await storage.getColorThemes(req.session.userId);
+      res.json(themes);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get active color theme
+  app.get("/api/themes/active", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const activeTheme = await storage.getActiveColorTheme(req.session.userId);
+      res.json(activeTheme);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Create new color theme
+  app.post("/api/themes", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const themeData = insertColorThemeSchema.parse({
+        ...req.body,
+        userId: req.session.userId,
+      });
+
+      const theme = await storage.createColorTheme(themeData);
+      res.json(theme);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Update color theme
+  app.put("/api/themes/:id", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const themeId = parseInt(req.params.id);
+      const updatedTheme = await storage.updateColorTheme(themeId, req.body);
+      
+      if (!updatedTheme) {
+        return res.status(404).json({ message: "Theme not found" });
+      }
+
+      res.json(updatedTheme);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Delete color theme
+  app.delete("/api/themes/:id", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const themeId = parseInt(req.params.id);
+      const deleted = await storage.deleteColorTheme(themeId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Theme not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Set active theme
+  app.post("/api/themes/:id/activate", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const themeId = parseInt(req.params.id);
+      await storage.setActiveTheme(req.session.userId, themeId);
+      res.json({ success: true });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
