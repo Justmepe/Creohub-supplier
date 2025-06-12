@@ -30,9 +30,13 @@ export default function AffiliatePage() {
     enabled: !!creator?.id,
   });
 
-  // Fetch existing affiliate links
-  const { data: affiliateLinks = [], isLoading: linksLoading, refetch: refetchLinks } = useQuery<AffiliateLink[]>({
+  // Fetch existing affiliate links with custom query function
+  const { data: affiliateLinks = [], isLoading: linksLoading, refetch: refetchLinks, error } = useQuery<AffiliateLink[]>({
     queryKey: ["/api/affiliate/links"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/affiliate/links");
+      return response.json();
+    },
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -41,6 +45,10 @@ export default function AffiliatePage() {
   // Fetch commissions
   const { data: commissions = [], isLoading: commissionsLoading } = useQuery<Commission[]>({
     queryKey: ["/api/affiliate/commissions"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/affiliate/commissions");
+      return response.json();
+    },
   });
 
   // Create affiliate link mutation
@@ -190,31 +198,42 @@ export default function AffiliatePage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {affiliateLinks.map((link: any) => (
-                  <div key={link.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium">Product #{link.productId}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Commission: {link.commissionRate}% | Clicks: {link.clicks || 0} | Conversions: {link.conversions || 0}
+                  {affiliateLinks.map((link: any) => {
+                    const product = products?.find(p => p.id === link.productId);
+                    const affiliateUrl = `${window.location.origin}/product/${link.productId}?ref=${link.linkCode}`;
+                    
+                    return (
+                      <div key={link.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="font-medium">{product?.name || `Product #${link.productId}`}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Commission: {link.commissionRate}% | Clicks: {link.clicks || 0} | Conversions: {link.conversions || 0}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1 font-mono bg-gray-50 dark:bg-gray-800 p-1 rounded">
+                            {affiliateUrl}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={link.isActive ? "default" : "secondary"}>
+                            {link.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              copyToClipboard(affiliateUrl);
+                              toast({
+                                title: "Link Copied!",
+                                description: "Affiliate link copied to clipboard",
+                              });
+                            }}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Code: {link.linkCode}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={link.isActive ? "default" : "secondary"}>
-                        {link.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(`${window.location.origin}/product/${link.productId}?ref=${link.linkCode}`)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
                   {affiliateLinks.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
                       No affiliate links created yet
