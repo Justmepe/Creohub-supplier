@@ -333,6 +333,7 @@ export class MemStorage implements IStorage {
       paymentStatus: "pending",
       orderStatus: "processing",
       shippingAddress: insertOrder.shippingAddress || null,
+      affiliateLinkId: insertOrder.affiliateLinkId || null,
       createdAt: new Date() 
     };
     this.orders.set(id, order);
@@ -458,8 +459,7 @@ export class MemStorage implements IStorage {
     const settings: ProductSettings = { 
       id, 
       ...insertSettings,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date()
     };
     this.productSettings.set(id, settings);
     return settings;
