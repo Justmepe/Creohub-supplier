@@ -13,15 +13,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Copy, ExternalLink, TrendingUp, DollarSign, Users, MousePointer, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import type { Product, AffiliateLink, Commission } from "@shared/schema";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AffiliatePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { creator } = useAuth();
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
   // Fetch user's products for affiliate link creation
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
-    queryKey: ["/api/products/mine"],
+    queryKey: [`/api/creators/${creator?.id}/products`],
+    enabled: !!creator?.id,
   });
 
   // Fetch existing affiliate links
@@ -250,45 +253,57 @@ export default function AffiliatePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleCreateAffiliateLink} className="space-y-4">
-                <div>
-                  <Label htmlFor="product">Product</Label>
-                  <Select onValueChange={(value) => setSelectedProduct(parseInt(value))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id.toString()}>
-                          {product.name} - ${product.price}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {productsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+                  <span className="ml-2">Loading products...</span>
                 </div>
-
-                <div>
-                  <Label htmlFor="commissionRate">Commission Rate (%)</Label>
-                  <Input
-                    id="commissionRate"
-                    name="commissionRate"
-                    type="number"
-                    min="1"
-                    max="50"
-                    step="0.1"
-                    placeholder="15"
-                    required
-                  />
+              ) : products.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No products available to create affiliate links.</p>
+                  <p className="text-sm text-muted-foreground mt-2">Create some products first in the Products tab.</p>
                 </div>
+              ) : (
+                <form onSubmit={handleCreateAffiliateLink} className="space-y-4">
+                  <div>
+                    <Label htmlFor="product">Product ({products.length} available)</Label>
+                    <Select onValueChange={(value) => setSelectedProduct(parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a product" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product.id} value={product.id.toString()}>
+                            {product.name} - ${product.price}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={createAffiliateLinkMutation.isPending}
-                  className="w-full"
-                >
-                  {createAffiliateLinkMutation.isPending ? "Creating..." : "Create Affiliate Link"}
-                </Button>
-              </form>
+                  <div>
+                    <Label htmlFor="commissionRate">Commission Rate (%)</Label>
+                    <Input
+                      id="commissionRate"
+                      name="commissionRate"
+                      type="number"
+                      min="1"
+                      max="50"
+                      step="0.1"
+                      placeholder="15"
+                      required
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={createAffiliateLinkMutation.isPending}
+                    className="w-full"
+                  >
+                    {createAffiliateLinkMutation.isPending ? "Creating..." : "Create Affiliate Link"}
+                  </Button>
+                </form>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
