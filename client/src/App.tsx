@@ -29,6 +29,7 @@ import PaymentTest from "@/pages/payment-test";
 import PaymentSuccess from "@/pages/payment-success";
 import PaymentFailed from "@/pages/payment-failed";
 import PaymentDemo from "@/pages/payment-demo";
+import CustomerOrdersPage from "@/pages/customer-orders";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -70,6 +71,7 @@ function App() {
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/payment/failed" component={PaymentFailed} />
               <Route path="/payment-demo" component={PaymentDemo} />
+              <Route path="/track-orders" component={CustomerOrdersPage} />
               <Route component={NotFound} />
             </Switch>
           </div>

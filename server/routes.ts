@@ -493,6 +493,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Customer order tracking endpoint
+  app.get("/api/orders/customer", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Email parameter is required" });
+      }
+
+      const orders = await storage.getOrdersByCustomerEmail(email);
+      res.json(orders);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   // Analytics routes
   app.post("/api/analytics", async (req: Request, res: Response) => {
     try {

@@ -258,7 +258,7 @@ export default function CustomerOrdersPage() {
                           <p><span className="font-medium">Method:</span> {order.paymentMethod || 'N/A'}</p>
                           <p><span className="font-medium">Total:</span> {formatPrice(order.totalAmount, order.currency)}</p>
                           <p><span className="font-medium">Status:</span> 
-                            <Badge size="sm" className={`ml-2 ${getStatusColor(order.status)}`}>
+                            <Badge className={`ml-2 ${getStatusColor(order.status)}`}>
                               {order.status}
                             </Badge>
                           </p>

@@ -336,6 +336,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.orders.values()).filter(order => order.creatorId === creatorId);
   }
 
+  async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+    return Array.from(this.orders.values()).filter(order => order.customerEmail === email);
+  }
+
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const id = this.currentOrderId++;
     const order: Order = { 
