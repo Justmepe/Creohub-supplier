@@ -22,6 +22,7 @@ export default function AffiliatePage() {
   const { creator } = useAuth();
   const { formatPrice, convertPrice } = useCurrency();
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Fetch user's products for affiliate link creation
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
@@ -51,6 +52,7 @@ export default function AffiliatePage() {
         description: "Affiliate link created successfully",
       });
       setSelectedProduct(null);
+      formRef.current?.reset();
       refetchLinks();
     },
     onError: (error: any) => {
@@ -268,7 +270,7 @@ export default function AffiliatePage() {
                   <p className="text-sm text-muted-foreground mt-2">Create some products first in the Products tab.</p>
                 </div>
               ) : (
-                <form onSubmit={handleCreateAffiliateLink} className="space-y-4">
+                <form ref={formRef} onSubmit={handleCreateAffiliateLink} className="space-y-4">
                   <div>
                     <Label htmlFor="product">Product ({products.length} available)</Label>
                     <Select onValueChange={(value) => setSelectedProduct(parseInt(value))}>
