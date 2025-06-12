@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, ExternalLink, TrendingUp, DollarSign, Users, MousePointer, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import type { Product, AffiliateLink, Commission } from "@shared/schema";
 
 export default function AffiliatePage() {
   const { toast } = useToast();
@@ -19,17 +20,17 @@ export default function AffiliatePage() {
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
   // Fetch user's products for affiliate link creation
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products/mine"],
   });
 
   // Fetch existing affiliate links
-  const { data: affiliateLinks = [] } = useQuery({
+  const { data: affiliateLinks = [], isLoading: linksLoading } = useQuery<AffiliateLink[]>({
     queryKey: ["/api/affiliate/links"],
   });
 
   // Fetch commissions
-  const { data: commissions = [] } = useQuery({
+  const { data: commissions = [], isLoading: commissionsLoading } = useQuery<Commission[]>({
     queryKey: ["/api/affiliate/commissions"],
   });
 
@@ -84,12 +85,12 @@ export default function AffiliatePage() {
 
   // Calculate total earnings
   const totalEarnings = commissions
-    .filter((c: any) => c.status === "paid")
-    .reduce((sum: number, c: any) => sum + parseFloat(c.amount), 0);
+    .filter((c) => c.status === "paid")
+    .reduce((sum, c) => sum + parseFloat(c.commissionAmount || "0"), 0);
 
   const pendingEarnings = commissions
-    .filter((c: any) => c.status === "pending")
-    .reduce((sum: number, c: any) => sum + parseFloat(c.amount), 0);
+    .filter((c) => c.status === "pending")
+    .reduce((sum, c) => sum + parseFloat(c.commissionAmount || "0"), 0);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -155,7 +156,7 @@ export default function AffiliatePage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {affiliateLinks.reduce((sum: number, link: any) => sum + (link.clicks || 0), 0)}
+                  {affiliateLinks.reduce((sum, link) => sum + (link.clicks || 0), 0)}
                 </div>
               </CardContent>
             </Card>
