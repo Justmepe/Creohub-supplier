@@ -1,510 +1,373 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "wouter";
-import logoPath from "@assets/Logo_1749474304178.png";
+import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import PesapalPayment from "@/components/payments/PesapalPayment";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { PriceDisplay } from "@/components/ui/price-display";
 import { apiRequest } from "@/lib/queryClient";
-import type { OrderItem, ShippingAddress } from "@/lib/types";
-import {
-  ShoppingCart,
-  Package,
-  Truck,
-  CreditCard,
-  ArrowLeft,
-  CheckCircle,
-  Loader2
-} from "lucide-react";
-import { Link } from "wouter";
+import { ArrowLeft, CreditCard, Smartphone, Building2 } from "lucide-react";
 
-const checkoutSchema = z.object({
-  customerName: z.string().min(2, "Name must be at least 2 characters"),
-  customerEmail: z.string().email("Invalid email address"),
-  customerPhone: z.string().optional(),
-  shippingAddress: z.object({
-    fullName: z.string().min(2, "Full name is required"),
-    address: z.string().min(5, "Address is required"),
-    city: z.string().min(2, "City is required"),
-    state: z.string().min(2, "State is required"),
-    postalCode: z.string().min(3, "Postal code is required"),
-    country: z.string().min(2, "Country is required"),
-    phone: z.string().optional(),
-  }).optional(),
-});
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  imageUrl?: string;
+  creatorId: number;
+}
 
-type CheckoutFormData = z.infer<typeof checkoutSchema>;
+interface Creator {
+  id: number;
+  storeHandle: string;
+  storeName?: string;
+}
 
-export default function Checkout() {
-  const { creatorId } = useParams();
+export default function CheckoutPage() {
+  const [, params] = useRoute("/checkout/:productId");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { currentCurrency } = useCurrency();
-  const [cartItems, setCartItems] = useState<OrderItem[]>([]);
-  const [step, setStep] = useState(1);
-  const [orderId, setOrderId] = useState<number | null>(null);
+  const productId = params?.productId ? parseInt(params.productId) : null;
 
-  const form = useForm<CheckoutFormData>({
-    resolver: zodResolver(checkoutSchema),
-    defaultValues: {
-      customerName: "",
-      customerEmail: "",
-      customerPhone: "",
-      shippingAddress: {
-        fullName: "",
-        address: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        country: "Kenya",
-        phone: "",
-      },
+  const [customerInfo, setCustomerInfo] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+  const [paymentMethod, setPaymentMethod] = useState("pesapal");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Get affiliate referral from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const affiliateRef = urlParams.get("ref");
+
+  // Fetch product details
+  const { data: product, isLoading: productLoading } = useQuery<Product>({
+    queryKey: [`/api/products/${productId}`],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/products/${productId}`);
+      return response.json();
+    },
+    enabled: !!productId,
+  });
+
+  // Fetch creator details
+  const { data: creator } = useQuery<Creator>({
+    queryKey: [`/api/creators/${product?.creatorId}`],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${product?.creatorId}`);
+      return response.json();
+    },
+    enabled: !!product?.creatorId,
+  });
+
+  // Payment processing mutation
+  const processPaymentMutation = useMutation({
+    mutationFn: async (paymentData: any) => {
+      const response = await apiRequest("POST", `/api/payments/customer/${paymentMethod}`, paymentData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (paymentMethod === "pesapal" && data.redirect_url) {
+        window.location.href = data.redirect_url;
+      } else if (paymentMethod === "mpesa" && data.checkoutRequestId) {
+        // Poll for M-Pesa status
+        pollMpesaStatus(data.checkoutRequestId);
+      } else if (paymentMethod === "stripe" && data.clientSecret) {
+        // Handle Stripe payment
+        handleStripePayment(data.clientSecret);
+      }
+    },
+    onError: (error: any) => {
+      setIsProcessing(false);
+      toast({
+        title: "Payment Failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
     },
   });
 
-  const { data: creator, isLoading: creatorLoading } = useQuery({
-    queryKey: [`/api/creators/${creatorId}`],
-    enabled: !!creatorId,
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/creators/${creatorId}`);
-      return response.json();
-    }
-  });
+  const pollMpesaStatus = async (checkoutRequestId: string) => {
+    let attempts = 0;
+    const maxAttempts = 30; // 5 minutes
 
-  const { data: products } = useQuery({
-    queryKey: [`/api/creators/${creatorId}/products`],
-    enabled: !!creatorId,
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/creators/${creatorId}/products`);
-      return response.json();
-    }
-  });
+    const poll = async () => {
+      try {
+        const response = await apiRequest("GET", `/api/payments/customer/mpesa/status/${checkoutRequestId}`);
+        const result = await response.json();
 
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem(`cart_${creatorId}`);
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    } else if (products && products.length > 0) {
-      // Create mock cart item for demo
-      const mockItem: OrderItem = {
-        productId: products[0].id,
-        name: products[0].name,
-        price: parseFloat(products[0].price),
-        quantity: 1,
-        type: products[0].type,
-      };
-      setCartItems([mockItem]);
-    }
-  }, [creatorId, products]);
+        if (result.status === "completed") {
+          setIsProcessing(false);
+          toast({
+            title: "Payment Successful!",
+            description: "Your order has been confirmed",
+          });
+          setLocation("/orders");
+        } else if (result.status === "failed") {
+          setIsProcessing(false);
+          toast({
+            title: "Payment Failed",
+            description: "Please try again",
+            variant: "destructive",
+          });
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(poll, 10000); // Poll every 10 seconds
+        } else {
+          setIsProcessing(false);
+          toast({
+            title: "Payment Timeout",
+            description: "Please check your phone and try again",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        setIsProcessing(false);
+        toast({
+          title: "Error",
+          description: "Unable to verify payment status",
+          variant: "destructive",
+        });
+      }
+    };
 
-  const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const hasPhysicalItems = cartItems.some(item => item.type === "physical");
-
-  const updateQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      setCartItems(cartItems.filter(item => item.productId !== productId));
-    } else {
-      setCartItems(cartItems.map(item =>
-        item.productId === productId ? { ...item, quantity: newQuantity } : item
-      ));
-    }
-    localStorage.setItem(`cart_${creatorId}`, JSON.stringify(cartItems));
+    poll();
   };
 
-  const onSubmit = (data: CheckoutFormData) => {
+  const handleStripePayment = (clientSecret: string) => {
+    // This would integrate with Stripe Elements
     toast({
-      title: "Customer details validated",
-      description: "Please proceed with payment below.",
+      title: "Stripe Integration",
+      description: "Redirecting to secure payment...",
     });
   };
 
-  if (creatorLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading checkout...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
 
-  if (!creator) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="pt-6 text-center">
-            <h3 className="text-lg font-semibold mb-2">Creator Not Found</h3>
-            <p className="text-gray-600 mb-4">The creator you're trying to purchase from doesn't exist.</p>
-            <Button asChild>
-              <Link href="/">Go Home</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+    setIsProcessing(true);
 
-  if (step === 4 && orderId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="pt-6 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h3>
-            <p className="text-gray-600 mb-4">
-              Thank you for your purchase. Your order #{orderId} has been placed successfully.
-            </p>
-            <div className="space-y-2">
-              <Button asChild className="w-full">
-                <Link href={`/storefront/${creator.storeHandle}`}>
-                  Continue Shopping
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/">
-                  Explore More Creators
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+    const orderData = {
+      productId: product.id,
+      creatorId: product.creatorId,
+      customerName: customerInfo.name,
+      customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
+      shippingAddress: customerInfo.address,
+      totalAmount: product.price,
+      currency: "KES",
+      affiliateRef: affiliateRef,
+    };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link href={`/storefront/${creator.storeHandle}`}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Store
-                </Link>
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
-              <div className="flex items-center space-x-2">
-                <img 
-                  src={logoPath} 
-                  alt="Creohub" 
-                  className="h-6 w-6"
-                />
-                <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-              </div>
-            </div>
-            <div className="text-sm text-gray-600">
-              {creator.storeName}
-            </div>
+    processPaymentMutation.mutate(orderData);
+  };
+
+  if (productLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
           </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+  if (!product) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <Button onClick={() => setLocation("/")}>Go Back Home</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const priceInKES = parseFloat(product.price);
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <Button
+          variant="ghost"
+          onClick={() => window.history.back()}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
+        <div className="grid md:grid-cols-2 gap-8">
           {/* Order Summary */}
-          <div className="lg:order-2">
-            <Card className="sticky top-8">
+          <div>
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  Order Summary
-                </CardTitle>
+                <CardTitle>Order Summary</CardTitle>
+                <CardDescription>
+                  From {creator?.storeName || creator?.storeHandle}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {cartItems.map((item) => (
-                  <div key={item.productId} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{item.name}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {item.type}
-                        </Badge>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          >
-                            -
-                          </Button>
-                          <span className="text-sm mx-2">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          >
-                            +
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <PriceDisplay
-                        originalPrice={item.price * item.quantity}
-                        originalCurrency="KES"
-                        size="sm"
-                        className="font-semibold"
-                      />
-                      <div className="text-sm text-gray-500">
-                        <PriceDisplay
-                          originalPrice={item.price}
-                          originalCurrency="KES"
-                          size="sm"
-                        /> each
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <PriceDisplay
-                      originalPrice={totalAmount}
-                      originalCurrency="KES"
-                      size="sm"
+                <div className="flex items-center space-x-4">
+                  {product.imageUrl && (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded"
                     />
-                  </div>
-                  {hasPhysicalItems && (
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Shipping</span>
-                      <span>Calculated at next step</span>
-                    </div>
                   )}
-                  <Separator />
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span>Total</span>
-                    <PriceDisplay
-                      originalPrice={totalAmount}
-                      originalCurrency="KES"
-                      size="lg"
-                      className="font-semibold"
-                    />
+                  <div className="flex-1">
+                    <h3 className="font-medium">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {product.description}
+                    </p>
                   </div>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span>Product Price</span>
+                  <span className="font-medium">KES {priceInKES.toLocaleString()}</span>
+                </div>
+                {affiliateRef && (
+                  <div className="flex justify-between items-center text-sm text-muted-foreground">
+                    <span>Referred by</span>
+                    <span>{affiliateRef}</span>
+                  </div>
+                )}
+                <Separator />
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span>Total</span>
+                  <span>KES {priceInKES.toLocaleString()}</span>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Checkout Form */}
-          <div className="lg:order-1">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Customer Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Customer Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="customerName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="John Doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="customerEmail"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="john@example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Checkout</CardTitle>
+                <CardDescription>
+                  Complete your purchase
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Customer Information */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium">Customer Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          required
+                          value={customerInfo.name}
+                          onChange={(e) =>
+                            setCustomerInfo({ ...customerInfo, name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          required
+                          value={customerInfo.email}
+                          onChange={(e) =>
+                            setCustomerInfo({ ...customerInfo, email: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        required
+                        placeholder="+254XXXXXXXXX"
+                        value={customerInfo.phone}
+                        onChange={(e) =>
+                          setCustomerInfo({ ...customerInfo, phone: e.target.value })
+                        }
                       />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="customerPhone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+254 700 000 000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-
-                {/* Shipping Address (only for physical products) */}
-                {hasPhysicalItems && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Truck className="h-5 w-5" />
-                        Shipping Address
-                      </CardTitle>
-                      <CardDescription>
-                        Required for physical products delivery
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="shippingAddress.fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Recipient's full name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    <div>
+                      <Label htmlFor="address">Delivery Address</Label>
+                      <Input
+                        id="address"
+                        required
+                        placeholder="Enter your delivery address"
+                        value={customerInfo.address}
+                        onChange={(e) =>
+                          setCustomerInfo({ ...customerInfo, address: e.target.value })
+                        }
                       />
-                      <FormField
-                        control={form.control}
-                        name="shippingAddress.address"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Address</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Street address, building, apartment"
-                                className="resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="shippingAddress.city"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>City</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Nairobi" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="shippingAddress.state"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>State/County</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Nairobi County" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="shippingAddress.postalCode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Postal Code</FormLabel>
-                              <FormControl>
-                                <Input placeholder="00100" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="shippingAddress.country"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Country</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Kenya" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Payment Method */}
-                <PesapalPayment
-                  amount={totalAmount}
-                  currency="KES"
-                  productId={cartItems[0]?.productId.toString() || "ORDER"}
-                  productName={cartItems.map(item => item.name).join(", ")}
-                  customerEmail={form.watch("customerEmail") || ""}
-                  customerPhone={form.watch("customerPhone") || ""}
-                  customerName={form.watch("customerName") || ""}
-                  onSuccess={(data) => {
-                    toast({
-                      title: "Payment Successful",
-                      description: "Your order has been confirmed!",
-                    });
-                    setStep(4);
-                    setOrderId(data.order_id);
-                  }}
-                  onCancel={() => {
-                    toast({
-                      title: "Payment Cancelled",
-                      description: "You can try again when ready.",
-                    });
-                  }}
-                />
-
-                {/* Order Total Display */}
-                <div className="p-4 bg-gray-50 rounded-lg border">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium">Total Order Value:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      KES {totalAmount.toLocaleString()}
-                    </span>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Payment will be processed securely through Pesapal
-                  </p>
-                </div>
-              </form>
-            </Form>
+
+                  <Separator />
+
+                  {/* Payment Method */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium">Payment Method</h3>
+                    <RadioGroup
+                      value={paymentMethod}
+                      onValueChange={setPaymentMethod}
+                    >
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="pesapal" id="pesapal" />
+                        <Label htmlFor="pesapal" className="flex items-center cursor-pointer">
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Pesapal (Cards, Mobile Money, Banking)
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="mpesa" id="mpesa" />
+                        <Label htmlFor="mpesa" className="flex items-center cursor-pointer">
+                          <Smartphone className="h-4 w-4 mr-2" />
+                          M-Pesa STK Push
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="stripe" id="stripe" />
+                        <Label htmlFor="stripe" className="flex items-center cursor-pointer">
+                          <Building2 className="h-4 w-4 mr-2" />
+                          International Cards (Stripe)
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                        Processing Payment...
+                      </>
+                    ) : (
+                      `Pay KES ${priceInKES.toLocaleString()}`
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

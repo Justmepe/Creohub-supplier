@@ -13,7 +13,7 @@ import Products from "@/pages/products";
 import Orders from "@/pages/orders";
 import Settings from "@/pages/settings";
 import Pricing from "@/pages/pricing";
-import Checkout from "@/pages/checkout";
+import CheckoutPage from "@/pages/checkout";
 import Storefront from "@/pages/storefront";
 import CreatorProfile from "@/pages/creator-profile";
 import Affiliate from "@/pages/affiliate";
@@ -56,7 +56,7 @@ function App() {
               <Route path="/orders" component={Orders} />
               <Route path="/settings" component={Settings} />
               <Route path="/pricing" component={Pricing} />
-              <Route path="/checkout/:creatorId" component={Checkout} />
+              <Route path="/checkout/:productId" component={CheckoutPage} />
               <Route path="/storefront/:handle" component={Storefront} />
               <Route path="/profile" component={CreatorProfile} />
               <Route path="/affiliate" component={Affiliate} />

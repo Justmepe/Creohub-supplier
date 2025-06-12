@@ -277,11 +277,9 @@ export default function ProductCard({ product, creatorId, variant = "default" }:
             
             <Button 
               variant="outline"
-              onClick={async () => {
-                // Add to cart first
-                await addToCart();
-                // Then navigate to checkout using wouter
-                setLocation(`/checkout/${creatorId}`);
+              onClick={() => {
+                // Navigate directly to checkout for immediate purchase
+                setLocation(`/checkout/${product.id}`);
               }}
               disabled={isAddingToCart}
             >
