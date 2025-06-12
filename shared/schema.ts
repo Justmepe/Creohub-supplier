@@ -116,6 +116,16 @@ export const productSettings = pgTable("product_settings", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const colorThemes = pgTable("color_themes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  isActive: boolean("is_active").default(false),
+  colors: jsonb("colors").notNull(), // stores color palette
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -198,6 +208,13 @@ export const insertProductSettingsSchema = createInsertSchema(productSettings).p
   affiliateGuidelines: true,
 });
 
+export const insertColorThemeSchema = createInsertSchema(colorThemes).pick({
+  userId: true,
+  name: true,
+  isActive: true,
+  colors: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -222,3 +239,6 @@ export type InsertCommission = z.infer<typeof insertCommissionSchema>;
 
 export type ProductSettings = typeof productSettings.$inferSelect;
 export type InsertProductSettings = z.infer<typeof insertProductSettingsSchema>;
+
+export type ColorTheme = typeof colorThemes.$inferSelect;
+export type InsertColorTheme = z.infer<typeof insertColorThemeSchema>;

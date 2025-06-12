@@ -7,6 +7,7 @@ import {
   affiliateLinks,
   commissions,
   productSettings,
+  colorThemes,
   type User, 
   type InsertUser,
   type Creator,
@@ -22,7 +23,9 @@ import {
   type Commission,
   type InsertCommission,
   type ProductSettings,
-  type InsertProductSettings
+  type InsertProductSettings,
+  type ColorTheme,
+  type InsertColorTheme
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -80,6 +83,14 @@ export interface IStorage {
   createProductSettings(settings: InsertProductSettings): Promise<ProductSettings>;
   getProductSettings(productId: number): Promise<ProductSettings | undefined>;
   updateProductSettings(productId: number, updates: Partial<ProductSettings>): Promise<ProductSettings | undefined>;
+
+  // Color Themes
+  createColorTheme(theme: InsertColorTheme): Promise<ColorTheme>;
+  getColorThemes(userId: number): Promise<ColorTheme[]>;
+  getActiveColorTheme(userId: number): Promise<ColorTheme | undefined>;
+  updateColorTheme(id: number, updates: Partial<ColorTheme>): Promise<ColorTheme | undefined>;
+  deleteColorTheme(id: number): Promise<boolean>;
+  setActiveTheme(userId: number, themeId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -91,6 +102,7 @@ export class MemStorage implements IStorage {
   private affiliateLinks: Map<number, AffiliateLink>;
   private commissions: Map<number, Commission>;
   private productSettings: Map<number, ProductSettings>;
+  private colorThemes: Map<number, ColorTheme>;
   private currentUserId: number;
   private currentCreatorId: number;
   private currentProductId: number;
@@ -99,6 +111,7 @@ export class MemStorage implements IStorage {
   private currentAffiliateLinkId: number;
   private currentCommissionId: number;
   private currentProductSettingsId: number;
+  private currentColorThemeId: number;
 
   constructor() {
     this.users = new Map();
@@ -109,6 +122,7 @@ export class MemStorage implements IStorage {
     this.affiliateLinks = new Map();
     this.commissions = new Map();
     this.productSettings = new Map();
+    this.colorThemes = new Map();
     this.currentUserId = 1;
     this.currentCreatorId = 1;
     this.currentProductId = 1;
@@ -117,6 +131,7 @@ export class MemStorage implements IStorage {
     this.currentAffiliateLinkId = 1;
     this.currentCommissionId = 1;
     this.currentProductSettingsId = 1;
+    this.currentColorThemeId = 1;
     
     // Initialize with admin test account immediately
     this.initializeAdminAccount();
