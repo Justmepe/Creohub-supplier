@@ -14,11 +14,13 @@ import { Copy, ExternalLink, TrendingUp, DollarSign, Users, MousePointer, ArrowL
 import { Link } from "wouter";
 import type { Product, AffiliateLink, Commission } from "@shared/schema";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 export default function AffiliatePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { creator } = useAuth();
+  const { formatPrice, convertPrice } = useCurrency();
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
   // Fetch user's products for affiliate link creation
@@ -128,7 +130,7 @@ export default function AffiliatePage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${totalEarnings.toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatPrice(totalEarnings, 'KES')}</div>
               </CardContent>
             </Card>
 
@@ -138,7 +140,7 @@ export default function AffiliatePage() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${pendingEarnings.toFixed(2)}</div>
+                <div className="text-2xl font-bold">{formatPrice(pendingEarnings, 'KES')}</div>
               </CardContent>
             </Card>
 
@@ -224,7 +226,7 @@ export default function AffiliatePage() {
                 {commissions.map((commission) => (
                   <div key={commission.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <div className="font-medium">${commission.commissionAmount}</div>
+                      <div className="font-medium">{formatPrice(parseFloat(commission.commissionAmount), 'KES')}</div>
                       <div className="text-sm text-muted-foreground">
                         Order #{commission.orderId} • {new Date(commission.createdAt || new Date()).toLocaleDateString()}
                       </div>
@@ -274,7 +276,7 @@ export default function AffiliatePage() {
                       <SelectContent>
                         {products.map((product) => (
                           <SelectItem key={product.id} value={product.id.toString()}>
-                            {product.name} - ${product.price}
+                            {product.name} - {formatPrice(parseFloat(product.price), 'KES')}
                           </SelectItem>
                         ))}
                       </SelectContent>
