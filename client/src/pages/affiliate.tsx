@@ -34,6 +34,8 @@ export default function AffiliatePage() {
   const { data: affiliateLinks = [], isLoading: linksLoading, refetch: refetchLinks } = useQuery<AffiliateLink[]>({
     queryKey: ["/api/affiliate/links"],
     staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Fetch commissions
@@ -181,8 +183,14 @@ export default function AffiliatePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {affiliateLinks.map((link: any) => (
+              {linksLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+                  <span className="ml-2">Loading affiliate links...</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {affiliateLinks.map((link: any) => (
                   <div key={link.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="font-medium">Product #{link.productId}</div>
@@ -207,12 +215,13 @@ export default function AffiliatePage() {
                     </div>
                   </div>
                 ))}
-                {affiliateLinks.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No affiliate links created yet
-                  </div>
-                )}
-              </div>
+                  {affiliateLinks.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No affiliate links created yet
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
