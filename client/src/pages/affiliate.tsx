@@ -218,12 +218,12 @@ export default function AffiliatePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {commissions.map((commission: any) => (
+                {commissions.map((commission) => (
                   <div key={commission.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <div className="font-medium">${commission.amount}</div>
+                      <div className="font-medium">${commission.commissionAmount}</div>
                       <div className="text-sm text-muted-foreground">
-                        Order #{commission.orderId} • {new Date(commission.createdAt).toLocaleDateString()}
+                        Order #{commission.orderId} • {new Date(commission.createdAt || new Date()).toLocaleDateString()}
                       </div>
                     </div>
                     <Badge variant={commission.status === "paid" ? "default" : "secondary"}>
@@ -258,7 +258,7 @@ export default function AffiliatePage() {
                       <SelectValue placeholder="Select a product" />
                     </SelectTrigger>
                     <SelectContent>
-                      {products.map((product: any) => (
+                      {products.map((product) => (
                         <SelectItem key={product.id} value={product.id.toString()}>
                           {product.name} - ${product.price}
                         </SelectItem>
