@@ -65,6 +65,7 @@ export const orders = pgTable("orders", {
   orderStatus: text("order_status").default("processing"), // processing, shipped, delivered, cancelled
   items: jsonb("items").notNull(), // array of order items
   shippingAddress: jsonb("shipping_address"),
+  affiliateLinkId: integer("affiliate_link_id").references(() => affiliateLinks.id), // tracks affiliate referral
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -74,6 +75,44 @@ export const analytics = pgTable("analytics", {
   productId: integer("product_id").references(() => products.id),
   eventType: text("event_type").notNull(), // view, purchase, click
   eventData: jsonb("event_data").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const affiliateLinks = pgTable("affiliate_links", {
+  id: serial("id").primaryKey(),
+  affiliateCreatorId: integer("affiliate_creator_id").references(() => creators.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  linkCode: text("link_code").notNull().unique(),
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull(), // percentage
+  clicks: integer("clicks").default(0),
+  conversions: integer("conversions").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const commissions = pgTable("commissions", {
+  id: serial("id").primaryKey(),
+  affiliateCreatorId: integer("affiliate_creator_id").references(() => creators.id).notNull(),
+  originalCreatorId: integer("original_creator_id").references(() => creators.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  orderId: integer("order_id").references(() => orders.id).notNull(),
+  affiliateLinkId: integer("affiliate_link_id").references(() => affiliateLinks.id).notNull(),
+  saleAmount: decimal("sale_amount", { precision: 10, scale: 2 }).notNull(),
+  commissionAmount: decimal("commission_amount", { precision: 10, scale: 2 }).notNull(),
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull(),
+  status: text("status").default("pending"), // pending, paid, cancelled
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const productSettings = pgTable("product_settings", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id).notNull().unique(),
+  allowAffiliates: boolean("allow_affiliates").default(true),
+  defaultCommissionRate: decimal("default_commission_rate", { precision: 5, scale: 2 }).default("15.00"),
+  minCommissionRate: decimal("min_commission_rate", { precision: 5, scale: 2 }).default("5.00"),
+  maxCommissionRate: decimal("max_commission_rate", { precision: 5, scale: 2 }).default("50.00"),
+  affiliateGuidelines: text("affiliate_guidelines"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -132,6 +171,33 @@ export const insertAnalyticsSchema = createInsertSchema(analytics).pick({
   eventData: true,
 });
 
+export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).pick({
+  affiliateCreatorId: true,
+  productId: true,
+  linkCode: true,
+  commissionRate: true,
+});
+
+export const insertCommissionSchema = createInsertSchema(commissions).pick({
+  affiliateCreatorId: true,
+  originalCreatorId: true,
+  productId: true,
+  orderId: true,
+  affiliateLinkId: true,
+  saleAmount: true,
+  commissionAmount: true,
+  commissionRate: true,
+});
+
+export const insertProductSettingsSchema = createInsertSchema(productSettings).pick({
+  productId: true,
+  allowAffiliates: true,
+  defaultCommissionRate: true,
+  minCommissionRate: true,
+  maxCommissionRate: true,
+  affiliateGuidelines: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -147,3 +213,12 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
 export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
+
+export type AffiliateLink = typeof affiliateLinks.$inferSelect;
+export type InsertAffiliateLink = z.infer<typeof insertAffiliateLinkSchema>;
+
+export type Commission = typeof commissions.$inferSelect;
+export type InsertCommission = z.infer<typeof insertCommissionSchema>;
+
+export type ProductSettings = typeof productSettings.$inferSelect;
+export type InsertProductSettings = z.infer<typeof insertProductSettingsSchema>;
