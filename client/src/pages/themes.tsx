@@ -347,7 +347,7 @@ export default function ThemesPage() {
                   </div>
                   
                   <div className="flex gap-2">
-                    {Object.values(theme.colors as any).map((color: string, index: number) => (
+                    {Object.values(theme.colors as Record<string, string>).map((color: string, index: number) => (
                       <div
                         key={index}
                         className="w-6 h-6 rounded-full border"

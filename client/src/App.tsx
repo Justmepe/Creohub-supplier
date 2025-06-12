@@ -17,6 +17,7 @@ import Checkout from "@/pages/checkout";
 import Storefront from "@/pages/storefront";
 import CreatorProfile from "@/pages/creator-profile";
 import Affiliate from "@/pages/affiliate";
+import Themes from "@/pages/themes";
 import Testing from "@/pages/testing";
 import TestLogin from "@/pages/test-login";
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -59,6 +60,7 @@ function App() {
               <Route path="/storefront/:handle" component={Storefront} />
               <Route path="/profile" component={CreatorProfile} />
               <Route path="/affiliate" component={Affiliate} />
+              <Route path="/themes" component={Themes} />
               <Route path="/testing" component={Testing} />
               <Route path="/test-login" component={TestLogin} />
               <Route path="/admin" component={AdminDashboard} />
