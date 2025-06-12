@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, ExternalLink, TrendingUp, DollarSign, Users, MousePointer } from "lucide-react";
+import { Copy, ExternalLink, TrendingUp, DollarSign, Users, MousePointer, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 
 export default function AffiliatePage() {
   const { toast } = useToast();
@@ -93,6 +94,14 @@ export default function AffiliatePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          <Link href="/dashboard">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
         <h1 className="text-3xl font-bold mb-2">Affiliate Program</h1>
         <p className="text-muted-foreground">
           Promote other creators' products and earn commissions
