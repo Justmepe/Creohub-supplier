@@ -58,6 +58,7 @@ export interface IStorage {
   // Orders
   getOrder(id: number): Promise<Order | undefined>;
   getOrdersByCreator(creatorId: number): Promise<Order[]>;
+  getOrdersByCustomerEmail(email: string): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, updates: Partial<Order>): Promise<Order | undefined>;
 
