@@ -306,6 +306,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload creator logo
+  app.post("/api/creators/:id/upload-logo", upload.single("logo"), async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No logo file provided" });
+      }
+
+      const logoUrl = `/uploads/${req.file.filename}`;
+      
+      const creator = await storage.updateCreator(creatorId, {
+        storeLogo: logoUrl
+      });
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      res.json({ logoUrl, creator });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Upload creator banner
+  app.post("/api/creators/:id/upload-banner", upload.single("banner"), async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No banner file provided" });
+      }
+
+      const bannerUrl = `/uploads/${req.file.filename}`;
+      
+      const creator = await storage.updateCreator(creatorId, {
+        storeBanner: bannerUrl
+      });
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      res.json({ bannerUrl, creator });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Product routes with plan validation
   app.post("/api/products", upload.single("digitalFile"), async (req: Request, res: Response) => {
     try {

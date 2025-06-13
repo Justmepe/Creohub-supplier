@@ -22,6 +22,8 @@ export const creators = pgTable("creators", {
   storeHandle: text("store_handle").notNull().unique(),
   storeName: text("store_name").notNull(),
   storeDescription: text("store_description"),
+  storeLogo: text("store_logo"), // URL to uploaded logo image
+  storeBanner: text("store_banner"), // URL to uploaded banner image
   storeTheme: text("store_theme").default("minimal"),
   storeColors: jsonb("store_colors").default({}),
   customDomain: text("custom_domain"),
