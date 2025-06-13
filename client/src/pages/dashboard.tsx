@@ -310,7 +310,8 @@ export default function Dashboard() {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="orders">Customer Orders</TabsTrigger>
+            <TabsTrigger value="subscriptions">Plan History</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -512,6 +513,58 @@ export default function Dashboard() {
                     <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-lg font-medium text-gray-600 mb-2">No orders yet</p>
                     <p className="text-gray-500">Orders will appear here once customers start buying your products</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="subscriptions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Plan History</CardTitle>
+                <CardDescription>Your subscription plan upgrades and payments</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {subscriptionsLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : Array.isArray(subscriptions) && subscriptions.length > 0 ? (
+                  <div className="space-y-4">
+                    {subscriptions.map((subscription: any) => (
+                      <div key={subscription.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="font-medium capitalize">{subscription.planType} Plan</p>
+                            <p className="text-sm text-gray-600">
+                              Started: {new Date(subscription.startsAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">KES {parseFloat(subscription.amount).toLocaleString()}</p>
+                            <Badge variant={subscription.paymentStatus === 'completed' ? 'default' : 'secondary'}>
+                              {subscription.paymentStatus}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-sm text-gray-600">
+                          <span>Payment Method: {subscription.paymentMethod || 'N/A'}</span>
+                          <span className="capitalize">Status: {subscription.subscriptionStatus}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">No subscription history</p>
+                    <p className="text-gray-500">Plan upgrades and subscription payments will appear here</p>
                   </div>
                 )}
               </CardContent>
