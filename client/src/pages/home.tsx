@@ -569,11 +569,9 @@ export default function Home() {
                     <span className="text-gray-700 font-semibold">0% transaction fees</span>
                   </li>
                 </ul>
-                <Link href="/pricing">
-                  <Button variant="outline" className="w-full border-purple-200 text-purple-600 hover:bg-purple-50">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
+                <Button variant="outline" className="w-full border-purple-200 text-purple-600 hover:bg-purple-50" onClick={() => handlePlanSignup('pro')}>
+                  Upgrade to Pro
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -712,6 +710,19 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Creator Onboarding Dialog */}
+      <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Your Creator Account</DialogTitle>
+          </DialogHeader>
+          <CreatorOnboarding 
+            onComplete={() => setShowOnboarding(false)} 
+            selectedPlan={selectedPlan}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Demo Modal */}
       {showDemo && (
