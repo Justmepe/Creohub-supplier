@@ -32,6 +32,7 @@ import PaymentSuccess from "@/pages/payment-success";
 import PaymentFailed from "@/pages/payment-failed";
 import PaymentDemo from "@/pages/payment-demo";
 import CustomerOrdersPage from "@/pages/customer-orders";
+import VerifyEmail from "@/pages/verify-email";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({

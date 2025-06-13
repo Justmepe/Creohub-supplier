@@ -26,7 +26,7 @@ import { generateVerificationCode, sendVerificationEmail } from "./services/emai
 import { createUserSession, validateSession, invalidateSession, cleanupExpiredSessions } from "./services/session";
 import { db } from "./db";
 import { emailVerifications, users } from "@shared/schema";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, isNull } from "drizzle-orm";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
@@ -251,7 +251,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add route to check authentication status
+  // Email verification routes
+  app.post("/api/auth/verify-email", async (req: Request, res: Response) => {
+    try {
+      const { userId, code } = req.body;
+      
+      if (!userId || !code) {
+        return res.status(400).json({ message: "User ID and verification code are required" });
+      }
+
+      // Find valid verification code
+      const [verification] = await db
+        .select()
+        .from(emailVerifications)
+        .where(
+          and(
+            eq(emailVerifications.userId, userId),
+            eq(emailVerifications.code, code),
+            gt(emailVerifications.expiresAt, new Date()),
+            isNull(emailVerifications.usedAt)
+          )
+        );
+
+      if (!verification) {
+        return res.status(400).json({ message: "Invalid or expired verification code" });
+      }
+
+      // Mark verification as used
+      await db
+        .update(emailVerifications)
+        .set({ usedAt: new Date() })
+        .where(eq(emailVerifications.id, verification.id));
+
+      // Update user as verified
+      await db
+        .update(users)
+        .set({ isEmailVerified: true })
+        .where(eq(users.id, userId));
+
+      res.json({ message: "Email verified successfully. You can now log in." });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/resend-verification", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.isEmailVerified) {
+        return res.status(400).json({ message: "Email is already verified" });
+      }
+
+      // Generate new verification code
+      const verificationCode = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      
+      await db.insert(emailVerifications).values({
+        userId: user.id,
+        email: user.email,
+        code: verificationCode,
+        type: 'registration',
+        expiresAt
+      });
+      
+      await sendVerificationEmail(user.email, verificationCode, 'registration');
+      
+      res.json({ message: "Verification code sent to your email" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Add route to check authentication status with session validation
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers.authorization;
@@ -260,30 +341,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const token = authHeader.substring(7);
-      const userId = parseInt(Buffer.from(token, 'base64').toString());
       
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid token" });
+      // Try session-based authentication first
+      const userId = await validateSession(token);
+      if (userId) {
+        const user = await storage.getUser(userId);
+        if (user) {
+          return res.json({ user: { ...user, password: undefined } });
+        }
       }
 
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
+      // Fallback to old token format for existing users
+      try {
+        const fallbackUserId = parseInt(Buffer.from(token, 'base64').toString());
+        if (fallbackUserId) {
+          const user = await storage.getUser(fallbackUserId);
+          if (user) {
+            return res.json({ user: { ...user, password: undefined } });
+          }
+        }
+      } catch (e) {
+        // Ignore fallback errors
       }
 
-      res.json({ user: { ...user, password: undefined } });
+      res.status(401).json({ message: "Invalid or expired session" });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
 
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Failed to logout" });
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        await invalidateSession(token);
       }
-      res.json({ message: "Logged out successfully" });
-    });
+      
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to logout" });
+        }
+        res.json({ message: "Logged out successfully" });
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
   });
 
   // User profile routes

@@ -232,6 +232,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   isAdmin: true,
   role: true,
   isCreator: true,
+  isEmailVerified: true,
 });
 
 export const insertCreatorSchema = createInsertSchema(creators).pick({
