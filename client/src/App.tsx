@@ -60,6 +60,7 @@ function App() {
               <Route path="/settings" component={Settings} />
               <Route path="/pricing" component={Pricing} />
               <Route path="/checkout/:productId" component={CheckoutPage} />
+              <Route path="/checkout" component={CheckoutPage} />
               <Route path="/storefront/:handle" component={Storefront} />
               <Route path="/profile" component={Profile} />
               <Route path="/creator/:handle" component={CreatorProfile} />

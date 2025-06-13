@@ -80,21 +80,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Creator not found" });
       }
 
-      // Update creator's plan
-      const subscriptionEndsAt = new Date();
-      subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1); // 1 month subscription
+      // For free plan, update immediately
+      if (planId === 'free') {
+        const updatedCreator = await storage.updateCreator(creatorId, {
+          planType: planId,
+          subscriptionStatus: 'trial',
+          subscriptionEndsAt: null,
+        });
 
-      const updatedCreator = await storage.updateCreator(creatorId, {
-        planType: planId,
-        subscriptionStatus: planId === 'free' ? 'trial' : 'active',
-        subscriptionEndsAt: planId === 'free' ? null : subscriptionEndsAt,
+        res.json({ 
+          success: true, 
+          creator: updatedCreator,
+          plan: plan
+        });
+        return;
+      }
+
+      // For paid plans, initiate payment process
+      // Create a subscription order that needs payment
+      const subscriptionOrder = await storage.createOrder({
+        creatorId: creatorId,
+        customerEmail: creator.email || `creator${creatorId}@creohub.com`,
+        customerName: creator.storeName || creator.storeHandle,
+        customerPhone: creator.phone || '',
+        totalAmount: plan.price.toString(),
+        currency: plan.currency,
+        paymentMethod: 'subscription',
+        items: JSON.stringify([{
+          name: `${plan.name} Plan Subscription`,
+          price: plan.price,
+          quantity: 1,
+          type: 'subscription'
+        }]),
+        metadata: JSON.stringify({
+          subscriptionPlanId: planId,
+          subscriptionType: 'monthly'
+        })
       });
 
-      res.json({ 
-        success: true, 
-        creator: updatedCreator,
-        plan: plan
+      // Return payment URL for frontend to redirect
+      res.json({
+        success: false,
+        requiresPayment: true,
+        orderId: subscriptionOrder.id,
+        amount: plan.price,
+        currency: plan.currency,
+        planName: plan.name,
+        message: "Payment required to upgrade plan"
       });
+
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -1596,6 +1630,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactionId: `ch_${Date.now()}`,
         message: "Payment processed successfully",
       });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Subscription payment webhook - processes plan upgrades after successful payment
+  app.post("/api/subscription/payment-webhook", async (req: Request, res: Response) => {
+    try {
+      const { orderId, status, transactionId } = req.body;
+      
+      if (status !== 'completed' && status !== 'COMPLETED') {
+        return res.json({ message: "Payment not completed" });
+      }
+
+      // Get the order details
+      const order = await storage.getOrder(parseInt(orderId));
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Check if this is a subscription order
+      let metadata = null;
+      try {
+        const items = JSON.parse(order.items as string);
+        if (Array.isArray(items) && items[0]?.type === 'subscription') {
+          metadata = items[0];
+        } else {
+          return res.json({ message: "Not a subscription order" });
+        }
+      } catch (e) {
+        return res.json({ message: "Invalid order metadata" });
+      }
+
+      // Extract subscription plan details
+      const planName = metadata.name;
+      let planId = 'starter'; // Default
+      if (planName?.includes('Pro')) planId = 'pro';
+      else if (planName?.includes('Starter')) planId = 'starter';
+      
+      const plan = getPlanById(planId);
+      if (!plan) {
+        return res.status(400).json({ message: "Invalid plan ID" });
+      }
+
+      // Update the creator's subscription plan
+      const subscriptionEndsAt = new Date();
+      subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1); // 1 month subscription
+
+      const updatedCreator = await storage.updateCreator(order.creatorId, {
+        planType: planId,
+        subscriptionStatus: 'active',
+        subscriptionEndsAt: subscriptionEndsAt,
+      });
+
+      // Update order status
+      await storage.updateOrder(order.id, {
+        status: 'completed',
+        paymentStatus: 'paid'
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Subscription activated successfully",
+        creator: updatedCreator,
+        plan: plan
+      });
+
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

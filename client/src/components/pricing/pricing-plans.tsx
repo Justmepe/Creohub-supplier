@@ -36,14 +36,25 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
       });
       return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "Plan Updated",
-        description: "Your subscription has been updated successfully.",
-      });
-      // Invalidate and refetch creator data to update UI
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/creators'] });
+    onSuccess: (data) => {
+      if (data.requiresPayment) {
+        // Redirect to payment page for paid plans
+        toast({
+          title: "Payment Required",
+          description: `Please complete payment to activate your ${data.planName} plan.`,
+        });
+        // Redirect to checkout page with order details
+        window.location.href = `/checkout?orderId=${data.orderId}&amount=${data.amount}&currency=${data.currency}&planName=${encodeURIComponent(data.planName)}`;
+      } else {
+        // Free plan upgrade completed
+        toast({
+          title: "Plan Updated",
+          description: "Your subscription has been updated successfully.",
+        });
+        // Invalidate and refetch creator data to update UI
+        queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/creators'] });
+      }
     },
     onError: (error: any) => {
       toast({
