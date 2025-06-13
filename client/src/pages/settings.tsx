@@ -366,14 +366,14 @@ export default function Settings() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <ImageUpload
-                    currentImageUrl={creator?.storeLogo}
+                    currentImageUrl={creator?.storeLogo || undefined}
                     onUpload={uploadLogo}
                     uploading={logoUploading}
                     type="logo"
                     maxSizeMB={2}
                   />
                   <ImageUpload
-                    currentImageUrl={creator?.storeBanner}
+                    currentImageUrl={creator?.storeBanner || undefined}
                     onUpload={uploadBanner}
                     uploading={bannerUploading}
                     type="banner"

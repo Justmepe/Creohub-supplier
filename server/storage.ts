@@ -286,6 +286,8 @@ export class MemStorage implements IStorage {
       ...insertCreator, 
       id,
       storeDescription: insertCreator.storeDescription || null,
+      storeLogo: null,
+      storeBanner: null,
       storeTheme: insertCreator.storeTheme || "minimal",
       storeColors: insertCreator.storeColors || {},
       customDomain: insertCreator.customDomain || null,
