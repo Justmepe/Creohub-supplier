@@ -126,6 +126,57 @@ export const colorThemes = pgTable("color_themes", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const creatorEarnings = pgTable("creator_earnings", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  totalEarnings: decimal("total_earnings", { precision: 12, scale: 2 }).default("0.00"),
+  availableBalance: decimal("available_balance", { precision: 12, scale: 2 }).default("0.00"),
+  pendingBalance: decimal("pending_balance", { precision: 12, scale: 2 }).default("0.00"),
+  totalWithdrawn: decimal("total_withdrawn", { precision: 12, scale: 2 }).default("0.00"),
+  currency: text("currency").default("KES"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
+export const payoutMethods = pgTable("payout_methods", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  type: text("type").notNull(), // mpesa, bank_transfer, paypal, stripe
+  accountDetails: jsonb("account_details").notNull(), // stores encrypted account info
+  accountName: text("account_name").notNull(),
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const withdrawalRequests = pgTable("withdrawal_requests", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  payoutMethodId: integer("payout_method_id").references(() => payoutMethods.id).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").default("KES"),
+  status: text("status").default("pending"), // pending, processing, completed, failed, cancelled
+  processingFee: decimal("processing_fee", { precision: 8, scale: 2 }).default("0.00"),
+  netAmount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(),
+  transactionId: text("transaction_id"),
+  notes: text("notes"),
+  processedAt: timestamp("processed_at"),
+  failureReason: text("failure_reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const earningTransactions = pgTable("earning_transactions", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  orderId: integer("order_id").references(() => orders.id),
+  commissionId: integer("commission_id").references(() => commissions.id),
+  type: text("type").notNull(), // sale, commission, withdrawal, fee, refund
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").default("KES"),
+  description: text("description").notNull(),
+  status: text("status").default("completed"), // pending, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -199,6 +250,33 @@ export const insertCommissionSchema = createInsertSchema(commissions).pick({
   commissionRate: true,
 });
 
+export const insertPayoutMethodSchema = createInsertSchema(payoutMethods).pick({
+  creatorId: true,
+  type: true,
+  accountDetails: true,
+  accountName: true,
+  isDefault: true,
+});
+
+export const insertWithdrawalRequestSchema = createInsertSchema(withdrawalRequests).pick({
+  creatorId: true,
+  payoutMethodId: true,
+  amount: true,
+  currency: true,
+  netAmount: true,
+  notes: true,
+});
+
+export const insertEarningTransactionSchema = createInsertSchema(earningTransactions).pick({
+  creatorId: true,
+  orderId: true,
+  commissionId: true,
+  type: true,
+  amount: true,
+  currency: true,
+  description: true,
+});
+
 export const insertProductSettingsSchema = createInsertSchema(productSettings).pick({
   productId: true,
   allowAffiliates: true,
@@ -242,3 +320,13 @@ export type InsertProductSettings = z.infer<typeof insertProductSettingsSchema>;
 
 export type ColorTheme = typeof colorThemes.$inferSelect;
 export type InsertColorTheme = z.infer<typeof insertColorThemeSchema>;
+
+export type CreatorEarnings = typeof creatorEarnings.$inferSelect;
+export type PayoutMethod = typeof payoutMethods.$inferSelect;
+export type InsertPayoutMethod = z.infer<typeof insertPayoutMethodSchema>;
+
+export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect;
+export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSchema>;
+
+export type EarningTransaction = typeof earningTransactions.$inferSelect;
+export type InsertEarningTransaction = z.infer<typeof insertEarningTransactionSchema>;

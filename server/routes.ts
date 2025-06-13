@@ -17,7 +17,10 @@ import {
   insertAffiliateLinkSchema,
   insertCommissionSchema,
   insertProductSettingsSchema,
-  insertColorThemeSchema
+  insertColorThemeSchema,
+  insertPayoutMethodSchema,
+  insertWithdrawalRequestSchema,
+  insertEarningTransactionSchema
 } from "@shared/schema";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
@@ -1299,6 +1302,202 @@ export async function registerRoutes(app: Express): Promise<Server> {
           password: "admin123"
         }
       });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Withdrawal and Earnings Management Routes
+  
+  // Get creator earnings overview
+  app.get("/api/creators/:id/earnings", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const earnings = await storage.getCreatorEarnings(creatorId);
+      const transactions = await storage.getEarningTransactions(creatorId);
+      
+      res.json({
+        earnings: earnings || {
+          totalEarnings: "0.00",
+          availableBalance: "0.00",
+          pendingBalance: "0.00",
+          totalWithdrawn: "0.00",
+          currency: "KES"
+        },
+        recentTransactions: transactions.slice(0, 10)
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get creator payout methods
+  app.get("/api/creators/:id/payout-methods", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const payoutMethods = await storage.getPayoutMethods(creatorId);
+      res.json(payoutMethods);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Add new payout method
+  app.post("/api/creators/:id/payout-methods", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const validatedData = insertPayoutMethodSchema.parse({
+        ...req.body,
+        creatorId
+      });
+      
+      // If this is set as default, unset other defaults
+      if (validatedData.isDefault) {
+        await storage.unsetDefaultPayoutMethods(creatorId);
+      }
+      
+      const payoutMethod = await storage.createPayoutMethod(validatedData);
+      res.json(payoutMethod);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Delete payout method
+  app.delete("/api/payout-methods/:id", async (req: Request, res: Response) => {
+    try {
+      const payoutMethodId = parseInt(req.params.id);
+      await storage.deletePayoutMethod(payoutMethodId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get withdrawal requests for creator
+  app.get("/api/creators/:id/withdrawals", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const withdrawals = await storage.getWithdrawalRequests(creatorId);
+      res.json(withdrawals);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Create withdrawal request
+  app.post("/api/creators/:id/withdrawals", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const { amount, payoutMethodId, notes } = req.body;
+      
+      // Check available balance
+      const earnings = await storage.getCreatorEarnings(creatorId);
+      if (!earnings || parseFloat(earnings.availableBalance) < parseFloat(amount)) {
+        return res.status(400).json({ message: "Insufficient available balance" });
+      }
+
+      // Calculate processing fee (2% for M-Pesa, 3% for others)
+      const payoutMethod = await storage.getPayoutMethod(payoutMethodId);
+      const feeRate = payoutMethod?.type === 'mpesa' ? 0.02 : 0.03;
+      const processingFee = parseFloat(amount) * feeRate;
+      const netAmount = parseFloat(amount) - processingFee;
+
+      const withdrawalData = {
+        creatorId,
+        payoutMethodId,
+        amount: amount.toString(),
+        currency: earnings?.currency || "KES",
+        processingFee: processingFee.toString(),
+        netAmount: netAmount.toString(),
+        notes: notes || ""
+      };
+
+      const withdrawal = await storage.createWithdrawalRequest(withdrawalData);
+      
+      // Update available balance (move to pending)
+      await storage.updateCreatorBalance(creatorId, {
+        availableBalance: (parseFloat(earnings.availableBalance) - parseFloat(amount)).toString(),
+        pendingBalance: (parseFloat(earnings.pendingBalance || "0") + parseFloat(amount)).toString()
+      });
+
+      res.json(withdrawal);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Cancel withdrawal request (only pending ones)
+  app.put("/api/withdrawals/:id/cancel", async (req: Request, res: Response) => {
+    try {
+      const withdrawalId = parseInt(req.params.id);
+      const withdrawal = await storage.getWithdrawalRequest(withdrawalId);
+      
+      if (!withdrawal || withdrawal.status !== 'pending') {
+        return res.status(400).json({ message: "Cannot cancel this withdrawal" });
+      }
+
+      await storage.updateWithdrawalStatus(withdrawalId, 'cancelled', 'Cancelled by user');
+      
+      // Restore balance
+      const earnings = await storage.getCreatorEarnings(withdrawal.creatorId);
+      if (earnings) {
+        await storage.updateCreatorBalance(withdrawal.creatorId, {
+          availableBalance: (parseFloat(earnings.availableBalance) + parseFloat(withdrawal.amount)).toString(),
+          pendingBalance: (parseFloat(earnings.pendingBalance) - parseFloat(withdrawal.amount)).toString()
+        });
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: Process withdrawal request
+  app.put("/api/admin/withdrawals/:id/process", async (req: Request, res: Response) => {
+    try {
+      const withdrawalId = parseInt(req.params.id);
+      const { status, transactionId, notes } = req.body;
+      
+      const withdrawal = await storage.getWithdrawalRequest(withdrawalId);
+      if (!withdrawal) {
+        return res.status(404).json({ message: "Withdrawal not found" });
+      }
+
+      await storage.updateWithdrawalStatus(withdrawalId, status, notes, transactionId);
+      
+      // If completed, update total withdrawn and balances
+      if (status === 'completed') {
+        const earnings = await storage.getCreatorEarnings(withdrawal.creatorId);
+        if (earnings) {
+          await storage.updateCreatorBalance(withdrawal.creatorId, {
+            pendingBalance: (parseFloat(earnings.pendingBalance) - parseFloat(withdrawal.amount)).toString(),
+            totalWithdrawn: (parseFloat(earnings.totalWithdrawn) + parseFloat(withdrawal.netAmount)).toString()
+          });
+        }
+
+        // Record transaction
+        await storage.createEarningTransaction({
+          creatorId: withdrawal.creatorId,
+          type: 'withdrawal',
+          amount: `-${withdrawal.netAmount}`,
+          currency: withdrawal.currency,
+          description: `Withdrawal processed via ${withdrawal.payoutMethodId}`,
+          status: 'completed'
+        });
+      } else if (status === 'failed') {
+        // Restore available balance
+        const earnings = await storage.getCreatorEarnings(withdrawal.creatorId);
+        if (earnings) {
+          await storage.updateCreatorBalance(withdrawal.creatorId, {
+            availableBalance: (parseFloat(earnings.availableBalance) + parseFloat(withdrawal.amount)).toString(),
+            pendingBalance: (parseFloat(earnings.pendingBalance) - parseFloat(withdrawal.amount)).toString()
+          });
+        }
+      }
+
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
