@@ -12,7 +12,32 @@ export const users = pgTable("users", {
   avatar: text("avatar"),
   isCreator: boolean("is_creator").default(false),
   isAdmin: boolean("is_admin").default(false),
+  isEmailVerified: boolean("is_email_verified").default(false),
   role: text("role").default("user"), // user, creator, admin
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const emailVerifications = pgTable("email_verifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  type: text("type").notNull(), // registration, password_reset, email_change
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  sessionToken: text("session_token").notNull().unique(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true),
+  expiresAt: timestamp("expires_at").notNull(),
+  lastUsedAt: timestamp("last_used_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -364,3 +389,13 @@ export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSche
 
 export type EarningTransaction = typeof earningTransactions.$inferSelect;
 export type InsertEarningTransaction = z.infer<typeof insertEarningTransactionSchema>;
+
+// Email verification schemas
+export const insertEmailVerificationSchema = createInsertSchema(emailVerifications);
+export type EmailVerification = typeof emailVerifications.$inferSelect;
+export type InsertEmailVerification = z.infer<typeof insertEmailVerificationSchema>;
+
+// User session schemas
+export const insertUserSessionSchema = createInsertSchema(userSessions);
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
