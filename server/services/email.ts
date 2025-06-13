@@ -1,12 +1,31 @@
 import { MailService } from '@sendgrid/mail';
+import * as nodemailer from 'nodemailer';
 
-if (!process.env.SENDGRID_API_KEY) {
-  console.warn("SENDGRID_API_KEY not found. Email functionality will be disabled.");
-}
+// Initialize email services
+let mailService: MailService | null = null;
+let gmailTransporter: any = null;
+let emailProvider: 'sendgrid' | 'gmail' | null = null;
 
-const mailService = new MailService();
+// Configure SendGrid
 if (process.env.SENDGRID_API_KEY) {
+  mailService = new MailService();
   mailService.setApiKey(process.env.SENDGRID_API_KEY);
+  emailProvider = 'sendgrid';
+  console.log('Email configured with SendGrid');
+}
+// Configure Gmail SMTP as fallback
+else if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  gmailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD
+    }
+  });
+  emailProvider = 'gmail';
+  console.log('Email configured with Gmail SMTP');
+} else {
+  console.warn("No email service configured. Set SENDGRID_API_KEY or GMAIL_USER/GMAIL_APP_PASSWORD.");
 }
 
 interface EmailParams {
@@ -18,22 +37,33 @@ interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
+  // No email service configured - log to console for development
+  if (!emailProvider) {
     console.log("Email would be sent:", params);
-    return true; // Return true in development when no API key is set
+    return true;
   }
 
   try {
-    await mailService.send({
-      to: params.to,
-      from: params.from,
-      subject: params.subject,
-      text: params.text || '',
-      html: params.html || params.text || '',
-    });
+    if (emailProvider === 'sendgrid' && mailService) {
+      await mailService.send({
+        to: params.to,
+        from: params.from,
+        subject: params.subject,
+        text: params.text || '',
+        html: params.html || params.text || '',
+      });
+    } else if (emailProvider === 'gmail' && gmailTransporter) {
+      await gmailTransporter.sendMail({
+        from: params.from,
+        to: params.to,
+        subject: params.subject,
+        text: params.text || '',
+        html: params.html || params.text || '',
+      });
+    }
     return true;
   } catch (error) {
-    console.error('SendGrid email error:', error);
+    console.error(`${emailProvider} email error:`, error);
     return false;
   }
 }
