@@ -47,17 +47,27 @@ export default function Checkout() {
   // Parse URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    const subscriptionId = urlParams.get('subscriptionId');
     const orderId = urlParams.get('orderId');
     const amount = urlParams.get('amount');
     const currency = urlParams.get('currency');
     const planName = urlParams.get('planName');
 
-    if (orderId && amount && currency && planName) {
+    if (subscriptionId && amount && currency && planName) {
+      setCheckoutData({
+        subscriptionId,
+        amount,
+        currency,
+        planName: decodeURIComponent(planName),
+        type: 'subscription'
+      });
+    } else if (orderId && amount && currency && planName) {
       setCheckoutData({
         orderId,
         amount,
         currency,
-        planName: decodeURIComponent(planName)
+        planName: decodeURIComponent(planName),
+        type: 'product'
       });
     } else {
       toast({
