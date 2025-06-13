@@ -471,9 +471,13 @@ export default function Home() {
                     <span className="text-gray-500">10% transaction fee</span>
                   </li>
                 </ul>
-                <Button variant="outline" className="w-full">
-                  Start Free Trial
-                </Button>
+                <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      Start Free Trial
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
               </CardContent>
             </Card>
 
@@ -520,9 +524,11 @@ export default function Home() {
                     <span className="text-gray-500">5% transaction fee</span>
                   </li>
                 </ul>
-                <Button className="w-full">
-                  Upgrade to Starter
-                </Button>
+                <Link href="/pricing">
+                  <Button className="w-full">
+                    Upgrade to Starter
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -563,9 +569,11 @@ export default function Home() {
                     <span className="text-gray-700 font-semibold">0% transaction fees</span>
                   </li>
                 </ul>
-                <Button variant="outline" className="w-full border-purple-200 text-purple-600 hover:bg-purple-50">
-                  Upgrade to Pro
-                </Button>
+                <Link href="/pricing">
+                  <Button variant="outline" className="w-full border-purple-200 text-purple-600 hover:bg-purple-50">
+                    Upgrade to Pro
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
