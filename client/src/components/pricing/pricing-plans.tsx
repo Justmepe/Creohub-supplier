@@ -27,7 +27,13 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
 
   const upgradeMutation = useMutation({
     mutationFn: async (planId: string) => {
-      const response = await apiRequest('POST', '/api/subscription/upgrade', { planId });
+      if (!creator?.id) {
+        throw new Error('Creator account not found');
+      }
+      const response = await apiRequest('POST', '/api/subscription/upgrade', { 
+        planId, 
+        creatorId: creator.id 
+      });
       return response.json();
     },
     onSuccess: () => {
