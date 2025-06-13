@@ -28,6 +28,7 @@ import {
   Upload
 } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import PricingPlans from "@/components/pricing/pricing-plans";
 import { Link } from "wouter";
 
 const storeSettingsSchema = z.object({
@@ -532,97 +533,15 @@ export default function Settings() {
           {/* Plan Settings */}
           <TabsContent value="plan">
             <div className="space-y-6">
-              {/* Current Plan */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Current Plan</CardTitle>
+                  <CardTitle>Subscription Plans</CardTitle>
                   <CardDescription>
-                    Manage your subscription and billing
+                    Choose the plan that works best for you
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-semibold text-lg capitalize">
-                        {creator.planType} Plan
-                      </h3>
-                      <p className="text-gray-600">
-                        {creator.planType === 'pro' 
-                          ? "KES 1,500/month - All features included"
-                          : "Free forever - Limited features"
-                        }
-                      </p>
-                    </div>
-                    {creator.planType === 'free' && (
-                      <Button>
-                        Upgrade to Pro
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Plan Features */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Plan Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Free Plan Features */}
-                    <div>
-                      <h4 className="font-semibold mb-3">Free Plan</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Basic storefront
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Up to 10 products
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Payment processing
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          5-10% transaction fee
-                        </li>
-                      </ul>
-                    </div>
-
-                    {/* Pro Plan Features */}
-                    <div>
-                      <h4 className="font-semibold mb-3">Pro Plan</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Unlimited products
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Custom branding
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Advanced analytics
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          0% transaction fees
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Email marketing tools
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Custom domain support
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
+                  <PricingPlans showCurrentPlan={true} />
                 </CardContent>
               </Card>
             </div>

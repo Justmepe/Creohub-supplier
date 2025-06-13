@@ -6,7 +6,7 @@ import { Check, Crown, Zap } from 'lucide-react';
 import { PRICING_PLANS, type PricingPlan } from '@/../../shared/pricing';
 import { detectCurrencyFromBrowser, formatCurrency, convertCurrency } from '@/../../shared/currency';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 
@@ -41,6 +41,9 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
         title: "Plan Updated",
         description: "Your subscription has been updated successfully.",
       });
+      // Invalidate and refetch creator data to update UI
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/creators'] });
     },
     onError: (error: any) => {
       toast({
@@ -64,10 +67,6 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
   };
 
   const handlePlanSelect = (planId: string) => {
-    console.log('Plan selected:', planId);
-    console.log('Creator:', creator);
-    console.log('onPlanSelect callback:', onPlanSelect);
-    
     if (onPlanSelect) {
       onPlanSelect(planId);
     } else {
@@ -82,7 +81,6 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
         window.location.href = '/';
         return;
       }
-      console.log('Triggering upgrade mutation for plan:', planId);
       upgradeMutation.mutate(planId);
     }
   };
