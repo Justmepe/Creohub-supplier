@@ -33,6 +33,7 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
   const [detectedCurrency, setDetectedCurrency] = useState('USD');
+  const [selectedPlan, setSelectedPlan] = useState('free');
 
   useEffect(() => {
     const currency = detectCurrencyFromBrowser();
@@ -42,6 +43,11 @@ export default function Home() {
   const formatPrice = (usdPrice: number) => {
     const convertedPrice = convertCurrency(usdPrice, 'USD', detectedCurrency);
     return formatCurrency(convertedPrice, detectedCurrency);
+  };
+
+  const handlePlanSignup = (planType: string) => {
+    setSelectedPlan(planType);
+    setShowOnboarding(true);
   };
 
   const features = [
@@ -471,13 +477,9 @@ export default function Home() {
                     <span className="text-gray-500">10% transaction fee</span>
                   </li>
                 </ul>
-                <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      Start Free Trial
-                    </Button>
-                  </DialogTrigger>
-                </Dialog>
+                <Button variant="outline" className="w-full" onClick={() => handlePlanSignup('free')}>
+                  Start Free Trial
+                </Button>
               </CardContent>
             </Card>
 
@@ -524,11 +526,9 @@ export default function Home() {
                     <span className="text-gray-500">5% transaction fee</span>
                   </li>
                 </ul>
-                <Link href="/pricing">
-                  <Button className="w-full">
-                    Upgrade to Starter
-                  </Button>
-                </Link>
+                <Button className="w-full" onClick={() => handlePlanSignup('starter')}>
+                  Upgrade to Starter
+                </Button>
               </CardContent>
             </Card>
 

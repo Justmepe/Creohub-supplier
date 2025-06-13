@@ -35,9 +35,10 @@ type CreatorFormData = z.infer<typeof creatorSchema>;
 
 interface CreatorOnboardingProps {
   onComplete: () => void;
+  selectedPlan?: string; // 'free', 'starter', or 'pro'
 }
 
-export default function CreatorOnboarding({ onComplete }: CreatorOnboardingProps) {
+export default function CreatorOnboarding({ onComplete, selectedPlan = 'free' }: CreatorOnboardingProps) {
   const [step, setStep] = useState(1);
   const [userData, setUserData] = useState<UserFormData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +101,12 @@ export default function CreatorOnboarding({ onComplete }: CreatorOnboardingProps
 
       setTimeout(() => {
         onComplete();
-        setLocation("/dashboard");
+        if (selectedPlan === 'free') {
+          setLocation("/dashboard");
+        } else {
+          // For paid plans, redirect to pricing page to complete upgrade
+          setLocation("/pricing");
+        }
       }, 2000);
 
     } catch (error: any) {
