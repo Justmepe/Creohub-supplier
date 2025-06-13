@@ -23,10 +23,12 @@ import {
 import Navbar from '@/components/layout/navbar';
 
 interface CheckoutData {
-  orderId: string;
+  subscriptionId?: string;
+  orderId?: string;
   amount: string;
   currency: string;
   planName: string;
+  type: 'subscription' | 'product';
 }
 
 export default function Checkout() {

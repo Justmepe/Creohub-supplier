@@ -155,6 +155,7 @@ export class MemStorage implements IStorage {
   private currentCreatorId: number;
   private currentProductId: number;
   private currentOrderId: number;
+  private currentSubscriptionId: number;
   private currentAnalyticsId: number;
   private currentAffiliateLinkId: number;
   private currentCommissionId: number;
@@ -166,6 +167,7 @@ export class MemStorage implements IStorage {
     this.creators = new Map();
     this.products = new Map();
     this.orders = new Map();
+    this.subscriptions = new Map();
     this.analytics = new Map();
     this.affiliateLinks = new Map();
     this.commissions = new Map();
@@ -179,6 +181,7 @@ export class MemStorage implements IStorage {
     this.currentCreatorId = 1;
     this.currentProductId = 1;
     this.currentOrderId = 1;
+    this.currentSubscriptionId = 1;
     this.currentAnalyticsId = 1;
     this.currentAffiliateLinkId = 1;
     this.currentCommissionId = 1;
@@ -420,6 +423,41 @@ export class MemStorage implements IStorage {
     const updatedOrder = { ...order, ...updates };
     this.orders.set(id, updatedOrder);
     return updatedOrder;
+  }
+
+  // Subscriptions
+  async getSubscription(id: number): Promise<Subscription | undefined> {
+    return this.subscriptions.get(id);
+  }
+
+  async getSubscriptionsByCreator(creatorId: number): Promise<Subscription[]> {
+    return Array.from(this.subscriptions.values()).filter(subscription => subscription.creatorId === creatorId);
+  }
+
+  async createSubscription(insertSubscription: InsertSubscription): Promise<Subscription> {
+    const id = this.currentSubscriptionId++;
+    const subscription: Subscription = { 
+      ...insertSubscription, 
+      id,
+      createdAt: new Date(),
+      paymentStatus: insertSubscription.paymentStatus || "pending",
+      subscriptionStatus: insertSubscription.subscriptionStatus || "active",
+      startsAt: insertSubscription.startsAt || new Date(),
+      endsAt: insertSubscription.endsAt || null,
+      paymentReference: insertSubscription.paymentReference || null,
+      metadata: insertSubscription.metadata || {}
+    };
+    this.subscriptions.set(id, subscription);
+    return subscription;
+  }
+
+  async updateSubscription(id: number, updates: Partial<Subscription>): Promise<Subscription | undefined> {
+    const subscription = this.subscriptions.get(id);
+    if (!subscription) return undefined;
+    
+    const updatedSubscription = { ...subscription, ...updates };
+    this.subscriptions.set(id, updatedSubscription);
+    return updatedSubscription;
   }
 
   // Analytics

@@ -97,32 +97,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // For paid plans, initiate payment process
-      // Create a subscription order that needs payment
-      const subscriptionOrder = await storage.createOrder({
+      // Create a subscription record that needs payment
+      const subscription = await storage.createSubscription({
         creatorId: creatorId,
-        customerEmail: creator.email || `creator${creatorId}@creohub.com`,
-        customerName: creator.storeName || creator.storeHandle,
-        customerPhone: creator.phone || '',
-        totalAmount: plan.price.toString(),
+        planType: planId,
+        billingCycle: 'monthly',
+        amount: plan.price.toString(),
         currency: plan.currency,
-        paymentMethod: 'subscription',
-        items: JSON.stringify([{
-          name: `${plan.name} Plan Subscription`,
-          price: plan.price,
-          quantity: 1,
-          type: 'subscription'
-        }]),
-        metadata: JSON.stringify({
-          subscriptionPlanId: planId,
+        paymentMethod: 'pesapal',
+        paymentStatus: 'pending',
+        subscriptionStatus: 'pending',
+        metadata: {
+          planName: plan.name,
           subscriptionType: 'monthly'
-        })
+        }
       });
 
       // Return payment URL for frontend to redirect
       res.json({
         success: false,
         requiresPayment: true,
-        orderId: subscriptionOrder.id,
+        subscriptionId: subscription.id,
         amount: plan.price,
         currency: plan.currency,
         planName: plan.name,
