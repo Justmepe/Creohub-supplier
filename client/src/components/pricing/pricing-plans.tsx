@@ -64,6 +64,10 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
   };
 
   const handlePlanSelect = (planId: string) => {
+    console.log('Plan selected:', planId);
+    console.log('Creator:', creator);
+    console.log('onPlanSelect callback:', onPlanSelect);
+    
     if (onPlanSelect) {
       onPlanSelect(planId);
     } else {
@@ -78,6 +82,7 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
         window.location.href = '/';
         return;
       }
+      console.log('Triggering upgrade mutation for plan:', planId);
       upgradeMutation.mutate(planId);
     }
   };
