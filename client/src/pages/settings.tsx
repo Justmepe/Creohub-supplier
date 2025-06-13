@@ -24,8 +24,10 @@ import {
   Shield,
   ExternalLink,
   Save,
-  Eye
+  Eye,
+  Upload
 } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 import { Link } from "wouter";
 
 const storeSettingsSchema = z.object({
@@ -110,6 +112,51 @@ export default function Settings() {
       });
     },
   });
+
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
+
+  const uploadLogo = async (file: File) => {
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      
+      const response = await fetch(`/api/creators/${creator?.id}/upload-logo`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) throw new Error('Upload failed');
+      
+      const result = await response.json();
+      setCreator(result.creator);
+      queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator?.id}`] });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const uploadBanner = async (file: File) => {
+    setBannerUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('banner', file);
+      
+      const response = await fetch(`/api/creators/${creator?.id}/upload-banner`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) throw new Error('Upload failed');
+      
+      const result = await response.json();
+      setCreator(result.creator);
+      queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator?.id}`] });
+    } finally {
+      setBannerUploading(false);
+    }
+  };
 
   if (!user || !creator) {
     return (
@@ -305,6 +352,34 @@ export default function Settings() {
                     </Button>
                   </form>
                 </Form>
+              </CardContent>
+            </Card>
+
+            {/* Store Branding */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Store Branding</CardTitle>
+                <CardDescription>
+                  Upload your store logo and banner to create a professional brand presence
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ImageUpload
+                    currentImageUrl={creator?.storeLogo}
+                    onUpload={uploadLogo}
+                    uploading={logoUploading}
+                    type="logo"
+                    maxSizeMB={2}
+                  />
+                  <ImageUpload
+                    currentImageUrl={creator?.storeBanner}
+                    onUpload={uploadBanner}
+                    uploading={bannerUploading}
+                    type="banner"
+                    maxSizeMB={5}
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

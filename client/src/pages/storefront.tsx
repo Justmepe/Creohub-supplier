@@ -16,7 +16,8 @@ import {
   ShoppingCart,
   ExternalLink,
   Eye,
-  Heart
+  Heart,
+  ArrowLeft
 } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
@@ -106,6 +107,18 @@ export default function Storefront() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Back Button */}
+      <div className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <Button variant="ghost" asChild>
+            <Link href="/dashboard">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Link>
+          </Button>
+        </div>
+      </div>
+
       {/* Store Header */}
       <div className={`py-16 ${getThemeClasses(creator.storeTheme)}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
