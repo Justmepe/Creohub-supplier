@@ -35,7 +35,7 @@ export default function Pricing() {
     },
     {
       icon: <CheckCircle className="w-6 h-6" />,
-      title: "30-Day Free Trial",
+      title: "14-Day Free Trial",
       description: "Test all features risk-free for 14 days with up to 3 products"
     }
   ];
@@ -54,7 +54,7 @@ export default function Pricing() {
             Choose Your Plan
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Start with our free 30-day trial and scale your creator business with transparent pricing that grows with you.
+            Start with our free 14-day trial and scale your creator business with transparent pricing that grows with you.
           </p>
 
           {currencyInfo && (
@@ -137,7 +137,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  After your 30-day free trial, you'll need to choose a paid plan to continue adding new products. 
+                  After your 14-day free trial, you'll need to choose a paid plan to continue adding new products. 
                   Your existing products and storefront remain active, but you'll be prompted to upgrade for full access.
                 </p>
               </CardContent>

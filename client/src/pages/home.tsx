@@ -440,7 +440,7 @@ export default function Home() {
                 <CardTitle className="text-2xl">Free</CardTitle>
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-neutral">Free</span>
-                  <span className="text-gray-600 ml-2">30-day trial</span>
+                  <span className="text-gray-600 ml-2">14-day trial</span>
                 </div>
                 <CardDescription>Perfect for getting started</CardDescription>
               </CardHeader>
