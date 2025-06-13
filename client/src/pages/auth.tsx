@@ -61,6 +61,21 @@ export default function Auth() {
       return response.json();
     },
     onSuccess: async (data) => {
+      // Handle email verification requirement
+      if (data.requiresVerification) {
+        localStorage.setItem('pendingVerificationUserId', data.userId.toString());
+        localStorage.setItem('pendingVerificationEmail', data.email);
+        
+        toast({
+          title: "Email Verification Required",
+          description: "Please verify your email before logging in. Check your inbox for a verification code.",
+          variant: "destructive",
+        });
+        
+        setLocation(`/verify-email?userId=${data.userId}&email=${encodeURIComponent(data.email)}`);
+        return;
+      }
+
       // Store the authentication token
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
@@ -106,30 +121,16 @@ export default function Auth() {
       return response.json();
     },
     onSuccess: async (data) => {
-      setUser(data.user);
-      
-      // Try to load creator profile (in case it exists)
-      try {
-        const creatorResponse = await apiRequest("GET", `/api/creators/user/${data.user.id}`);
-        if (creatorResponse.ok) {
-          const creatorData = await creatorResponse.json();
-          setCreator(creatorData);
-        }
-      } catch (error) {
-        // Creator profile doesn't exist yet
-      }
+      // Store pending verification data
+      localStorage.setItem('pendingVerificationUserId', data.userId.toString());
+      localStorage.setItem('pendingVerificationEmail', data.email);
       
       toast({
         title: "Registration Successful",
-        description: "Welcome to Creohub!",
+        description: "Please check your email for a verification code to complete your registration.",
       });
       
-      // Redirect based on user role
-      if (data.user.isAdmin) {
-        setLocation("/admin");
-      } else {
-        setLocation("/dashboard");
-      }
+      setLocation(`/verify-email?userId=${data.userId}&email=${encodeURIComponent(data.email)}`);
     },
     onError: (error: any) => {
       toast({

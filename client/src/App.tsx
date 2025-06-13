@@ -55,6 +55,7 @@ function App() {
               <Route path="/auth" component={Auth} />
               <Route path="/login" component={Auth} />
               <Route path="/signup" component={Auth} />
+              <Route path="/verify-email" component={VerifyEmail} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/products" component={Products} />
               <Route path="/orders" component={Orders} />

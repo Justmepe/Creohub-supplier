@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import type { User, Creator } from "@shared/schema";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 
 interface AuthContextType {
   user: User | null;
