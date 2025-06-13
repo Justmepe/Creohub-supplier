@@ -22,6 +22,11 @@ import {
   insertWithdrawalRequestSchema,
   insertEarningTransactionSchema
 } from "@shared/schema";
+import { generateVerificationCode, sendVerificationEmail } from "./services/email";
+import { createUserSession, validateSession, invalidateSession, cleanupExpiredSessions } from "./services/session";
+import { db } from "./db";
+import { emailVerifications, users } from "@shared/schema";
+import { eq, and, gt } from "drizzle-orm";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
@@ -42,6 +47,9 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Cleanup expired sessions every 5 minutes
+  setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
   
   // PayPal routes
   app.get("/paypal/setup", async (req, res) => {
@@ -172,8 +180,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User already exists" });
       }
 
-      const user = await storage.createUser(userData);
-      res.json({ user: { ...user, password: undefined } });
+      const user = await storage.createUser({
+        ...userData,
+        isEmailVerified: false
+      });
+      
+      // Generate and send verification code
+      const verificationCode = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      
+      await db.insert(emailVerifications).values({
+        userId: user.id,
+        email: user.email,
+        code: verificationCode,
+        type: 'registration',
+        expiresAt
+      });
+      
+      await sendVerificationEmail(user.email, verificationCode, 'registration');
+      
+      res.json({ 
+        message: "Registration successful. Please check your email for verification code.",
+        userId: user.id,
+        email: user.email
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -195,12 +225,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Create a simple token (user ID encoded)
-      const token = Buffer.from(user.id.toString()).toString('base64');
+      // Check if email is verified
+      if (!user.isEmailVerified) {
+        return res.status(403).json({ 
+          message: "Please verify your email before logging in",
+          requiresVerification: true,
+          userId: user.id,
+          email: user.email
+        });
+      }
+
+      // Create session token
+      const sessionToken = await createUserSession(
+        user.id,
+        req.ip,
+        req.get('User-Agent')
+      );
 
       res.json({ 
         user: { ...user, password: undefined },
-        token: token
+        token: sessionToken
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message });

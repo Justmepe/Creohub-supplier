@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { db } from '../db';
 import { userSessions, users } from '@shared/schema';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, lt } from 'drizzle-orm';
 
 export const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
@@ -83,7 +83,7 @@ export async function cleanupExpiredSessions(): Promise<void> {
     .where(
       and(
         eq(userSessions.isActive, true),
-        gt(userSessions.expiresAt, new Date())
+        lt(userSessions.expiresAt, new Date())
       )
     );
 }
