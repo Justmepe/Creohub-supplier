@@ -56,50 +56,55 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0 flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
               <img 
                 src={logoPath} 
                 alt="Creohub" 
-                className="h-8 w-8"
+                className="h-8 w-8 flex-shrink-0"
               />
-              <h1 className="text-2xl font-bold text-primary cursor-pointer">Creohub</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-primary cursor-pointer whitespace-nowrap">Creohub</h1>
             </Link>
             {creator && (
-              <Badge variant="outline" className="ml-3">
+              <Badge variant="outline" className="ml-2 sm:ml-3 hidden sm:inline-flex">
                 {creator.storeName}
               </Badge>
             )}
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-2">
             {user && creator && (
               <>
-                {navigation.map((item) => (
+                {navigation.slice(0, 4).map((item) => (
                   <Link key={item.name} href={item.href}>
                     <Button
                       variant={isActive(item.href) ? "default" : "ghost"}
-                      className="flex items-center gap-2"
+                      size="sm"
+                      className="flex items-center gap-1"
                     >
                       <item.icon className="h-4 w-4" />
-                      {item.name}
+                      <span className="hidden xl:inline">{item.name}</span>
                     </Button>
                   </Link>
                 ))}
 
-                <Button variant="outline" asChild>
+                <Button variant="outline" size="sm" asChild>
                   <Link href={`/storefront/${creator.storeHandle}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Store
-                    <ExternalLink className="ml-2 h-4 w-4" />
+                    <Eye className="h-4 w-4" />
+                    <span className="hidden xl:inline ml-1">Store</span>
                   </Link>
                 </Button>
               </>
             )}
+          </div>
 
+          {/* Right side - Currency and User */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Currency Selector */}
-            <CurrencySelector />
+            <div className="hidden sm:block">
+              <CurrencySelector />
+            </div>
 
             {/* User Menu */}
             {user ? (
@@ -107,7 +112,7 @@ export default function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarImage src={user.avatar || undefined} alt={user.username} />
                       <AvatarFallback>
                         {user.fullName?.charAt(0) || user.username.charAt(0)}
                       </AvatarFallback>
@@ -157,88 +162,88 @@ export default function Navbar() {
                 </Button>
               </div>
             )}
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80">
-                <div className="flex items-center space-x-2 p-4 border-b">
-                  <img 
-                    src={logoPath} 
-                    alt="Creohub" 
-                    className="h-6 w-6"
-                  />
-                  <h2 className="text-lg font-bold text-primary">Creohub</h2>
-                </div>
-                <div className="flex flex-col space-y-4 mt-4">
-                  {user && creator && (
-                    <>
-                      <div className="flex items-center space-x-3 p-4 border-b">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={user.avatar} alt={user.username} />
-                          <AvatarFallback>
-                            {user.fullName?.charAt(0) || user.username.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{user.fullName || user.username}</p>
-                          <p className="text-sm text-gray-500">{creator.storeName}</p>
+            {/* Mobile menu button */}
+            <div className="lg:hidden">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80">
+                  <div className="flex items-center space-x-2 p-4 border-b">
+                    <img 
+                      src={logoPath} 
+                      alt="Creohub" 
+                      className="h-6 w-6"
+                    />
+                    <h2 className="text-lg font-bold text-primary">Creohub</h2>
+                  </div>
+                  <div className="flex flex-col space-y-4 mt-4">
+                    {user && creator && (
+                      <>
+                        <div className="flex items-center space-x-3 p-4 border-b">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.avatar || undefined} alt={user.username} />
+                            <AvatarFallback>
+                              {user.fullName?.charAt(0) || user.username.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{user.fullName || user.username}</p>
+                            <p className="text-sm text-gray-500">{creator.storeName}</p>
+                          </div>
                         </div>
-                      </div>
 
-                      {navigation.map((item) => (
-                        <Link key={item.name} href={item.href}>
-                          <Button
-                            variant={isActive(item.href) ? "default" : "ghost"}
+                        {navigation.map((item) => (
+                          <Link key={item.name} href={item.href}>
+                            <Button
+                              variant={isActive(item.href) ? "default" : "ghost"}
+                              className="w-full justify-start"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <item.icon className="mr-2 h-4 w-4" />
+                              {item.name}
+                            </Button>
+                          </Link>
+                        ))}
+
+                        <Button variant="outline" asChild className="w-full justify-start">
+                          <Link href={`/storefront/${creator.storeHandle}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Store
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+
+                        <div className="border-t pt-4">
+                          <Button 
+                            variant="ghost" 
                             className="w-full justify-start"
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            onClick={handleLogout}
                           >
-                            <item.icon className="mr-2 h-4 w-4" />
-                            {item.name}
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Log out
                           </Button>
-                        </Link>
-                      ))}
+                        </div>
+                      </>
+                    )}
 
-                      <Button variant="outline" asChild className="w-full justify-start">
-                        <Link href={`/storefront/${creator.storeHandle}`}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Store
-                          <ExternalLink className="ml-auto h-4 w-4" />
-                        </Link>
-                      </Button>
-
-                      <div className="border-t pt-4">
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start"
-                          onClick={handleLogout}
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Log out
+                    {!user && (
+                      <div className="space-y-2">
+                        <Button variant="ghost" asChild className="w-full">
+                          <Link href="/auth">Sign In</Link>
+                        </Button>
+                        <Button asChild className="w-full">
+                          <Link href="/auth">Get Started</Link>
                         </Button>
                       </div>
-                    </>
-                  )}
-
-                  {!user && (
-                    <div className="space-y-2">
-                      <Button variant="ghost" asChild className="w-full">
-                        <Link href="/auth">Sign In</Link>
-                      </Button>
-                      <Button asChild className="w-full">
-                        <Link href="/auth">Get Started</Link>
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
