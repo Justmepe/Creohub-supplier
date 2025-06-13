@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Globe, CreditCard, TrendingUp } from 'lucide-react';
+import { CheckCircle, Globe, CreditCard, TrendingUp, ArrowLeft } from 'lucide-react';
 import PricingPlans from '@/components/pricing/pricing-plans';
 import { detectCurrencyFromBrowser, SUPPORTED_CURRENCIES } from '@/../../shared/currency';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,6 +56,14 @@ export default function Pricing() {
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
+          <div className="flex items-center justify-center mb-6">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" className="mr-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
           <Badge variant="secondary" className="mb-4">
             Pricing Plans
           </Badge>
