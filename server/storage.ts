@@ -137,6 +137,10 @@ export class MemStorage implements IStorage {
   private commissions: Map<number, Commission>;
   private productSettings: Map<number, ProductSettings>;
   private colorThemes: Map<number, ColorTheme>;
+  private creatorEarnings: Map<number, CreatorEarnings>;
+  private earningTransactions: Map<number, EarningTransaction>;
+  private payoutMethods: Map<number, PayoutMethod>;
+  private withdrawalRequests: Map<number, WithdrawalRequest>;
   private currentUserId: number;
   private currentCreatorId: number;
   private currentProductId: number;

@@ -80,25 +80,34 @@ export default function WithdrawalsPage() {
   // Queries
   const { data: earningsData, isLoading: earningsLoading } = useQuery({
     queryKey: ["earnings", creator?.id],
-    queryFn: () => apiRequest(`/api/creators/${creator?.id}/earnings`).then(res => res.json()),
+    queryFn: async () => {
+      const response = await fetch(`/api/creators/${creator?.id}/earnings`);
+      return response.json();
+    },
     enabled: !!creator?.id,
   });
 
   const { data: payoutMethods, isLoading: methodsLoading } = useQuery({
     queryKey: ["payout-methods", creator?.id],
-    queryFn: () => apiRequest(`/api/creators/${creator?.id}/payout-methods`).then(res => res.json()),
+    queryFn: async () => {
+      const response = await fetch(`/api/creators/${creator?.id}/payout-methods`);
+      return response.json();
+    },
     enabled: !!creator?.id,
   });
 
   const { data: withdrawals, isLoading: withdrawalsLoading } = useQuery({
     queryKey: ["withdrawals", creator?.id],
-    queryFn: () => apiRequest(`/api/creators/${creator?.id}/withdrawals`).then(res => res.json()),
+    queryFn: async () => {
+      const response = await fetch(`/api/creators/${creator?.id}/withdrawals`);
+      return response.json();
+    },
     enabled: !!creator?.id,
   });
 
   // Mutations
   const addPayoutMethodMutation = useMutation({
-    mutationFn: (data: PayoutMethodForm) => {
+    mutationFn: async (data: PayoutMethodForm) => {
       const accountDetails = {
         phoneNumber: data.phoneNumber,
         accountNumber: data.accountNumber,
@@ -106,7 +115,7 @@ export default function WithdrawalsPage() {
         paypalEmail: data.paypalEmail,
       };
 
-      return apiRequest(`/api/creators/${creator?.id}/payout-methods`, {
+      const response = await fetch(`/api/creators/${creator?.id}/payout-methods`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -116,6 +125,7 @@ export default function WithdrawalsPage() {
           isDefault: data.isDefault,
         }),
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payout-methods"] });
@@ -136,8 +146,8 @@ export default function WithdrawalsPage() {
   });
 
   const createWithdrawalMutation = useMutation({
-    mutationFn: (data: WithdrawalForm) => {
-      return apiRequest(`/api/creators/${creator?.id}/withdrawals`, {
+    mutationFn: async (data: WithdrawalForm) => {
+      const response = await fetch(`/api/creators/${creator?.id}/withdrawals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,6 +156,7 @@ export default function WithdrawalsPage() {
           notes: data.notes,
         }),
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["withdrawals"] });

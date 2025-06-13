@@ -62,6 +62,7 @@ function App() {
               <Route path="/storefront/:handle" component={Storefront} />
               <Route path="/profile" component={CreatorProfile} />
               <Route path="/affiliate" component={Affiliate} />
+              <Route path="/withdrawals" component={Withdrawals} />
               <Route path="/themes" component={Themes} />
               <Route path="/testing" component={Testing} />
               <Route path="/test-login" component={TestLogin} />
