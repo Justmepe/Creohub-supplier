@@ -46,7 +46,7 @@ export default function CreateCreatorProfile({ userId }: CreateCreatorProfilePro
         userId,
         planType: "free", // Start with free plan
         subscriptionStatus: "trial", // Start with trial
-        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
         productCount: 0,
       });
       return response.json();

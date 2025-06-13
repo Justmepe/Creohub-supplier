@@ -36,7 +36,7 @@ export default function Pricing() {
     {
       icon: <CheckCircle className="w-6 h-6" />,
       title: "30-Day Free Trial",
-      description: "Test all features risk-free for 30 days with up to 3 products"
+      description: "Test all features risk-free for 14 days with up to 3 products"
     }
   ];
 

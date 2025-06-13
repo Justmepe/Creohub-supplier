@@ -280,7 +280,7 @@ export class MemStorage implements IStorage {
   async createCreator(insertCreator: InsertCreator): Promise<Creator> {
     const id = this.currentCreatorId++;
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 30); // 30-day trial
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14-day trial
     
     const creator: Creator = { 
       ...insertCreator, 
@@ -774,7 +774,7 @@ export class DatabaseStorage implements IStorage {
 
   async createCreator(insertCreator: InsertCreator): Promise<Creator> {
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 30); // 30-day trial
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14); // 14-day trial
     
     const [creator] = await db
       .insert(creators)
