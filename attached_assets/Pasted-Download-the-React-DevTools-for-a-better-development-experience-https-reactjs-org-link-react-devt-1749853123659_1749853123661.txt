@@ -1,0 +1,37 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+dashboard.tsx:66 Products query state: {activeCreatorId: undefined, queryEnabled: false, queryKey: '/api/creators/undefined/products', products: undefined, productsLoading: false, …}
+dashboard.tsx:80 Dashboard debug: {isHydrated: false, user: null, authToken: 'Nw==', products: 'undefined/null', productsLoading: false, …}
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: undefined, productsLoading: true, …}
+queryClient.ts:33 Making API request: {method: 'GET', url: '/api/creators/3/products', headers: Array(1), hasToken: true}
+dashboard.tsx:80 Dashboard debug: {isHydrated: true, user: {…}, authToken: 'Nw==', products: 'undefined/null', productsLoading: true, …}
+dashboard.tsx:109 Starting manual test fetch for creator: 3
+queryClient.ts:33 Making API request: {method: 'GET', url: '/api/creators/3/orders', headers: Array(1), hasToken: true}
+queryClient.ts:33 Making API request: {method: 'GET', url: '/api/creators/3/analytics', headers: Array(1), hasToken: true}
+queryClient.ts:33 Making API request: {method: 'GET', url: '/api/creators/3/subscriptions', headers: Array(1), hasToken: true}
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: undefined, productsLoading: true, …}
+queryClient.ts:41 API response: {url: '/api/creators/3/products', status: 200, ok: true}
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: Array(0), productsLoading: false, …}
+dashboard.tsx:80 Dashboard debug: {isHydrated: true, user: {…}, authToken: 'Nw==', products: Array(0), productsLoading: false, …}
+dashboard.tsx:98 Products fetch completed for creator: 3
+dashboard.tsx:99 Products result: []
+queryClient.ts:41 API response: {url: '/api/creators/3/orders', status: 200, ok: true}
+queryClient.ts:41 API response: {url: '/api/creators/3/analytics', status: 200, ok: true}
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: Array(0), productsLoading: false, …}
+queryClient.ts:41 API response: {url: '/api/creators/3/subscriptions', status: 200, ok: true}
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: Array(0), productsLoading: false, …}
+dashboard.tsx:115 Manual fetch test result: {url: '/api/creators/3/products', status: 200, ok: true}
+dashboard.tsx:122 Manual fetch returned data: []
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: Array(0), productsLoading: false, …}
+dashboard.tsx:213 Dashboard data check: {products: Array(0), orders: Array(0), subscriptions: Array(3), subscriptionsType: 'object', subscriptionsArray: true, …}
+dashboard.tsx:80 Dashboard debug: {isHydrated: true, user: {…}, authToken: 'Nw==', products: Array(0), productsLoading: false, …}
+dashboard.tsx:98 Products fetch completed for creator: 3
+dashboard.tsx:99 Products result: []
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: Array(0), productsLoading: false, …}
+dashboard.tsx:80 Dashboard debug: {isHydrated: true, user: {…}, authToken: 'Nw==', products: Array(0), productsLoading: false, …}
+dashboard.tsx:98 Products fetch completed for creator: 3
+dashboard.tsx:99 Products result: []
+dashboard.tsx:66 Products query state: {activeCreatorId: 3, queryEnabled: true, queryKey: '/api/creators/3/products', products: Array(0), productsLoading: false, …}
+dashboard.tsx:213 Dashboard data check: {products: Array(0), orders: Array(0), subscriptions: Array(3), subscriptionsType: 'object', subscriptionsArray: true, …}
+dashboard.tsx:80 Dashboard debug: {isHydrated: true, user: {…}, authToken: 'Nw==', products: Array(0), productsLoading: false, …}
+dashboard.tsx:98 Products fetch completed for creator: 3
+dashboard.tsx:99 Products result: []

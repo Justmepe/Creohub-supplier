@@ -216,7 +216,8 @@ export default function Dashboard() {
     subscriptions: subscriptions,
     subscriptionsType: typeof subscriptions,
     subscriptionsArray: Array.isArray(subscriptions),
-    subscriptionsLength: Array.isArray(subscriptions) ? subscriptions.length : 'not array'
+    subscriptionsLength: Array.isArray(subscriptions) ? subscriptions.length : 'not array',
+    subscriptionsData: Array.isArray(subscriptions) ? subscriptions : 'not showing'
   });
 
   return (
@@ -308,13 +309,15 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="orders">Customer Orders</TabsTrigger>
-            <TabsTrigger value="subscriptions">Plan History</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="subscriptions">Plans</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-6">
