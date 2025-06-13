@@ -927,6 +927,37 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
+  async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.customerEmail, email));
+  }
+
+  // Subscriptions
+  async getSubscription(id: number): Promise<Subscription | undefined> {
+    const [subscription] = await db.select().from(subscriptions).where(eq(subscriptions.id, id));
+    return subscription || undefined;
+  }
+
+  async getSubscriptionsByCreator(creatorId: number): Promise<Subscription[]> {
+    return await db.select().from(subscriptions).where(eq(subscriptions.creatorId, creatorId));
+  }
+
+  async createSubscription(insertSubscription: InsertSubscription): Promise<Subscription> {
+    const [subscription] = await db
+      .insert(subscriptions)
+      .values(insertSubscription)
+      .returning();
+    return subscription;
+  }
+
+  async updateSubscription(id: number, updates: Partial<Subscription>): Promise<Subscription | undefined> {
+    const [subscription] = await db
+      .update(subscriptions)
+      .set(updates)
+      .where(eq(subscriptions.id, id))
+      .returning();
+    return subscription || undefined;
+  }
+
   // Analytics
   async createAnalytics(insertAnalytics: InsertAnalytics): Promise<Analytics> {
     const [analyticsRecord] = await db

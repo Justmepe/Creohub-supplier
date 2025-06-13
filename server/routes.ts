@@ -578,7 +578,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const creatorId = parseInt(req.params.id);
       const orders = await storage.getOrdersByCreator(creatorId);
-      res.json(orders);
+      
+      // Filter out subscription orders - only return actual product orders from customers
+      const productOrders = orders.filter(order => {
+        // Check if this is a real product order by verifying it has actual product items
+        try {
+          const items = Array.isArray(order.items) ? order.items : JSON.parse(order.items as string);
+          return Array.isArray(items) && items.length > 0 && items[0].productId;
+        } catch {
+          return false;
+        }
+      });
+      
+      res.json(productOrders);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Separate route for subscription history
+  app.get("/api/creators/:id/subscriptions", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const subscriptions = await storage.getSubscriptionsByCreator(creatorId);
+      res.json(subscriptions);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

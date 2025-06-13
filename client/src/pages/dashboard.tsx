@@ -148,6 +148,15 @@ export default function Dashboard() {
     }
   });
 
+  const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery({
+    queryKey: [`/api/creators/${activeCreator?.id}/subscriptions`],
+    enabled: !!activeCreator?.id,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/creators/${activeCreator?.id}/subscriptions`);
+      return response.json();
+    }
+  });
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
