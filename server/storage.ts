@@ -161,6 +161,10 @@ export class MemStorage implements IStorage {
     this.commissions = new Map();
     this.productSettings = new Map();
     this.colorThemes = new Map();
+    this.creatorEarnings = new Map();
+    this.earningTransactions = new Map();
+    this.payoutMethods = new Map();
+    this.withdrawalRequests = new Map();
     this.currentUserId = 1;
     this.currentCreatorId = 1;
     this.currentProductId = 1;
@@ -583,6 +587,106 @@ export class MemStorage implements IStorage {
     const selectedTheme = this.colorThemes.get(themeId);
     if (selectedTheme && selectedTheme.userId === userId) {
       this.colorThemes.set(themeId, { ...selectedTheme, isActive: true, updatedAt: new Date() });
+    }
+  }
+
+  // Creator Earnings Methods
+  async getCreatorEarnings(creatorId: number): Promise<CreatorEarnings | undefined> {
+    return Array.from(this.creatorEarnings.values()).find(e => e.creatorId === creatorId);
+  }
+
+  async updateCreatorBalance(creatorId: number, amount: string): Promise<void> {
+    const existing = Array.from(this.creatorEarnings.values()).find(e => e.creatorId === creatorId);
+    if (existing) {
+      this.creatorEarnings.set(existing.id, { 
+        ...existing, 
+        availableBalance: (parseFloat(existing.availableBalance) + parseFloat(amount)).toString(),
+        updatedAt: new Date()
+      });
+    } else {
+      this.creatorEarnings.set(this.currentCreatorId++, {
+        id: this.currentCreatorId,
+        creatorId,
+        totalEarnings: amount,
+        availableBalance: amount,
+        pendingWithdrawals: "0",
+        totalWithdrawn: "0",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+  }
+
+  async createEarningTransaction(transaction: InsertEarningTransaction): Promise<EarningTransaction> {
+    const newTransaction: EarningTransaction = {
+      id: this.currentAnalyticsId++,
+      ...transaction,
+      createdAt: new Date()
+    };
+    this.earningTransactions.set(newTransaction.id, newTransaction);
+    return newTransaction;
+  }
+
+  async getEarningTransactions(creatorId: number): Promise<EarningTransaction[]> {
+    return Array.from(this.earningTransactions.values()).filter(t => t.creatorId === creatorId);
+  }
+
+  // Payout Methods
+  async getPayoutMethods(creatorId: number): Promise<PayoutMethod[]> {
+    return Array.from(this.payoutMethods.values()).filter(p => p.creatorId === creatorId);
+  }
+
+  async getPayoutMethod(id: number): Promise<PayoutMethod | undefined> {
+    return this.payoutMethods.get(id);
+  }
+
+  async createPayoutMethod(method: InsertPayoutMethod): Promise<PayoutMethod> {
+    const newMethod: PayoutMethod = {
+      id: this.currentAnalyticsId++,
+      ...method,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.payoutMethods.set(newMethod.id, newMethod);
+    return newMethod;
+  }
+
+  async deletePayoutMethod(id: number): Promise<void> {
+    this.payoutMethods.delete(id);
+  }
+
+  // Withdrawal Requests
+  async getWithdrawalRequests(creatorId: number): Promise<WithdrawalRequest[]> {
+    return Array.from(this.withdrawalRequests.values()).filter(w => w.creatorId === creatorId);
+  }
+
+  async getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined> {
+    return this.withdrawalRequests.get(id);
+  }
+
+  async createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
+    const newRequest: WithdrawalRequest = {
+      id: this.currentAnalyticsId++,
+      ...request,
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.withdrawalRequests.set(newRequest.id, newRequest);
+    return newRequest;
+  }
+
+  async updateWithdrawalStatus(id: number, status: string, notes?: string, transactionId?: string): Promise<void> {
+    const existing = this.withdrawalRequests.get(id);
+    if (existing) {
+      this.withdrawalRequests.set(id, {
+        ...existing,
+        status,
+        adminNotes: notes || existing.adminNotes,
+        transactionId: transactionId || existing.transactionId,
+        processedAt: status === "completed" ? new Date() : existing.processedAt,
+        updatedAt: new Date()
+      });
     }
   }
 }
