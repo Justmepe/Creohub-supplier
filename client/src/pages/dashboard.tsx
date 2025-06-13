@@ -209,13 +209,14 @@ export default function Dashboard() {
   const recentOrders = Array.isArray(orders) ? orders.slice(0, 5) : [];
   const topProducts = Array.isArray(products) ? products.slice(0, 3) : [];
   
-  // Debug products data flow
-  console.log('Products data flow check:', {
+  // Debug data flow
+  console.log('Dashboard data check:', {
     products: products,
-    productsType: typeof products,
-    isArray: Array.isArray(products),
-    topProducts: topProducts,
-    topProductsLength: topProducts.length
+    orders: orders,
+    subscriptions: subscriptions,
+    subscriptionsType: typeof subscriptions,
+    subscriptionsArray: Array.isArray(subscriptions),
+    subscriptionsLength: Array.isArray(subscriptions) ? subscriptions.length : 'not array'
   });
 
   return (
