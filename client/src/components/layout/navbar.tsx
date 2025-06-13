@@ -78,7 +78,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-2">
             {user && creator && (
               <>
-                {navigation.slice(0, 4).map((item) => (
+                {navigation.map((item) => (
                   <Link key={item.name} href={item.href}>
                     <Button
                       variant={isActive(item.href) ? "default" : "ghost"}
