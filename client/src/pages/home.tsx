@@ -631,7 +631,11 @@ export default function Home() {
                   </Button>
                 </DialogTrigger>
               </Dialog>
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-4 rounded-xl font-semibold text-lg h-auto">
+              <Button 
+                variant="outline" 
+                className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-4 rounded-xl font-semibold text-lg h-auto"
+                onClick={() => setShowDemo(true)}
+              >
                 <ArrowRight className="mr-2 h-5 w-5" />
                 Schedule Demo
               </Button>
