@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import type { User } from '@shared/schema';
 
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 const WARNING_TIME = 5 * 60 * 1000; // 5 minutes before timeout
 
-export function useSessionTimeout() {
-  const { user, logout } = useAuth();
+export function useSessionTimeout(user: User | null, logout: () => void) {
   const { toast } = useToast();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const warningRef = useRef<NodeJS.Timeout | null>(null);
