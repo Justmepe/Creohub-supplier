@@ -8,6 +8,10 @@ import {
   commissions,
   productSettings,
   colorThemes,
+  creatorEarnings,
+  payoutMethods,
+  withdrawalRequests,
+  earningTransactions,
   type User, 
   type InsertUser,
   type Creator,
@@ -25,7 +29,14 @@ import {
   type ProductSettings,
   type InsertProductSettings,
   type ColorTheme,
-  type InsertColorTheme
+  type InsertColorTheme,
+  type CreatorEarnings,
+  type PayoutMethod,
+  type InsertPayoutMethod,
+  type WithdrawalRequest,
+  type InsertWithdrawalRequest,
+  type EarningTransaction,
+  type InsertEarningTransaction
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -92,6 +103,28 @@ export interface IStorage {
   updateColorTheme(id: number, updates: Partial<ColorTheme>): Promise<ColorTheme | undefined>;
   deleteColorTheme(id: number): Promise<boolean>;
   setActiveTheme(userId: number, themeId: number): Promise<void>;
+
+  // Creator Earnings
+  getCreatorEarnings(creatorId: number): Promise<CreatorEarnings | undefined>;
+  updateCreatorBalance(creatorId: number, updates: Partial<CreatorEarnings>): Promise<void>;
+  createEarningTransaction(transaction: InsertEarningTransaction): Promise<EarningTransaction>;
+  getEarningTransactions(creatorId: number): Promise<EarningTransaction[]>;
+
+  // Payout Methods
+  getPayoutMethods(creatorId: number): Promise<PayoutMethod[]>;
+  getPayoutMethod(id: number): Promise<PayoutMethod | undefined>;
+  createPayoutMethod(method: InsertPayoutMethod): Promise<PayoutMethod>;
+  deletePayoutMethod(id: number): Promise<boolean>;
+  unsetDefaultPayoutMethods(creatorId: number): Promise<void>;
+
+  // Withdrawal Requests
+  getWithdrawalRequests(creatorId: number): Promise<WithdrawalRequest[]>;
+  getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined>;
+  createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
+  updateWithdrawalStatus(id: number, status: string, notes?: string, transactionId?: string): Promise<void>;
+
+  // Customer orders by email
+  getOrdersByCustomerEmail(email: string): Promise<Order[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -898,6 +931,100 @@ export class DatabaseStorage implements IStorage {
       .update(colorThemes)
       .set({ isActive: true, updatedAt: new Date() })
       .where(eq(colorThemes.id, themeId));
+  }
+
+  // Creator Earnings
+  async getCreatorEarnings(creatorId: number): Promise<CreatorEarnings | undefined> {
+    const [earnings] = await db.select().from(creatorEarnings).where(eq(creatorEarnings.creatorId, creatorId));
+    return earnings || undefined;
+  }
+
+  async updateCreatorBalance(creatorId: number, updates: Partial<CreatorEarnings>): Promise<void> {
+    await db
+      .update(creatorEarnings)
+      .set({ ...updates, lastUpdated: new Date() })
+      .where(eq(creatorEarnings.creatorId, creatorId));
+  }
+
+  async createEarningTransaction(transaction: InsertEarningTransaction): Promise<EarningTransaction> {
+    const [result] = await db
+      .insert(earningTransactions)
+      .values(transaction)
+      .returning();
+    return result;
+  }
+
+  async getEarningTransactions(creatorId: number): Promise<EarningTransaction[]> {
+    return await db.select().from(earningTransactions).where(eq(earningTransactions.creatorId, creatorId));
+  }
+
+  // Payout Methods
+  async getPayoutMethods(creatorId: number): Promise<PayoutMethod[]> {
+    return await db.select().from(payoutMethods).where(eq(payoutMethods.creatorId, creatorId));
+  }
+
+  async getPayoutMethod(id: number): Promise<PayoutMethod | undefined> {
+    const [method] = await db.select().from(payoutMethods).where(eq(payoutMethods.id, id));
+    return method || undefined;
+  }
+
+  async createPayoutMethod(method: InsertPayoutMethod): Promise<PayoutMethod> {
+    const [result] = await db
+      .insert(payoutMethods)
+      .values(method)
+      .returning();
+    return result;
+  }
+
+  async deletePayoutMethod(id: number): Promise<boolean> {
+    const result = await db
+      .delete(payoutMethods)
+      .where(eq(payoutMethods.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async unsetDefaultPayoutMethods(creatorId: number): Promise<void> {
+    await db
+      .update(payoutMethods)
+      .set({ isDefault: false })
+      .where(eq(payoutMethods.creatorId, creatorId));
+  }
+
+  // Withdrawal Requests
+  async getWithdrawalRequests(creatorId: number): Promise<WithdrawalRequest[]> {
+    return await db.select().from(withdrawalRequests).where(eq(withdrawalRequests.creatorId, creatorId));
+  }
+
+  async getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined> {
+    const [request] = await db.select().from(withdrawalRequests).where(eq(withdrawalRequests.id, id));
+    return request || undefined;
+  }
+
+  async createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
+    const [result] = await db
+      .insert(withdrawalRequests)
+      .values(request)
+      .returning();
+    return result;
+  }
+
+  async updateWithdrawalStatus(id: number, status: string, notes?: string, transactionId?: string): Promise<void> {
+    await db
+      .update(withdrawalRequests)
+      .set({ 
+        status, 
+        notes, 
+        transactionId,
+        processedAt: status === 'completed' ? new Date() : undefined,
+        failureReason: status === 'failed' ? notes : undefined
+      })
+      .where(eq(withdrawalRequests.id, id));
+  }
+
+  // Customer orders by email
+  async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.customerEmail, email));
   }
 }
 

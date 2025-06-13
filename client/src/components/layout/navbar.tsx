@@ -27,7 +27,8 @@ import {
   ExternalLink,
   Eye,
   Users,
-  Palette
+  Palette,
+  Wallet
 } from "lucide-react";
 
 export default function Navbar() {
@@ -45,6 +46,7 @@ export default function Navbar() {
     { name: "Products", href: "/products", icon: Package },
     { name: "Orders", href: "/orders", icon: ShoppingBag },
     { name: "Affiliate", href: "/affiliate", icon: Users },
+    { name: "Withdrawals", href: "/withdrawals", icon: Wallet },
     { name: "Themes", href: "/themes", icon: Palette },
     { name: "Settings", href: "/settings", icon: Settings },
   ];

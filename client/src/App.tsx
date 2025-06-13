@@ -17,6 +17,7 @@ import CheckoutPage from "@/pages/checkout";
 import Storefront from "@/pages/storefront";
 import CreatorProfile from "@/pages/creator-profile";
 import Affiliate from "@/pages/affiliate";
+import Withdrawals from "@/pages/withdrawals";
 import Themes from "@/pages/themes";
 import Testing from "@/pages/testing";
 import TestLogin from "@/pages/test-login";
