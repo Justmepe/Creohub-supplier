@@ -309,13 +309,13 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="subscriptions">Plans</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <div className="w-full">
+            <TabsList className="grid w-full grid-cols-5 h-12">
+              <TabsTrigger value="overview" className="text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="products" className="text-sm">Products</TabsTrigger>
+              <TabsTrigger value="orders" className="text-sm">Orders</TabsTrigger>
+              <TabsTrigger value="subscriptions" className="text-sm">Plans</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
             </TabsList>
           </div>
 

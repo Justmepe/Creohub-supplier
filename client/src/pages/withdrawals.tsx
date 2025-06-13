@@ -28,8 +28,10 @@ import {
   X,
   CheckCircle,
   AlertCircle,
-  History
+  History,
+  ArrowLeft
 } from "lucide-react";
+import { Link } from "wouter";
 import { formatDate } from "date-fns";
 
 const payoutMethodSchema = z.object({
@@ -228,9 +230,17 @@ export default function WithdrawalsPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Earnings & Withdrawals</h1>
-          <p className="text-muted-foreground">Manage your earnings and request withdrawals</p>
+        <div className="flex items-center space-x-4">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Earnings & Withdrawals</h1>
+            <p className="text-muted-foreground">Manage your earnings and request withdrawals</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Dialog open={showAddMethod} onOpenChange={setShowAddMethod}>
