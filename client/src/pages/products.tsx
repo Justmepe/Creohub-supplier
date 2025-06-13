@@ -1,435 +1,166 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import Navbar from "@/components/layout/navbar";
 import ProductUpload from "@/components/dashboard/product-upload";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCurrency } from "@/contexts/CurrencyContext";
 import { PriceDisplay } from "@/components/ui/price-display";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import { 
   Plus, 
-  Package, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  MoreHorizontal,
-  Download,
-  ExternalLink
+  Package,
+  Eye,
+  Edit,
+  ExternalLink,
+  ArrowLeft,
+  Search
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Link } from "wouter";
 
 export default function Products() {
-  const { creator } = useAuth();
-  const { formatPrice, convertPrice } = useCurrency();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const { creator: activeCreator } = useAuth();
+  const [activeTab, setActiveTab] = useState("list");
 
-  const { data: products, isLoading, error } = useQuery({
-    queryKey: [`/api/creators/${creator?.id}/products`],
-    enabled: !!creator?.id,
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/creators/${creator?.id}/products`);
-      return response.json();
-    }
+  const { data: products, isLoading: productsLoading } = useQuery({
+    queryKey: [`/api/creators/${activeCreator?.id}/products`],
+    enabled: !!activeCreator?.id,
   });
 
-  // Debug products query
-  console.log('Products page debug (AFTER FIX):', {
-    creator: creator,
-    creatorId: creator?.id,
-    queryEnabled: !!creator?.id,
-    products: products,
-    productsType: typeof products,
-    isArray: Array.isArray(products),
-    productsLength: products?.length,
-    isLoading: isLoading,
-    error: error,
-    errorMessage: error?.message,
-    queryKey: `/api/creators/${creator?.id}/products`
-  });
-
-  const deleteProductMutation = useMutation({
-    mutationFn: (productId: number) =>
-      apiRequest("DELETE", `/api/products/${productId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator?.id}/products`] });
-      toast({
-        title: "Product deleted",
-        description: "The product has been successfully deleted.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error deleting product",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const toggleProductStatus = useMutation({
-    mutationFn: ({ productId, isActive }: { productId: number; isActive: boolean }) =>
-      apiRequest("PUT", `/api/products/${productId}`, { isActive }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator?.id}/products`] });
-      toast({
-        title: "Product updated",
-        description: "Product status has been updated.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error updating product",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  if (!creator) {
+  if (!activeCreator) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardContent className="pt-6 text-center">
-              <h3 className="text-lg font-semibold mb-2">Creator Profile Required</h3>
-              <p className="text-gray-600 mb-4">You need to create a creator profile to manage products.</p>
-            </CardContent>
-          </Card>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Create Creator Profile</h1>
+            <p className="text-gray-600 mb-8">You need to create a creator profile to manage products</p>
+            <Link href="/dashboard">
+              <Button>Go to Dashboard</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  const filteredProducts = products?.filter((product: any) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === "all" || product.type === selectedType;
-    return matchesSearch && matchesType;
-  }) || [];
-
-  const productTypes = [
-    { value: "all", label: "All Products" },
-    { value: "digital", label: "Digital" },
-    { value: "physical", label: "Physical" },
-    { value: "service", label: "Services" },
-    { value: "booking", label: "Bookings" },
-  ];
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "digital": return "bg-blue-100 text-blue-800";
-      case "physical": return "bg-green-100 text-green-800";
-      case "service": return "bg-purple-100 text-purple-800";
-      case "booking": return "bg-orange-100 text-orange-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
-
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Products</h1>
-              <p className="text-gray-600">
-                Manage your digital products, physical goods, and services
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">Products</h1>
+              <p className="text-gray-600">Manage your digital products, services, and merchandise</p>
             </div>
-            <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-              <DialogTrigger asChild>
-                <Button className="mt-4 sm:mt-0">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Product
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Add New Product</DialogTitle>
-                  <DialogDescription>
-                    Upload a new product to your store
-                  </DialogDescription>
-                </DialogHeader>
-                <ProductUpload onSuccess={() => setShowUploadDialog(false)} />
-              </DialogContent>
-            </Dialog>
           </div>
+          <Button onClick={() => setActiveTab("create")} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Product
+          </Button>
         </div>
 
-        {/* Search and Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex gap-2">
-                {productTypes.map((type) => (
-                  <Button
-                    key={type.value}
-                    variant={selectedType === type.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedType(type.value)}
-                  >
-                    {type.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="list">Product List</TabsTrigger>
+            <TabsTrigger value="create">Add Product</TabsTrigger>
+          </TabsList>
 
-        {/* Products List */}
-        {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="pt-6">
-                  <div className="h-40 bg-gray-200 rounded-lg mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center py-12">
-              <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {searchQuery || selectedType !== "all" ? "No products found" : "No products yet"}
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {searchQuery || selectedType !== "all" 
-                  ? "Try adjusting your search or filters"
-                  : "Get started by adding your first product to your store"
-                }
-              </p>
-              {(!searchQuery && selectedType === "all") && (
-                <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Your First Product
+          <TabsContent value="list" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Products</CardTitle>
+                <CardDescription>
+                  {Array.isArray(products) ? products.length : 0} products available
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {productsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse border rounded-lg p-4">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : Array.isArray(products) && products.length > 0 ? (
+                  <div className="space-y-4">
+                    {products.map((product: any) => (
+                      <div key={product.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-xl mb-2">{product.name}</h3>
+                            <p className="text-gray-600 mb-3">{product.description}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span className="capitalize px-2 py-1 bg-gray-100 rounded-md">{product.type}</span>
+                              <span>Created {new Date(product.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="text-right ml-6">
+                            <p className="font-bold text-2xl mb-2">
+                              <PriceDisplay amount={parseFloat(product.price)} />
+                            </p>
+                            <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                              {product.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t">
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <Eye className="h-4 w-4" />
+                              <span>{product.views || 0} views</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Package className="h-4 w-4" />
+                              <span>{product.downloads || 0} sales</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              View Store
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <Package className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">No products yet</h3>
+                    <p className="text-gray-500 mb-6">Start selling by creating your first product</p>
+                    <Button onClick={() => setActiveTab("create")} className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Create Your First Product
                     </Button>
-                  </DialogTrigger>
-                </Dialog>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product: any) => (
-              <Card key={product.id} className="group hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
-                  {/* Product Image/Icon */}
-                  <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center">
-                    {product.images && product.images.length > 0 ? (
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <Package className="h-12 w-12 text-gray-400" />
-                    )}
                   </div>
-
-                  {/* Product Info */}
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
-                        {product.name}
-                      </h3>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Product
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => toggleProductStatus.mutate({
-                              productId: product.id,
-                              isActive: !product.isActive
-                            })}
-                          >
-                            <Eye className="mr-2 h-4 w-4" />
-                            {product.isActive ? "Hide" : "Show"} Product
-                          </DropdownMenuItem>
-                          {product.digitalFile && (
-                            <DropdownMenuItem asChild>
-                              <a href={product.digitalFile} download>
-                                <Download className="mr-2 h-4 w-4" />
-                                Download File
-                              </a>
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Product
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Product</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete "{product.name}"? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteProductMutation.mutate(product.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    {product.description && (
-                      <p className="text-gray-600 text-sm line-clamp-2">
-                        {product.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <PriceDisplay
-                          originalPrice={parseFloat(product.price)}
-                          originalCurrency={product.currency}
-                          size="md"
-                        />
-                        {product.type === "physical" && product.stock !== null && (
-                          <span className="text-xs text-gray-500">
-                            {product.stock} in stock
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end space-y-1">
-                        <Badge className={getTypeColor(product.type)}>
-                          {product.type}
-                        </Badge>
-                        <Badge variant={product.isActive ? "default" : "secondary"}>
-                          {product.isActive ? "Active" : "Hidden"}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {product.category && (
-                      <Badge variant="outline" className="w-fit">
-                        {product.category}
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Stats Summary */}
-        {products && products.length > 0 && (
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-gray-900">{products.length}</div>
-                <div className="text-sm text-gray-600">Total Products</div>
+                )}
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {products.filter((p: any) => p.isActive).length}
-                </div>
-                <div className="text-sm text-gray-600">Active</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {products.filter((p: any) => p.type === "digital").length}
-                </div>
-                <div className="text-sm text-gray-600">Digital</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {products.filter((p: any) => p.type === "physical").length}
-                </div>
-                <div className="text-sm text-gray-600">Physical</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="create" className="space-y-6">
+            <ProductUpload onSuccess={() => setActiveTab("list")} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

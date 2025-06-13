@@ -298,7 +298,84 @@ export default function Dashboard() {
             </TabsContent>
 
             <TabsContent value="products">
-              <ProductUpload />
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Your Products</CardTitle>
+                    <CardDescription>Manage your digital products, services, and merchandise</CardDescription>
+                  </div>
+                  <Link href="/products">
+                    <Button className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Product
+                    </Button>
+                  </Link>
+                </CardHeader>
+                <CardContent>
+                  {productsLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : Array.isArray(products) && products.length > 0 ? (
+                    <div className="space-y-4">
+                      {products.map((product: any) => (
+                        <div key={product.id} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex-1">
+                              <h3 className="font-medium text-lg">{product.name}</h3>
+                              <p className="text-sm text-gray-600 mb-2">{product.description}</p>
+                              <div className="flex items-center gap-4 text-sm text-gray-500">
+                                <span className="capitalize">{product.type}</span>
+                                <span>•</span>
+                                <span>Created {new Date(product.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="text-right ml-4">
+                              <p className="font-semibold text-lg">
+                                <PriceDisplay amount={parseFloat(product.price)} />
+                              </p>
+                              <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                                {product.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Eye className="h-4 w-4" />
+                              <span>{product.views || 0} views</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
+                                Edit
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                View Store
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-2">No products yet</h3>
+                      <p className="text-gray-500 mb-4">Start selling by creating your first product</p>
+                      <Link href="/products">
+                        <Button className="flex items-center gap-2 mx-auto">
+                          <Plus className="h-4 w-4" />
+                          Create Product
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="orders">
