@@ -102,7 +102,7 @@ export default function Home() {
 
   const payments = [
     { name: "M-Pesa", icon: <Smartphone className="h-8 w-8 text-green-600" />, color: "bg-green-100" },
-    { name: "Pesapal", icon: <CreditCard className="h-8 w-8 text-blue-600" />, color: "bg-blue-100" },
+    { name: "Credit/Debit Cards", icon: <CreditCard className="h-8 w-8 text-blue-600" />, color: "bg-blue-100" },
     { name: "Bank Transfer", icon: <Building2 className="h-8 w-8 text-orange-600" />, color: "bg-orange-100" }
   ];
 
@@ -411,7 +411,7 @@ export default function Home() {
                   <h3 className="font-semibold text-neutral mb-2">{payment.name}</h3>
                   <p className="text-gray-600 text-sm">
                     {payment.name === "M-Pesa" && "Instant mobile money payments for East African customers"}
-                    {payment.name === "Pesapal" && "Secure payment gateway supporting multiple African payment methods"}
+                    {payment.name === "Credit/Debit Cards" && "Secure card payments with international support"}
                     {payment.name === "Bank Transfer" && "Direct bank transfers for larger transactions"}
                   </p>
                 </CardContent>
