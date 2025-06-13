@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +17,8 @@ import {
   ArrowLeft, 
   Shield,
   CheckCircle,
-  Clock
+  Clock,
+  User
 } from 'lucide-react';
 import Navbar from '@/components/layout/navbar';
 
@@ -32,6 +35,12 @@ export default function Checkout() {
   const { toast } = useToast();
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('pesapal');
+  const [customerInfo, setCustomerInfo] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '+254'
+  });
 
   // Parse URL parameters
   useEffect(() => {
@@ -69,31 +78,58 @@ export default function Checkout() {
     enabled: !!checkoutData?.orderId
   });
 
+  // Fetch user profile for complete information
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/auth/me'],
+    enabled: !!user
+  });
+
+  // Initialize customer info with user data
+  useEffect(() => {
+    if (user || userProfile) {
+      const fullName = creator?.storeName || user?.username || 'Customer';
+      const nameParts = fullName.split(' ');
+      
+      setCustomerInfo({
+        firstName: nameParts[0] || 'Customer',
+        lastName: nameParts.slice(1).join(' ') || 'User',
+        email: (userProfile as any)?.email || user?.email || '',
+        phone: '+254'
+      });
+    }
+  }, [user, userProfile, creator]);
+
   // Payment processing mutation
   const paymentMutation = useMutation({
     mutationFn: async ({ paymentMethod }: { paymentMethod: string }) => {
       if (!checkoutData) throw new Error('No checkout data');
       
       let endpoint = '';
-      let payload = {
-        orderId: checkoutData.orderId,
+      let payload: any = {
         amount: parseFloat(checkoutData.amount),
         currency: checkoutData.currency,
-        customerEmail: user?.email || `user${user?.id}@creohub.com`,
-        customerName: creator?.storeName || user?.username || 'Customer',
-        customerPhone: '+254700000000', // Default phone for demo
-        description: `${checkoutData.planName} Plan Subscription`
+        email: customerInfo.email || user?.email || `user${user?.id}@creohub.com`,
+        description: `${checkoutData.planName} Plan Subscription`,
+        orderId: checkoutData.orderId
       };
 
-      switch (paymentMethod) {
-        case 'pesapal':
-          endpoint = '/api/payments/customer/pesapal';
-          break;
-        case 'stripe':
-          endpoint = '/api/payments/customer/stripe/payment-intent';
-          break;
-        default:
-          throw new Error('Invalid payment method');
+      // Add required fields for Pesapal
+      if (paymentMethod === 'pesapal') {
+        payload = {
+          ...payload,
+          firstName: customerInfo.firstName,
+          lastName: customerInfo.lastName,
+          phone: customerInfo.phone,
+          productId: parseInt(checkoutData.orderId),
+          productName: `${checkoutData.planName} Plan Subscription`
+        };
+        endpoint = '/api/payments/customer/pesapal';
+      } else if (paymentMethod === 'stripe') {
+        payload.customerEmail = payload.email;
+        payload.customerName = creator?.storeName || user?.username || 'Customer';
+        endpoint = '/api/payments/customer/stripe/payment-intent';
+      } else {
+        throw new Error('Invalid payment method');
       }
 
       const response = await apiRequest('POST', endpoint, payload);
@@ -127,6 +163,37 @@ export default function Checkout() {
   });
 
   const handlePayment = () => {
+    // Validate required fields
+    if (!customerInfo.firstName.trim() || !customerInfo.lastName.trim() || !customerInfo.email.trim() || !customerInfo.phone.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all customer information fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerInfo.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate phone format (basic check)
+    if (customerInfo.phone.length < 10) {
+      toast({
+        title: "Invalid Phone",
+        description: "Please enter a valid phone number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     paymentMutation.mutate({ paymentMethod: selectedPaymentMethod });
   };
 
@@ -155,7 +222,68 @@ export default function Checkout() {
             </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Customer Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Customer Information
+                </CardTitle>
+                <CardDescription>
+                  Enter your details for payment processing
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={customerInfo.firstName}
+                      onChange={(e) => setCustomerInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={customerInfo.lastName}
+                      onChange={(e) => setCustomerInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={customerInfo.email}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="john@example.com"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={customerInfo.phone}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+254712345678"
+                    required
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Order Summary */}
             <Card>
               <CardHeader>
