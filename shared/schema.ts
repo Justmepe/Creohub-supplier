@@ -71,6 +71,23 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  planType: text("plan_type").notNull(), // starter, pro
+  billingCycle: text("billing_cycle").default("monthly"), // monthly, yearly
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").default("USD"),
+  paymentMethod: text("payment_method"), // pesapal, stripe, paypal
+  paymentStatus: text("payment_status").default("pending"), // pending, completed, failed
+  subscriptionStatus: text("subscription_status").default("active"), // active, cancelled, expired
+  startsAt: timestamp("starts_at").defaultNow(),
+  endsAt: timestamp("ends_at"),
+  paymentReference: text("payment_reference"), // external payment ID
+  metadata: jsonb("metadata").default({}), // additional payment data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const analytics = pgTable("analytics", {
   id: serial("id").primaryKey(),
   creatorId: integer("creator_id").references(() => creators.id).notNull(),
@@ -227,6 +244,19 @@ export const insertOrderSchema = createInsertSchema(orders).pick({
   shippingAddress: true,
 });
 
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).pick({
+  creatorId: true,
+  planType: true,
+  billingCycle: true,
+  amount: true,
+  currency: true,
+  paymentMethod: true,
+  startsAt: true,
+  endsAt: true,
+  paymentReference: true,
+  metadata: true,
+});
+
 export const insertAnalyticsSchema = createInsertSchema(analytics).pick({
   creatorId: true,
   productId: true,
@@ -298,6 +328,8 @@ export const insertColorThemeSchema = createInsertSchema(colorThemes).pick({
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 export type Creator = typeof creators.$inferSelect;
 export type InsertCreator = z.infer<typeof insertCreatorSchema>;

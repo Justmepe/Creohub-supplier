@@ -3,6 +3,7 @@ import {
   creators, 
   products, 
   orders, 
+  subscriptions,
   analytics,
   affiliateLinks,
   commissions,
@@ -20,6 +21,8 @@ import {
   type InsertProduct,
   type Order,
   type InsertOrder,
+  type Subscription,
+  type InsertSubscription,
   type Analytics,
   type InsertAnalytics,
   type AffiliateLink,
@@ -72,6 +75,12 @@ export interface IStorage {
   getOrdersByCustomerEmail(email: string): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, updates: Partial<Order>): Promise<Order | undefined>;
+
+  // Subscriptions
+  getSubscription(id: number): Promise<Subscription | undefined>;
+  getSubscriptionsByCreator(creatorId: number): Promise<Subscription[]>;
+  createSubscription(subscription: InsertSubscription): Promise<Subscription>;
+  updateSubscription(id: number, updates: Partial<Subscription>): Promise<Subscription | undefined>;
 
   // Analytics
   createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
@@ -132,6 +141,7 @@ export class MemStorage implements IStorage {
   private creators: Map<number, Creator>;
   private products: Map<number, Product>;
   private orders: Map<number, Order>;
+  private subscriptions: Map<number, Subscription>;
   private analytics: Map<number, Analytics>;
   private affiliateLinks: Map<number, AffiliateLink>;
   private commissions: Map<number, Commission>;
