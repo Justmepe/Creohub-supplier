@@ -1,6 +1,6 @@
 # Gmail SMTP Setup for Email Verification
 
-Since SendGrid rejected your account, I've configured Gmail SMTP as an alternative for sending verification emails.
+The platform now uses Gmail SMTP exclusively for sending verification emails.
 
 ## Setup Instructions for Production VPS
 
