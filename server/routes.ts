@@ -213,6 +213,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // User profile routes
+  app.put("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Check if user is authenticated and trying to update their own profile
+      if (!req.session?.userId || req.session.userId !== id) {
+        return res.status(403).json({ message: "Can only update your own profile" });
+      }
+      
+      const updates = req.body;
+      const user = await storage.updateUser(id, updates);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   // Creator routes
   app.post("/api/creators", async (req: Request, res: Response) => {
     try {

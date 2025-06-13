@@ -15,6 +15,7 @@ import Settings from "@/pages/settings";
 import Pricing from "@/pages/pricing";
 import CheckoutPage from "@/pages/checkout";
 import Storefront from "@/pages/storefront";
+import Profile from "@/pages/profile";
 import CreatorProfile from "@/pages/creator-profile";
 import Affiliate from "@/pages/affiliate";
 import Withdrawals from "@/pages/withdrawals";
@@ -60,7 +61,8 @@ function App() {
               <Route path="/pricing" component={Pricing} />
               <Route path="/checkout/:productId" component={CheckoutPage} />
               <Route path="/storefront/:handle" component={Storefront} />
-              <Route path="/profile" component={CreatorProfile} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/creator/:handle" component={CreatorProfile} />
               <Route path="/affiliate" component={Affiliate} />
               <Route path="/withdrawals" component={Withdrawals} />
               <Route path="/themes" component={Themes} />
