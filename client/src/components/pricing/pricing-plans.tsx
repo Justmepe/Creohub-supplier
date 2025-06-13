@@ -61,6 +61,17 @@ export default function PricingPlans({ onPlanSelect, showCurrentPlan = true }: P
     if (onPlanSelect) {
       onPlanSelect(planId);
     } else {
+      // Check if user has a creator account
+      if (!creator) {
+        toast({
+          title: "Creator Account Required",
+          description: "Please create a free creator account first, then upgrade your plan.",
+          variant: "destructive",
+        });
+        // Redirect to home page where they can start free trial
+        window.location.href = '/';
+        return;
+      }
       upgradeMutation.mutate(planId);
     }
   };
