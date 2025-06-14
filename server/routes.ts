@@ -9,6 +9,7 @@ declare module "express-session" {
 }
 import { storage } from "./storage";
 import { getSocialProofData, addFakeUser, socialProofConfig } from "./services/socialProof";
+import { sendEmail } from "./services/email";
 import { 
   insertUserSchema, 
   insertCreatorSchema, 
@@ -2266,7 +2267,12 @@ This message was sent through the Creohub contact form.
 Time: ${new Date().toISOString()}
       `.trim();
 
-      await sendEmail("support@creohub.io", emailSubject, emailBody, email);
+      await sendEmail({
+        to: "support@creohub.io",
+        from: email,
+        subject: emailSubject,
+        text: emailBody
+      });
 
       res.json({
         success: true,
