@@ -175,6 +175,21 @@ export class IntelligentChatbot {
   }
 
   generateSmartResponse(question: string, context?: ChatContext): SmartResponse {
+    const questionLower = question.toLowerCase().trim();
+    
+    // Early detection for thanks and common responses
+    if (questionLower.match(/^(thank you|thanks|thank|ty)(\s|$)/i) || 
+        questionLower === 'thank you' || 
+        questionLower === 'thanks' || 
+        questionLower === 'thank') {
+      return {
+        answer: "You're welcome! Is there anything else about Creohub I can help you with? I'm here to answer questions about pricing, features, getting started, or African market support.",
+        confidence: 1.0,
+        suggestedQuestions: ["What are your pricing plans?", "How do I get started?", "Do you support my country?"],
+        needsHumanSupport: false
+      };
+    }
+    
     const intent = this.analyzeIntent(question);
     const countryContext = this.detectCountryContext(question);
     
@@ -257,14 +272,18 @@ export class IntelligentChatbot {
   }
 
   private generateIntelligentDefault(question: string, entities: string[]): string {
-    const questionLower = question.toLowerCase();
+    const questionLower = question.toLowerCase().trim();
     
-    // Handle greetings and thanks
+    // Handle greetings
     if (questionLower.match(/^(hi|hello|hey|good morning|good afternoon)/)) {
       return "Hello! Welcome to Creohub. I'm here to help you build your creator business in Africa. What would you like to know about our platform?";
     }
     
-    if (questionLower.includes('thank')) {
+    // Handle thanks - prioritize this detection
+    if (questionLower.match(/^(thank you|thanks|thank|ty)(\s|$)/i) || 
+        questionLower === 'thank you' || 
+        questionLower === 'thanks' || 
+        questionLower === 'thank') {
       return "You're welcome! Is there anything else about Creohub I can help you with? I'm here to answer questions about pricing, features, getting started, or African market support.";
     }
     
