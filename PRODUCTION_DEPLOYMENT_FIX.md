@@ -28,10 +28,19 @@ GMAIL_APP_PASSWORD=lmkznhawpschulgb
 ### 2. Database Configuration Updated
 I've updated `server/db.ts` to handle SSL properly for production environments.
 
-### 3. Common VPS Database URLs
-- **Neon**: `postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require`
-- **Railway**: `postgresql://postgres:password@containers-us-west-xxx.railway.app:5432/railway`
-- **Supabase**: `postgresql://postgres:password@db.xxx.supabase.co:5432/postgres`
+### 3. PostgreSQL VPS Configuration
+Since you're using PostgreSQL on your VPS, your DATABASE_URL should be:
+
+```bash
+# If PostgreSQL is on the same server:
+DATABASE_URL=postgresql://postgres:your_password@127.0.0.1:5432/creohub
+
+# If PostgreSQL is on a different server:
+DATABASE_URL=postgresql://postgres:your_password@your-db-server-ip:5432/creohub
+
+# With SSL (recommended for production):
+DATABASE_URL=postgresql://postgres:your_password@your-db-host:5432/creohub?sslmode=require
+```
 
 ### 4. Fix Steps on Your VPS
 ```bash
