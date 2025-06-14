@@ -329,6 +329,75 @@ export const dropshippingPayments = pgTable("dropshipping_payments", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Intelligent Recommendation Engine
+export const creatorPreferences = pgTable("creator_preferences", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  preferredCategories: jsonb("preferred_categories"), // Array of preferred product categories
+  targetAudience: text("target_audience"), // "young_adults", "professionals", "families", etc.
+  budgetRange: jsonb("budget_range"), // {min: 100, max: 5000}
+  location: text("location"), // Creator's primary market location
+  interests: jsonb("interests"), // Array of creator's interests/niches
+  brandStyle: text("brand_style"), // "luxury", "affordable", "eco_friendly", etc.
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const productRecommendations = pgTable("product_recommendations", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  recommendationType: text("recommendation_type").notNull(), // "trending", "personalized", "similar_creators", "seasonal"
+  productType: text("product_type").notNull(), // "own_product", "dropshipping_product"
+  productId: integer("product_id"), // Reference to products table for own products
+  dropshippingProductId: integer("dropshipping_product_id").references(() => dropshippingProducts.id), // Reference to dropshipping products
+  score: decimal("score", { precision: 5, scale: 2 }).notNull(), // Recommendation confidence score (0-100)
+  reason: text("reason"), // Explanation for the recommendation
+  metadata: jsonb("metadata"), // Additional data like trending factor, similarity score, etc.
+  isActive: boolean("is_active").default(true),
+  viewedAt: timestamp("viewed_at"),
+  clickedAt: timestamp("clicked_at"),
+  addedToStoreAt: timestamp("added_to_store_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const marketTrends = pgTable("market_trends", {
+  id: serial("id").primaryKey(),
+  category: text("category").notNull(),
+  region: text("region").default("africa"), // "kenya", "uganda", "nigeria", "africa", "global"
+  trendScore: decimal("trend_score", { precision: 5, scale: 2 }).notNull(), // 0-100 trending score
+  searchVolume: integer("search_volume").default(0),
+  salesVelocity: decimal("sales_velocity", { precision: 8, scale: 2 }).default("0.00"), // Sales per day
+  competitionLevel: text("competition_level").default("medium"), // "low", "medium", "high"
+  priceRange: jsonb("price_range"), // {min: 500, max: 10000, average: 2500}
+  seasonality: jsonb("seasonality"), // {peak_months: [11, 12], low_months: [2, 3]}
+  keywords: jsonb("keywords"), // Popular search keywords for this category
+  period: text("period").notNull(), // "2024-06" for June 2024
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const creatorBehavior = pgTable("creator_behavior", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  action: text("action").notNull(), // "view_product", "add_to_store", "remove_from_store", "search", "filter"
+  entityType: text("entity_type"), // "product", "dropshipping_product", "category"
+  entityId: integer("entity_id"),
+  metadata: jsonb("metadata"), // Additional context like search terms, filters used, etc.
+  sessionId: text("session_id"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const similarCreators = pgTable("similar_creators", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  similarCreatorId: integer("similar_creator_id").references(() => creators.id).notNull(),
+  similarityScore: decimal("similarity_score", { precision: 5, scale: 2 }).notNull(), // 0-100
+  similarityFactors: jsonb("similarity_factors"), // What makes them similar (categories, audience, location, etc.)
+  calculatedAt: timestamp("calculated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
