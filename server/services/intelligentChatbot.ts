@@ -79,33 +79,72 @@ export class IntelligentChatbot {
     
     let bestMatch = { intent: "general", confidence: 0, entities: [] as string[] };
     
+    // Advanced pattern matching for common question structures
+    const questionPatterns = {
+      pricing: [
+        /how much.*cost/i, /what.*price/i, /pricing.*plan/i, /cost.*sell/i, 
+        /fee.*charge/i, /subscription.*price/i, /monthly.*cost/i, /plan.*cost/i
+      ],
+      countries: [
+        /support.*country/i, /available.*in/i, /work.*in/i, /accept.*from/i,
+        /country.*support/i, /use.*in.*africa/i, /african.*country/i
+      ],
+      payments: [
+        /payment.*method/i, /how.*pay/i, /accept.*payment/i, /mobile.*money/i,
+        /bank.*transfer/i, /credit.*card/i, /mpesa/i, /stripe/i
+      ],
+      gettingStarted: [
+        /how.*start/i, /get.*started/i, /begin.*sell/i, /create.*store/i,
+        /setup.*account/i, /first.*step/i, /how.*work/i
+      ],
+      products: [
+        /digital.*product/i, /physical.*product/i, /sell.*product/i, /upload.*product/i,
+        /what.*sell/i, /type.*product/i, /product.*support/i
+      ]
+    };
+    
+    // Check pattern matches first (higher confidence)
+    for (const [category, patterns] of Object.entries(questionPatterns)) {
+      for (const pattern of patterns) {
+        if (pattern.test(question)) {
+          return { 
+            intent: category, 
+            confidence: 0.8, 
+            entities: [category] 
+          };
+        }
+      }
+    }
+    
+    // Fallback to keyword matching with improved scoring
     for (const [category, data] of Object.entries(this.knowledgeBase)) {
-      let matchCount = 0;
-      let totalKeywords = data.keywords.length;
+      let matchScore = 0;
       const foundEntities: string[] = [];
       
-      // Check for keyword matches
+      // Weight matches based on keyword importance
       for (const keyword of data.keywords) {
         if (normalizedQuestion.includes(keyword)) {
-          matchCount++;
+          // Give higher weight to exact matches and important terms
+          const weight = keyword.length > 4 ? 2 : 1;
+          matchScore += weight;
           foundEntities.push(keyword);
         }
       }
       
-      // Check for synonyms if available
+      // Check for synonyms with lower weight
       if ('synonyms' in data) {
         for (const synonym of data.synonyms) {
           if (normalizedQuestion.includes(synonym)) {
-            matchCount++;
+            matchScore += 1;
             foundEntities.push(synonym);
           }
         }
-        totalKeywords += data.synonyms.length;
       }
       
-      const confidence = matchCount / Math.min(totalKeywords, words.length);
+      // Calculate confidence based on match quality and question length
+      const confidence = Math.min(matchScore / Math.max(words.length, 3), 1);
       
-      if (confidence > bestMatch.confidence) {
+      if (confidence > bestMatch.confidence && confidence > 0.2) {
         bestMatch = { intent: category, confidence, entities: foundEntities };
       }
     }
@@ -143,8 +182,8 @@ export class IntelligentChatbot {
     let needsHumanSupport = false;
     let suggestedQuestions: string[] = [];
     
-    // Handle specific intents
-    if (intent.confidence > 0.3) {
+    // Handle specific intents with higher confidence threshold
+    if (intent.confidence > 0.4) {
       const categoryData = this.knowledgeBase[intent.intent as keyof typeof this.knowledgeBase];
       
       // Check for country-specific responses
@@ -169,15 +208,21 @@ export class IntelligentChatbot {
       suggestedQuestions = this.generateSuggestions(intent.intent, countryContext);
     }
     
-    // Handle technical issues or complex questions
-    if (this.detectTechnicalIssue(question) || intent.confidence < 0.2) {
+    // Handle lower confidence matches with intelligent inference
+    else if (intent.confidence > 0.15) {
+      response = this.generateIntelligentInference(question, intent, countryContext);
+      suggestedQuestions = this.generateSuggestions(intent.intent, countryContext);
+    }
+    
+    // Handle technical issues
+    else if (this.detectTechnicalIssue(question)) {
       needsHumanSupport = true;
       response = this.generateEscalationResponse(question);
     }
     
-    // Default intelligent response
-    if (!response) {
-      response = this.generateContextualDefault(question, intent.entities);
+    // Intelligent default response for unclear questions
+    else {
+      response = this.generateIntelligentDefault(question, intent.entities);
     }
     
     return {
@@ -186,6 +231,61 @@ export class IntelligentChatbot {
       suggestedQuestions,
       needsHumanSupport
     };
+  }
+
+  private generateIntelligentInference(question: string, intent: any, countryContext: string | null): string {
+    const questionLower = question.toLowerCase();
+    
+    // Smart inference based on question patterns
+    if (questionLower.includes('smart') || questionLower.includes('intelligent')) {
+      return "Yes! Our platform uses intelligent systems to help creators succeed:\n\n• **Smart Analytics** - Track what sells best\n• **Intelligent Pricing** - Competitive market insights\n• **Auto-optimization** - Platform learns from your sales\n• **Smart Notifications** - Real-time updates\n• **AI-powered Support** - Like this conversation!\n\nWhat specific intelligent feature interests you most?";
+    }
+    
+    if (questionLower.includes('really') && (questionLower.includes('work') || questionLower.includes('good'))) {
+      return "Absolutely! Creohub is designed specifically for African creators and has proven results:\n\n✅ **Real Success Stories** - Creators earning consistently\n✅ **Local Payment Methods** - M-Pesa, local banks\n✅ **African-focused Features** - Built for our market\n✅ **Growing Community** - Active creator network\n✅ **Reliable Platform** - 99.9% uptime\n\nTry our free 14-day trial to experience it yourself!";
+    }
+    
+    // Use the best matching category data
+    const categoryData = this.knowledgeBase[intent.intent as keyof typeof this.knowledgeBase];
+    if ('responses' in categoryData) {
+      if (typeof categoryData.responses === 'object' && 'general' in categoryData.responses) {
+        return categoryData.responses.general;
+      }
+    }
+    
+    return "I understand you're asking about " + intent.entities.join(', ') + ". Let me provide you with relevant information:\n\n" + this.generateContextualGuidance(intent.intent);
+  }
+
+  private generateIntelligentDefault(question: string, entities: string[]): string {
+    const questionLower = question.toLowerCase();
+    
+    // Handle greetings and thanks
+    if (questionLower.match(/^(hi|hello|hey|good morning|good afternoon)/)) {
+      return "Hello! Welcome to Creohub. I'm here to help you build your creator business in Africa. What would you like to know about our platform?";
+    }
+    
+    if (questionLower.includes('thank')) {
+      return "You're welcome! Is there anything else about Creohub I can help you with? I'm here to answer questions about pricing, features, getting started, or African market support.";
+    }
+    
+    // Provide guidance based on detected entities
+    if (entities.length > 0) {
+      return `I can help you with questions about ${entities.join(', ')}. Here are some things I know well:\n\n• **Pricing Plans** - Free trial, Starter, Pro options\n• **African Countries** - Support across all African nations\n• **Payment Methods** - M-Pesa, local banks, mobile money\n• **Getting Started** - Step-by-step setup guide\n• **Products** - Digital and physical selling\n\nWhat specific aspect would you like to explore?`;
+    }
+    
+    return "I'm here to help with Creohub questions! I can provide detailed information about:\n\n• **Pricing & Plans** - Costs and features\n• **Country Support** - African market coverage\n• **Payment Solutions** - Local payment methods\n• **Platform Features** - What you can build\n• **Getting Started** - Your first steps\n\nWhat would you like to know?";
+  }
+
+  private generateContextualGuidance(intent: string): string {
+    const guidance: Record<string, string> = {
+      pricing: "Our pricing is transparent with three tiers: Free trial (10% fee), Starter $14.99/month (5% fee), and Pro $29.99/month (0% fee). All plans include unlimited products and full platform access.",
+      countries: "We support all African countries with local payment methods, currencies, and banking integrations. Special focus on South Africa, Kenya, Nigeria, Ghana, and Uganda.",
+      payments: "Multiple African payment options including M-Pesa, Pesapal, Flutterwave, and local banking. Earnings go directly to your bank account.",
+      gettingStarted: "Simple setup: Sign up for free trial, create your profile, upload products, customize your store, and start selling. No technical skills required.",
+      products: "Sell both digital (courses, ebooks, software) and physical products (handmade goods, books, merchandise) with full inventory management."
+    };
+    
+    return guidance[intent] || "Let me connect you with specific information that matches your question.";
   }
 
   private detectTechnicalIssue(question: string): boolean {
