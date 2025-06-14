@@ -46,6 +46,8 @@ export default function ChatBot() {
     support: "I'm here to help! For additional support:\n\n📧 **Email**: support@creohub.io\n💬 **Live Chat**: Available 9AM-6PM EAT\n📚 **Documentation**: Check our help center\n🎥 **Video Tutorials**: Coming soon!\n\nWhat specific question can I answer for you?",
     
     trial: "Your **14-day free trial** includes:\n\n• Full access to all features\n• Upload unlimited products\n• Custom storefront setup\n• Analytics dashboard\n• 10% platform fee on sales\n\nNo credit card required to start! Ready to begin your creator journey?",
+    
+    countries: "Yes! Creohub welcomes creators from all African countries including:\n\n🇿🇦 **South Africa** - ZAR support, local banks, Flutterwave\n🇰🇪 **Kenya** - M-Pesa, KES, local banking\n🇳🇬 **Nigeria** - Naira, local banks, Flutterwave\n🇬🇭 **Ghana** - Cedis, mobile money, local banking\n🇺🇬 **Uganda** - UGX, mobile money integration\n\n+ All other African countries with full platform access, local currency support, and African payment methods!",
   };
 
   const getBotResponse = (userMessage: string): string => {
@@ -82,6 +84,13 @@ export default function ChatBot() {
     // Free trial
     if (message.includes("trial") || message.includes("free")) {
       return predefinedResponses.trial;
+    }
+    
+    // Country/region specific questions
+    if (message.includes("south africa") || message.includes("kenya") || message.includes("nigeria") || 
+        message.includes("ghana") || message.includes("uganda") || message.includes("country") || 
+        message.includes("accept") || message.includes("available") || message.includes("from")) {
+      return predefinedResponses.countries;
     }
     
     // Greetings
