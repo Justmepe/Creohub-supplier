@@ -37,6 +37,7 @@ import VerifyEmail from "@/pages/verify-email";
 import EmailVerification from "@/pages/email-verification";
 import VerificationHelp from "@/pages/verification-help";
 import GetVerificationCode from "@/pages/get-verification-code";
+import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
 import SocialProofNotification from "@/components/UpgradeNotification";
 
@@ -90,6 +91,7 @@ function App() {
               <Route path="/payment/failed" component={PaymentFailed} />
               <Route path="/payment-demo" component={PaymentDemo} />
               <Route path="/track-orders" component={CustomerOrdersPage} />
+              <Route path="/contact" component={Contact} />
               <Route component={NotFound} />
             </Switch>
           </div>

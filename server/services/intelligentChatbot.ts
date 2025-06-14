@@ -328,7 +328,7 @@ export class IntelligentChatbot {
     
     // Use the best matching category data
     const categoryData = this.knowledgeBase[intent.intent as keyof typeof this.knowledgeBase];
-    if ('responses' in categoryData) {
+    if (categoryData && 'responses' in categoryData) {
       if (typeof categoryData.responses === 'object' && 'general' in categoryData.responses) {
         return categoryData.responses.general;
       }

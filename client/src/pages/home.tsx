@@ -693,7 +693,7 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-300">
                 <li><a href="mailto:support@creohub.io" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="mailto:support@creohub.io" className="hover:text-primary transition-colors">Contact Us</a></li>
+                <li><a href="/contact" className="hover:text-primary transition-colors">Contact Us</a></li>
                 <li><a href="#creators" className="hover:text-primary transition-colors">Creator Stories</a></li>
                 <li><a href="mailto:support@creohub.io" className="hover:text-primary transition-colors">Blog</a></li>
               </ul>
