@@ -806,8 +806,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         availablePaymentMethods: [
           'pesapal',
           'mpesa',
-          'stripe',
-          'flutterwave',
           'bank_transfer'
         ],
         defaultCurrency: currency,
@@ -1046,52 +1044,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe payments
-  app.post("/api/payments/customer/stripe/payment-intent", async (req: Request, res: Response) => {
-    try {
-      const { createStripePaymentIntent } = await import("./payments/stripe");
-      await createStripePaymentIntent(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Stripe payment service unavailable" });
-    }
-  });
-
-  app.post("/api/payments/customer/stripe/webhook", async (req: Request, res: Response) => {
-    try {
-      const { stripeWebhook } = await import("./payments/stripe");
-      await stripeWebhook(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Stripe webhook service unavailable" });
-    }
-  });
-
-  // Flutterwave payments
-  app.post("/api/payments/customer/flutterwave", async (req: Request, res: Response) => {
-    try {
-      const { initiateFlutterwavePayment } = await import("./payments/flutterwave");
-      await initiateFlutterwavePayment(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Flutterwave payment service unavailable" });
-    }
-  });
-
-  app.get("/api/payments/customer/flutterwave/verify/:transactionId", async (req: Request, res: Response) => {
-    try {
-      const { verifyFlutterwavePayment } = await import("./payments/flutterwave");
-      await verifyFlutterwavePayment(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Flutterwave verification service unavailable" });
-    }
-  });
-
-  app.post("/api/payments/customer/flutterwave/webhook", async (req: Request, res: Response) => {
-    try {
-      const { flutterwaveWebhook } = await import("./payments/flutterwave");
-      await flutterwaveWebhook(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Flutterwave webhook service unavailable" });
-    }
-  });
+  // Stripe and Flutterwave removed - using Pesapal, M-Pesa, and bank transfers only
 
   // Bank information
   app.get("/api/payments/banks/:country?", async (req: Request, res: Response) => {
@@ -1114,14 +1067,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/payments/creator/stripe/customer", requireAuth, async (req: any, res: Response) => {
-    try {
-      const { createStripeCustomer } = await import("./payments/stripe");
-      await createStripeCustomer(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Stripe customer service unavailable" });
-    }
-  });
+  // Stripe customer creation removed - using Pesapal for subscription payments
 
   // Bank transfer payments
   app.post("/api/payments/bank-transfer", async (req: Request, res: Response) => {
@@ -1611,15 +1557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe subscription payments  
-  app.post("/api/payments/stripe", async (req: Request, res: Response) => {
-    try {
-      const { createStripePaymentIntent } = await import("./payments/stripe");
-      await createStripePaymentIntent(req, res);
-    } catch (error: any) {
-      res.status(500).json({ message: "Stripe payment service unavailable" });
-    }
-  });
+  // Stripe payments removed - using Pesapal for all payments
 
   // Subscription payment webhook
   app.post("/api/subscription/payment-webhook", async (req: Request, res: Response) => {
