@@ -107,11 +107,34 @@ export default function Auth() {
       }
     },
     onError: (error: any) => {
+      const isEmailVerificationError = error.message?.includes("verify your email");
+      
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials",
         variant: "destructive",
       });
+
+      // Show verification link if email verification is needed
+      if (isEmailVerificationError) {
+        setTimeout(() => {
+          toast({
+            title: "Email Verification Required",
+            description: (
+              <div className="space-y-2">
+                <p>Please verify your email to continue.</p>
+                <a 
+                  href="/email-verification" 
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Click here to verify your email
+                </a>
+              </div>
+            ),
+            duration: 8000,
+          });
+        }, 2000);
+      }
     },
   });
 

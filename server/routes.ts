@@ -297,13 +297,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/resend-verification", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.body;
+      const { userId, email } = req.body;
       
-      if (!userId) {
-        return res.status(400).json({ message: "User ID is required" });
+      let user;
+      if (userId) {
+        user = await storage.getUser(userId);
+      } else if (email) {
+        user = await storage.getUserByEmail(email);
+      } else {
+        return res.status(400).json({ message: "User ID or email is required" });
       }
 
-      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -326,7 +330,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await sendVerificationEmail(user.email, verificationCode, 'registration');
       
-      res.json({ message: "Verification code sent to your email" });
+      res.json({ 
+        message: "Verification code sent to your email",
+        userId: user.id,
+        email: user.email
+      });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
