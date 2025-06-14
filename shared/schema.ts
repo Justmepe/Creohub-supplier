@@ -221,6 +221,114 @@ export const earningTransactions = pgTable("earning_transactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Dropshipping Partner System
+export const dropshippingPartners = pgTable("dropshipping_partners", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  companyName: text("company_name").notNull(),
+  businessLicense: text("business_license"),
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone"),
+  address: text("address"),
+  businessType: text("business_type"), // manufacturer, wholesaler, distributor
+  description: text("description"),
+  logo: text("logo"),
+  website: text("website"),
+  status: text("status").default("pending"), // pending, approved, suspended, rejected
+  defaultCommissionRate: decimal("default_commission_rate", { precision: 5, scale: 2 }).default("10.00"),
+  paymentAccountDetails: jsonb("payment_account_details"), // Bank details for receiving payments
+  taxInfo: jsonb("tax_info"), // Tax registration details
+  verificationDocuments: jsonb("verification_documents"), // Document URLs
+  isActive: boolean("is_active").default(true),
+  approvedAt: timestamp("approved_at"),
+  approvedBy: integer("approved_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const dropshippingProducts = pgTable("dropshipping_products", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").references(() => dropshippingPartners.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category"),
+  wholesalePrice: decimal("wholesale_price", { precision: 10, scale: 2 }).notNull(),
+  suggestedRetailPrice: decimal("suggested_retail_price", { precision: 10, scale: 2 }),
+  minimumPrice: decimal("minimum_price", { precision: 10, scale: 2 }),
+  currency: text("currency").default("KES"),
+  sku: text("sku").notNull(),
+  images: jsonb("images"), // Array of image URLs
+  specifications: jsonb("specifications"), // Product specs
+  stock: integer("stock").default(0),
+  minOrderQuantity: integer("min_order_quantity").default(1),
+  maxOrderQuantity: integer("max_order_quantity"),
+  shippingWeight: decimal("shipping_weight", { precision: 8, scale: 2 }),
+  shippingDimensions: jsonb("shipping_dimensions"), // {length, width, height}
+  shippingCost: decimal("shipping_cost", { precision: 8, scale: 2 }).default("0.00"),
+  processingTime: text("processing_time"), // "1-3 business days"
+  isActive: boolean("is_active").default(true),
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).default("10.00"),
+  tags: jsonb("tags"), // Array of searchable tags
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const dropshippingCreatorProducts = pgTable("dropshipping_creator_products", {
+  id: serial("id").primaryKey(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  dropshippingProductId: integer("dropshipping_product_id").references(() => dropshippingProducts.id).notNull(),
+  customName: text("custom_name"), // Creator can customize product name
+  customDescription: text("custom_description"), // Creator can customize description
+  customImages: jsonb("custom_images"), // Creator can add their own images
+  sellingPrice: decimal("selling_price", { precision: 10, scale: 2 }).notNull(),
+  markup: decimal("markup", { precision: 10, scale: 2 }).notNull(), // Creator's markup
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull(),
+  isActive: boolean("is_active").default(true),
+  salesCount: integer("sales_count").default(0),
+  revenue: decimal("revenue", { precision: 10, scale: 2 }).default("0.00"),
+  addedAt: timestamp("added_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const dropshippingOrders = pgTable("dropshipping_orders", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id).notNull(),
+  partnerId: integer("partner_id").references(() => dropshippingPartners.id).notNull(),
+  creatorId: integer("creator_id").references(() => creators.id).notNull(),
+  dropshippingProductId: integer("dropshipping_product_id").references(() => dropshippingProducts.id).notNull(),
+  quantity: integer("quantity").notNull(),
+  wholesalePrice: decimal("wholesale_price", { precision: 10, scale: 2 }).notNull(),
+  sellingPrice: decimal("selling_price", { precision: 10, scale: 2 }).notNull(),
+  creatorCommission: decimal("creator_commission", { precision: 10, scale: 2 }).notNull(),
+  partnerPayment: decimal("partner_payment", { precision: 10, scale: 2 }).notNull(),
+  platformFee: decimal("platform_fee", { precision: 10, scale: 2 }).default("0.00"),
+  shippingAddress: jsonb("shipping_address").notNull(),
+  customerInfo: jsonb("customer_info").notNull(),
+  status: text("status").default("pending"), // pending, confirmed, shipped, delivered, cancelled
+  trackingNumber: text("tracking_number"),
+  shippedAt: timestamp("shipped_at"),
+  deliveredAt: timestamp("delivered_at"),
+  partnerNotes: text("partner_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const dropshippingPayments = pgTable("dropshipping_payments", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").references(() => dropshippingPartners.id).notNull(),
+  period: text("period").notNull(), // "2024-06" for June 2024
+  totalOrders: integer("total_orders").notNull(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  platformFee: decimal("platform_fee", { precision: 10, scale: 2 }).default("0.00"),
+  netAmount: decimal("net_amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").default("KES"),
+  status: text("status").default("pending"), // pending, processed, paid
+  paymentReference: text("payment_reference"),
+  paymentMethod: text("payment_method"), // bank_transfer, mobile_money
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -333,6 +441,58 @@ export const insertEarningTransactionSchema = createInsertSchema(earningTransact
   amount: true,
   currency: true,
   description: true,
+});
+
+// Dropshipping insert schemas
+export const insertDropshippingPartnerSchema = createInsertSchema(dropshippingPartners).pick({
+  userId: true,
+  companyName: true,
+  businessLicense: true,
+  contactEmail: true,
+  contactPhone: true,
+  address: true,
+  businessType: true,
+  description: true,
+  logo: true,
+  website: true,
+  defaultCommissionRate: true,
+  paymentAccountDetails: true,
+  taxInfo: true,
+  verificationDocuments: true,
+});
+
+export const insertDropshippingProductSchema = createInsertSchema(dropshippingProducts).pick({
+  partnerId: true,
+  name: true,
+  description: true,
+  category: true,
+  wholesalePrice: true,
+  suggestedRetailPrice: true,
+  minimumPrice: true,
+  currency: true,
+  sku: true,
+  images: true,
+  specifications: true,
+  stock: true,
+  minOrderQuantity: true,
+  maxOrderQuantity: true,
+  shippingWeight: true,
+  shippingDimensions: true,
+  shippingCost: true,
+  processingTime: true,
+  commissionRate: true,
+  tags: true,
+});
+
+export const insertDropshippingCreatorProductSchema = createInsertSchema(dropshippingCreatorProducts).pick({
+  creatorId: true,
+  dropshippingProductId: true,
+  customName: true,
+  customDescription: true,
+  customImages: true,
+  sellingPrice: true,
+  markup: true,
+  commissionRate: true,
 });
 
 export const insertProductSettingsSchema = createInsertSchema(productSettings).pick({
