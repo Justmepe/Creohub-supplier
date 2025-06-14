@@ -79,13 +79,28 @@ export default function AdminDashboard() {
   const { data: allUsers } = useQuery({
     queryKey: ['/api/admin/users'],
     queryFn: async () => {
-      const token = localStorage.getItem('auth-token');
+      const token = btoa(authContext?.user?.id?.toString() || '');
       const response = await fetch('/api/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    }
+  });
+
+  // Fetch all withdrawal requests for payment management
+  const { data: withdrawalRequests, refetch: refetchWithdrawals } = useQuery({
+    queryKey: ['/api/admin/withdrawals'],
+    queryFn: async () => {
+      const token = btoa(authContext?.user?.id?.toString() || '');
+      const response = await fetch('/api/admin/withdrawals', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch withdrawal requests');
       return response.json();
     }
   });
@@ -173,9 +188,10 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs Navigation */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="creators">Creators</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
           </TabsList>
 

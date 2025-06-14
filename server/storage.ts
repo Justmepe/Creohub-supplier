@@ -131,6 +131,7 @@ export interface IStorage {
   getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined>;
   createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest>;
   updateWithdrawalStatus(id: number, status: string, notes?: string, transactionId?: string): Promise<void>;
+  getAllWithdrawalRequests(): Promise<WithdrawalRequest[]>;
 
   // Customer orders by email
   getOrdersByCustomerEmail(email: string): Promise<Order[]>;
@@ -732,12 +733,15 @@ export class MemStorage implements IStorage {
       this.withdrawalRequests.set(id, {
         ...existing,
         status,
-        adminNotes: notes || existing.adminNotes,
+        notes: notes || existing.notes,
         transactionId: transactionId || existing.transactionId,
-        processedAt: status === "completed" ? new Date() : existing.processedAt,
-        updatedAt: new Date()
+        processedAt: status === "completed" ? new Date() : existing.processedAt
       });
     }
+  }
+
+  async getAllWithdrawalRequests(): Promise<WithdrawalRequest[]> {
+    return Array.from(this.withdrawalRequests.values());
   }
 }
 
@@ -1209,6 +1213,10 @@ export class DatabaseStorage implements IStorage {
         failureReason: status === 'failed' ? notes : undefined
       })
       .where(eq(withdrawalRequests.id, id));
+  }
+
+  async getAllWithdrawalRequests(): Promise<WithdrawalRequest[]> {
+    return await db.select().from(withdrawalRequests);
   }
 
   // Customer orders by email

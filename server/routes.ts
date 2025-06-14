@@ -1741,6 +1741,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Get all withdrawal requests
+  app.get("/api/admin/withdrawals", async (req: Request, res: Response) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const token = authHeader.substring(7);
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const withdrawals = await storage.getAllWithdrawalRequests();
+      res.json(withdrawals);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin: Process withdrawal request
   app.put("/api/admin/withdrawals/:id/process", async (req: Request, res: Response) => {
     try {
