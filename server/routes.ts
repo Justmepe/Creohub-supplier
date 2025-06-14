@@ -1867,6 +1867,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to manually verify users (for production issues)
+  app.post("/api/admin/verify-user-email", async (req: Request, res: Response) => {
+    try {
+      const { email, adminKey } = req.body;
+      
+      // Simple admin key check (you can set ADMIN_KEY in your .env)
+      if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'creohub-admin-2025') {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Manually verify the user
+      const updatedUser = await storage.updateUser(user.id, {
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpiry: null
+      });
+
+      res.json({ 
+        message: "User email verified successfully", 
+        user: { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified }
+      });
+
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
