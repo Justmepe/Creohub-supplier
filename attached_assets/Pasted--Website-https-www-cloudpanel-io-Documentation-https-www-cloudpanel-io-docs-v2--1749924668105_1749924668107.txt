@@ -1,0 +1,347 @@
+* Website:         https://www.cloudpanel.io
+* Documentation:   https://www.cloudpanel.io/docs/v2/
+* Best Practices:  https://www.cloudpanel.io/docs/v2/best-practices/
+* CloudPanel:      https://147.93.95.151:8443
+* CloudPanel CLI:  clpctl
+
+
+ System information as of Sat Jun 14 18:07:03 UTC 2025
+
+  System load:  0.01               Processes:             174
+  Usage of /:   17.1% of 95.82GB   Users logged in:       1
+  Memory usage: 24%                IPv4 address for eth0: 147.93.95.151
+  Swap usage:   0%                 IPv6 address for eth0: 2a02:4780:28:2182::1
+You have new mail.
+Last login: Sat Jun 14 17:59:35 2025 from 102.219.210.70
+root@srv786837:~# cd /home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pwd
+/home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls -la server/public/
+total 20
+drwxrwxr-x 3 root    root    4096 Jun 14 16:55 .
+drwxrwxr-x 5 creohub creohub 4096 Jun 14 17:18 ..
+drwxrwxr-x 2 root    root    4096 Jun 14 17:47 assets
+-rw-rw-r-- 1 root    root     588 Jun 14 17:33 index.html
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls -la server/public/assets/
+total 2548
+drwxrwxr-x 2 root root    4096 Jun 14 17:47 .
+drwxrwxr-x 3 root root    4096 Jun 14 16:55 ..
+-rw-rw-r-- 1 root root 1320557 Jun 14 16:55 index-DbwAFaXj.js
+-rw-rw-r-- 1 root root   86184 Jun 14 16:55 index-DplBV4_z.css
+-rw-rw-r-- 1 root root   17015 Jun 14 17:50 index.js
+-rw-rw-r-- 1 root root 1147819 Jun 14 16:55 Logo_1749474304178-CBh_vqcq.png
+root@srv786837:/home/creohub/htdocs/www.creohub.io# /home/creohub/htdocs/www.creohub.io/server/public/assets/index.js
+-bash: /home/creohub/htdocs/www.creohub.io/server/public/assets/index.js: Permission denied
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cat > server/public/assets/index.js << 'EOF'
+> (function() {
+>   'use strict';
+>
+>   function createApp() {
+>     const root = document.getElementById('root');
+>     if (!root) return;
+>
+>     root.innerHTML = `
+>       <div class="min-h-screen bg-white">
+>         <header class="bg-white border-b border-gray-200">
+>           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+>             <div class="flex justify-between items-center h-16">
+>               <div class="flex items-center">
+>                 <h1 class="text-2xl font-bold text-gray-900">Creohub</h1>
+>                 <span class="ml-2 text-sm text-gray-500">African Creator Commerce</span>
+>               </div>
+>               <nav class="hidden md:flex space-x-8">
+>                 <a href="#" onclick="showPage('home')" class="text-gray-900 hover:text-blue-600">Home</a>
+>                 <a href="#" onclick="showPage('features')" class="text-gray-600 hover:text-blue-600">Features</a>
+>                 <a href="#" onclick="showPage('pricing')" class="text-gray-600 hover:text-blue-600">Pricing</a>
+>                 <a href="#" onclick="showPage('login')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Get Started</a>
+>               </nav>
+>             </div>
+>           </div>
+>         </header>
+>         <main id="main-content">${getHomePage()}</main>
+>         <footer class="bg-gray-50 border-t border-gray-200">
+>           <div class="max-w-7xl mx-auto px-4 py-12">
+>             <div class="text-center">
+>               <h2 class="text-lg font-semibold text-gray-900 mb-4">Creohub</h2>
+>               <p class="text-gray-600 mb-4">Empowering African creators with streamlined payment solutions</p>
+>               <div class="space-x-6">
+>                 <span class="text-sm text-gray-500">✓ Pesapal Integration</span>
+>                 <span class="text-sm text-gray-500">✓ M-Pesa Support</span>
+>                 <span class="text-sm text-gray-500">✓ Bank Transfers</span>
+>               </div>
+>             </div>
+>           </div>
+>         </footer>
+>       </div>
+>     `;
+>   }
+>
+>   function getHomePage() {
+>     return \`
+>       <div class="bg-gradient-to-br from-blue-50 to-indigo-100 py-16">
+>         <div class="max-w-7xl mx-auto px-4 text-center">
+>           <h1 class="text-5xl font-bold text-gray-900 mb-6">
+>             Sell Your Digital Products<br>
+>             <span class="text-blue-600">Across Africa</span>
+>           </h1>
+>           <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+>             Built specifically for African creators with Pesapal, M-Pesa, and local bank transfer support.
+>             Start selling in minutes with payment methods your customers actually use.
+>           </p>
+>           <div class="space-x-4">
+>             <button onclick="showPage('signup')" class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700">
+>               Start Free Trial
+>             </button>
+>             <button onclick="showPage('demo')" class="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-50">
+>               Watch Demo
+>             </button>
+>           </div>
+>         </div>
+>       </div>
+>       <div class="py-16 bg-white">
+>         <div class="max-w-7xl mx-auto px-4">
+>           <div class="text-center mb-12">
+>             <h2 class="text-3xl font-bold text-gray-900 mb-4">Built for African Markets</h2>
+>             <p class="text-gray-600 max-w-2xl mx-auto">Everything you need to sell digital products with payment methods that work across Kenya, Uganda, Tanzania, Rwanda, Nigeria, Ghana, and South Africa.</p>
+>           </div>
+>           <div class="grid md:grid-cols-3 gap-8">
+>             <div class="text-center p-6">
+>               <div class="w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+>                 <span class="text-blue-600 text-xl">💳</span>
+>               </div>
+>               <h3 class="text-xl font-semibold mb-2">Local Payments</h3>
+>               <p class="text-gray-600">Pesapal, M-Pesa, and bank transfers that your customers trust and use daily.</p>
+>             </div>
+>             <div class="text-center p-6">
+>               <div class="w-12 h-12 bg-green-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+>                 <span class="text-green-600 text-xl">⚡</span>
+>               </div>
+>               <h3 class="text-xl font-semibold mb-2">Instant Setup</h3>
+>               <p class="text-gray-600">Create your store and start selling in under 5 minutes. No complex integrations.</p>
+>             </div>
+>             <div class="text-center p-6">
+>               <div class="w-12 h-12 bg-purple-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+>                 <span class="text-purple-600 text-xl">📊</span>
+>               </div>
+>               <h3 class="text-xl font-semibold mb-2">Smart Analytics</h3>
+>               <p class="text-gray-600">Track sales, customer behavior, and optimize your products with built-in analytics.</p>
+>             </div>
+>           </div>
+>         </div>
+>       </div>
+>       <div class="bg-blue-600 py-16">
+>         <div class="max-w-4xl mx-auto text-center px-4">
+>           <h2 class="text-3xl font-bold text-white mb-4">Ready to Start Selling?</h2>
+>           <p class="text-blue-100 text-lg mb-8">Join thousands of African creators already using Creohub to grow their business.</p>
+>           <button onclick="showPage('signup')" class="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100">
+>             Get Started Free
+>           </button>
+>         </div>
+>       </div>
+>     \`;
+>   }
+>
+>   function getFeaturesPage() {
+>     return \`
+>       <div class="py-16">
+>         <div class="max-w-7xl mx-auto px-4">
+>           <h1 class="text-4xl font-bold text-center mb-12">Platform Features</h1>
+>           <div class="grid md:grid-cols-2 gap-12">
+>             <div>
+>               <h3 class="text-2xl font-semibold mb-4">Payment Processing</h3>
+>               <ul class="space-y-3 text-gray-600">
+>                 <li>✓ Pesapal gateway integration</li>
+>                 <li>✓ M-Pesa mobile money support</li>
+>                 <li>✓ Direct bank transfers</li>
+>                 <li>✓ Multi-currency support</li>
+>                 <li>✓ Instant payment notifications</li>
+
+                <li>✓ Digital product management</li>
+                <li>✓ Custom store branding</li>
+                <li>✓ Affiliate program system</li>
+                <li>✓ Customer analytics dashboard</li>
+>               </ul>
+>             </div>
+>             <div>
+>               <h3 class="text-2xl font-semibold mb-4">Creator Tools</h3>
+>               <ul class="space-y-3 text-gray-600">
+>                 <li>✓ Digital product management</li>
+>                 <li>✓ Custom store branding</li>
+>                 <li>✓ Affiliate program system</li>
+>                 <li>✓ Customer analytics dashboard</li>
+>                 <li>✓ Email verification system</li>
+>               </ul>
+>             </div>
+>           </div>
+>         </div>
+>       </div>
+>     \`;
+>   }
+>
+>   function getPricingPage() {
+>     return \`
+>       <div class="py-16">
+>         <div class="max-w-7xl mx-auto px-4">
+>           <h1 class="text-4xl font-bold text-center mb-12">Simple, Transparent Pricing</h1>
+>           <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+>             <div class="border border-gray-200 rounded-lg p-6 text-center">
+>               <h3 class="text-xl font-semibold mb-2">Free Trial</h3>
+>               <div class="text-3xl font-bold mb-4">14 Days</div>
+>               <p class="text-gray-600 mb-6">10% transaction fee</p>
+>               <ul class="text-sm text-gray-600 mb-6 space-y-2">
+>                 <li>✓ All core features</li>
+>                 <li>✓ Pesapal & M-Pesa</li>
+>                 <li>✓ Basic analytics</li>
+>               </ul>
+>               <button class="w-full bg-gray-100 text-gray-800 py-2 rounded">Current Plan</button>
+>             </div>
+>             <div class="border-2 border-blue-500 rounded-lg p-6 text-center relative">
+>               <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded text-sm">Popular</div>
+>               <h3 class="text-xl font-semibold mb-2">Starter</h3>
+>               <div class="text-3xl font-bold mb-4">\$14.99<span class="text-lg text-gray-600">/month</span></div>
+>               <p class="text-gray-600 mb-6">5% transaction fee</p>
+>               <ul class="text-sm text-gray-600 mb-6 space-y-2">
+>                 <li>✓ Everything in Free</li>
+>                 <li>✓ Advanced analytics</li>
+>                 <li>✓ Custom branding</li>
+>                 <li>✓ Priority support</li>
+>               </ul>
+>               <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Choose Plan</button>
+>             </div>
+>             <div class="border border-gray-200 rounded-lg p-6 text-center">
+>               <h3 class="text-xl font-semibold mb-2">Pro</h3>
+>               <div class="text-3xl font-bold mb-4">\$29.99<span class="text-lg text-gray-600">/month</span></div>
+>               <p class="text-gray-600 mb-6">0% transaction fee</p>
+>               <ul class="text-sm text-gray-600 mb-6 space-y-2">
+>                 <li>✓ Everything in Starter</li>
+>                 <li>✓ No transaction fees</li>
+>                 <li>✓ Advanced integrations</li>
+>                 <li>✓ White-label options</li>
+>               </ul>
+>               <button class="w-full bg-gray-100 text-gray-800 py-2 rounded hover:bg-gray-200">Choose Plan</button>
+>             </div>
+>           </div>
+>         </div>
+>       </div>
+>     \`;
+>   }
+>
+>   function getLoginPage() {
+>     return \`
+>       <div class="py-16">
+>         <div class="max-w-md mx-auto bg-white p-8 border border-gray-200 rounded-lg">
+>           <h2 class="text-2xl font-bold text-center mb-6">Welcome Back</h2>
+>           <form onsubmit="handleLogin(event)">
+>             <div class="mb-4">
+>               <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+>               <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+>             </div>
+>             <div class="mb-6">
+>               <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+>               <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+>             </div>
+>             <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Sign In</button>
+>           </form>
+>           <p class="text-center mt-4 text-sm text-gray-600">
+>             Don't have an account?
+>             <a href="#" onclick="showPage('signup')" class="text-blue-600 hover:underline">Sign up</a>
+>           </p>
+>         </div>
+>       </div>
+>     \`;
+>   }
+>
+>   function getSignupPage() {
+>     return \`
+>       <div class="py-16">
+>         <div class="max-w-md mx-auto bg-white p-8 border border-gray-200 rounded-lg">
+>           <h2 class="text-2xl font-bold text-center mb-6">Get Started Free</h2>
+>           <form onsubmit="handleSignup(event)">
+>             <div class="mb-4">
+>               <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+>               <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+>             </div>
+>             <div class="mb-4">
+>               <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+>               <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+>             </div>
+>             <div class="mb-6">
+>               <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+>               <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+>             </div>
+>             <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Start Free Trial</button>
+>           </form>
+>           <p class="text-center mt-4 text-sm text-gray-600">
+>             Already have an account?
+>             <a href="#" onclick="showPage('login')" class="text-blue-600 hover:underline">Sign in</a>
+>           </p>
+>         </div>
+>       </div>
+>     \`;
+>   }
+>
+>   window.showPage = function(page) {
+>     const mainContent = document.getElementById('main-content');
+>     if (!mainContent) return;
+>
+>     switch(page) {
+>       case 'home':
+>         mainContent.innerHTML = getHomePage();
+>         break;
+>       case 'features':
+>         mainContent.innerHTML = getFeaturesPage();
+>         break;
+>       case 'pricing':
+>         mainContent.innerHTML = getPricingPage();
+>         break;
+>       case 'login':
+>         mainContent.innerHTML = getLoginPage();
+>         break;
+     mainContent.innerHTML = getHomePage(>       case 'signup':
+>         mainContent.innerHTML = getSignupPage();
+>         break;
+>       default:
+>         mainContent.innerHTML = getHomePage();
+>     }
+>   };
+>
+>   window.handleLogin = function(event) {
+>     event.preventDefault();
+>     alert('Login functionality connects to your Creohub API. Platform is working!');
+>   };
+>
+>   window.handleSignup = function(event) {
+>     event.preventDefault();
+>     alert('Signup functionality connects to your Creohub API. Platform is ready!');
+>   };
+>
+>   if (document.readyState === 'loading') {
+>     document.addEventListener('DOMContentLoaded', createApp);
+>   } else {
+>     createApp();
+>   }
+> })();
+> EOF
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pkill -f "node dist/index.js"
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js &
+[1] 352549
+root@srv786837:/home/creohub/htdocs/www.creohub.io# Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+6:10:26 PM [express] serving on port 8080
+
+root@srv786837:/home/creohub/htdocs/www.creohub.io# curl -I http://localhost:8080
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Accept-Ranges: bytes
+Cache-Control: public, max-age=0
+Last-Modified: Sat, 14 Jun 2025 17:33:26 GMT
+ETag: W/"24c-1976f80df8d"
+Content-Type: text/html; charset=UTF-8
+Content-Length: 588
+Date: Sat, 14 Jun 2025 18:10:50 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+
