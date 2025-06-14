@@ -28,44 +28,33 @@ export default function SocialProofNotification() {
 
   const { data: socialProofData, isLoading, error } = useQuery<SocialProofResponse>({
     queryKey: ["/api/social-proof"],
+    queryFn: async () => {
+      const response = await fetch('/api/social-proof');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
     refetchInterval: 60000, // Refresh every minute to get new data
     retry: 3,
     enabled: true, // Ensure query is always enabled
     staleTime: 0, // Always fetch fresh data
   });
 
-  // Log query results
-  useEffect(() => {
-    if (error) {
-      console.error("Social proof query error:", error);
-    }
-    if (socialProofData) {
-      console.log("Social proof query success:", socialProofData);
-    }
-  }, [socialProofData, error]);
-
   const upgrades = socialProofData?.data || [];
-
-  // Debug logging
-  useEffect(() => {
-    console.log("Social proof data:", { socialProofData, isLoading, error, upgradesLength: upgrades.length });
-  }, [socialProofData, isLoading, error, upgrades.length]);
 
   useEffect(() => {
     if (upgrades.length === 0) {
-      console.log("No upgrades data available, skipping notifications");
       return;
     }
 
     const showNotification = () => {
       const upgrade = upgrades[upgradeIndex];
-      console.log("Showing notification for:", upgrade);
       setCurrentUpgrade(upgrade);
       setIsVisible(true);
 
       // Hide after 4 seconds
       setTimeout(() => {
-        console.log("Hiding notification");
         setIsVisible(false);
       }, 4000);
 
@@ -73,18 +62,11 @@ export default function SocialProofNotification() {
       setUpgradeIndex((prev) => (prev + 1) % upgrades.length);
     };
 
-    console.log("Setting up notification timers...");
     // Show first notification after 3 seconds
-    const initialTimer = setTimeout(() => {
-      console.log("Initial timer triggered");
-      showNotification();
-    }, 3000);
+    const initialTimer = setTimeout(showNotification, 3000);
 
     // Then show every 12 seconds
-    const interval = setInterval(() => {
-      console.log("Interval timer triggered");
-      showNotification();
-    }, 12000);
+    const interval = setInterval(showNotification, 12000);
 
     return () => {
       clearTimeout(initialTimer);

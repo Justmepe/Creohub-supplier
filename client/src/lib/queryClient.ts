@@ -65,13 +65,9 @@ export const getQueryFn: <T>(options: {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    console.log('Query client making request to:', queryKey[0], 'with headers:', Object.keys(headers));
-
     const res = await fetch(queryKey[0] as string, {
       headers,
     });
-
-    console.log('Query client response:', res.status, res.ok);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;

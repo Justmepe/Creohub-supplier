@@ -2153,12 +2153,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Social Proof endpoints (public endpoint)
   app.get("/api/social-proof", async (req: Request, res: Response) => {
     try {
-      console.log("Social proof endpoint called");
       const socialProofData = await getSocialProofData();
-      console.log("Social proof data retrieved:", socialProofData.length, "items");
       res.json({ data: socialProofData, config: socialProofConfig });
     } catch (error: any) {
-      console.error("Social proof endpoint error:", error);
       res.status(500).json({ message: error.message });
     }
   });
