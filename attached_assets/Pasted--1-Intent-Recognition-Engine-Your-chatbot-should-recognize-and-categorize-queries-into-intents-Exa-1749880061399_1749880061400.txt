@@ -1,0 +1,102 @@
+ 1. Intent Recognition Engine
+Your chatbot should recognize and categorize queries into intents. Example intents:
+
+Intent	Example User Inputs
+General Inquiry	"What is CreoHub?" "Tell me about this site"
+Pricing Inquiry	"How much does it cost?" "What are your pricing plans?"
+Feature Inquiry	"What can I do with CreoHub?" "Do you support e-commerce?"
+Account Help	"I can’t log in" "How do I create an account?"
+Technical Support	"I’m getting an error" "App won’t load"
+Integration Query	"Can I connect with Stripe?" "Do you support Zapier?"
+Use Case Guidance	"How can I sell digital products?" "Can I use this for my course?"
+Setup Guidance	"How do I start?" "Guide me through the setup"
+Contact/Live Support	"I want to talk to someone" "Help me with a complex issue"
+
+🧠 2. Core Knowledge Base / FAQ Layer
+Build predefined responses using knowledge from CreoHub’s content, such as:
+
+💡 What is CreoHub?
+"CreoHub is an all-in-one platform for creators to sell digital products, manage e-commerce, memberships, and automation — without coding."
+
+💰 Pricing Plans
+"We offer flexible pricing: a free tier with basic tools, and premium plans with advanced features like automations, integrations, and custom branding. Want a detailed breakdown?"
+
+(Then list pricing or link to pricing page.)
+
+🔧 Key Features
+"You can create digital stores, manage memberships, sell courses, offer subscriptions, and integrate third-party tools like Stripe, PayPal, and Zapier."
+
+🔄 3. Dynamic Response Flow Logic
+This gives the chatbot a "smart" feeling. Here’s how it can respond logically:
+
+A. Conditional Response Based on Context
+User: “Can I sell ebooks on CreoHub?”
+Bot:
+
+"Yes! You can upload and sell digital products like eBooks, courses, templates, or music. Want me to walk you through setting up your first product?"
+
+→ If yes, trigger step-by-step guide flow.
+
+B. Smart Follow-Up Questions
+User: “I need help creating a store”
+Bot:
+
+"Sure! Are you setting up a store for:
+1️⃣ Digital products
+2️⃣ Memberships
+3️⃣ Courses
+4️⃣ Something else?"
+(Based on selection, route to a tutorial or onboarding flow.)
+
+🔄 4. Response Templates / Flows
+✅ Onboarding Flow
+plaintext
+Copy
+Edit
+Hi there 👋 Welcome to CreoHub!
+Would you like a quick tour or jump right into creating your store?
+→ [Give me a tour] → [Skip to setup]
+🛠️ Product Setup Flow
+plaintext
+Copy
+Edit
+Let’s set up your first product!
+1. Name your product  
+2. Upload your digital file  
+3. Set pricing  
+4. Connect a payment method  
+→ Ready to begin?
+📡 5. Integration Responses
+When a user asks about tools like Stripe, PayPal, or marketing integrations:
+
+User: “Can I integrate with Stripe?”
+Bot:
+
+"Yes! We support Stripe, PayPal, and more. Head to your dashboard > Settings > Payments to connect your account. Want me to send the direct link?"
+
+🛑 6. Fallback + Human Support Trigger
+If the bot is stuck or user is confused:
+
+"Hmm, I didn't quite get that. You can type your question again or contact support. Need human help?"
+
+🔐 7. Authentication-Aware Logic (if linked to user accounts)
+If integrated with user accounts (via cookies/session):
+
+Detect logged-in user
+
+Customize help based on their plan or activity
+
+Example:
+
+User: “I can’t publish my product”
+Bot:
+
+"I see you’re on the free plan — publishing is limited to 1 product. Upgrade your plan to publish more!"
+
+🧩 8. Error/Issue Diagnostic Tree
+For bugs and errors:
+
+User: “My payment isn’t going through”
+Bot:
+
+"Sorry about that! Is this happening with:

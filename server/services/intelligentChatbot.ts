@@ -5,6 +5,8 @@ interface ChatContext {
   previousQuestions: string[];
   userIntent: string;
   confidence: number;
+  conversationFlow?: string;
+  userState?: 'new' | 'returning' | 'setup_in_progress';
 }
 
 interface SmartResponse {
@@ -12,10 +14,79 @@ interface SmartResponse {
   confidence: number;
   suggestedQuestions: string[];
   needsHumanSupport: boolean;
+  conversationFlow?: string;
+  quickActions?: { label: string; action: string }[];
 }
 
 export class IntelligentChatbot {
+  private intentPatterns = {
+    generalInquiry: [
+      /what is creohub/i, /tell me about/i, /explain creohub/i, /about this platform/i, 
+      /what does creohub do/i, /how does this work/i
+    ],
+    pricingInquiry: [
+      /how much.*cost/i, /what.*price/i, /pricing.*plan/i, /cost.*sell/i, 
+      /fee.*charge/i, /subscription.*price/i, /monthly.*cost/i, /plan.*cost/i,
+      /free.*trial/i, /how much.*pay/i
+    ],
+    featureInquiry: [
+      /what.*can.*do/i, /features/i, /capabilities/i, /what.*included/i,
+      /support.*ecommerce/i, /can.*sell/i, /what.*offer/i
+    ],
+    accountHelp: [
+      /can't.*log.*in/i, /login.*problem/i, /create.*account/i, /sign.*up/i,
+      /forgot.*password/i, /account.*issue/i
+    ],
+    technicalSupport: [
+      /error/i, /bug/i, /not.*working/i, /broken/i, /app.*won't.*load/i,
+      /technical.*issue/i, /problem.*with/i
+    ],
+    integrationQuery: [
+      /integrate.*with/i, /connect.*stripe/i, /support.*zapier/i, /api/i,
+      /third.*party/i, /payment.*gateway/i, /webhook/i
+    ],
+    useCaseGuidance: [
+      /sell.*digital.*products/i, /course/i, /ebook/i, /membership/i,
+      /subscription/i, /online.*store/i, /digital.*downloads/i
+    ],
+    setupGuidance: [
+      /how.*start/i, /get.*started/i, /setup/i, /guide.*me/i, /first.*steps/i,
+      /tutorial/i, /onboarding/i
+    ],
+    contactSupport: [
+      /talk.*to.*someone/i, /human.*help/i, /live.*support/i, /contact.*support/i,
+      /speak.*agent/i, /complex.*issue/i
+    ]
+  };
+
   private knowledgeBase = {
+    generalInquiry: {
+      answer: "Creohub is an all-in-one platform for African creators to sell digital products, manage e-commerce, memberships, and automation — without coding.\n\n✨ **What you can build:**\n• Digital product stores (ebooks, courses, templates)\n• Membership sites and subscriptions\n• Physical product e-commerce\n• Creator brand websites\n\nBuilt specifically for the African market with local payment methods like M-Pesa, local banking, and African currencies.",
+      quickActions: [
+        { label: "See Pricing", action: "pricing" },
+        { label: "Get Started", action: "setup" },
+        { label: "View Features", action: "features" }
+      ]
+    },
+    
+    pricingInquiry: {
+      answer: "We offer flexible pricing designed for African creators:\n\n🆓 **Free Trial** - 14 days, 10% platform fee\n💼 **Starter** - $14.99/month, 5% platform fee  \n🚀 **Pro** - $29.99/month, 0% platform fee\n\n**All plans include:**\n• Unlimited products & customers\n• Custom storefront & branding\n• Analytics dashboard\n• African payment methods\n• Email support\n\nWant a detailed breakdown of features?",
+      quickActions: [
+        { label: "Start Free Trial", action: "trial" },
+        { label: "Compare Plans", action: "compare" },
+        { label: "See Features", action: "features" }
+      ]
+    },
+
+    featureInquiry: {
+      answer: "Creohub gives you everything to build your creator business:\n\n🛍️ **E-commerce Features:**\n• Digital & physical product sales\n• Inventory management\n• Order tracking & fulfillment\n\n💰 **Monetization:**\n• Subscriptions & memberships\n• Course creation & delivery\n• Affiliate program\n\n🎨 **Customization:**\n• Custom storefront themes\n• Brand colors & logos\n• Mobile-responsive design\n\n📊 **Business Tools:**\n• Sales analytics\n• Customer management\n• Payment processing",
+      quickActions: [
+        { label: "See Demo", action: "demo" },
+        { label: "Get Started", action: "setup" },
+        { label: "Pricing", action: "pricing" }
+      ]
+    },
+
     pricing: {
       keywords: ["price", "cost", "fee", "money", "expensive", "cheap", "plan", "subscription", "payment"],
       synonyms: ["pricing", "rates", "charges", "billing", "amount"],
