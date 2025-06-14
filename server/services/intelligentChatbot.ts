@@ -42,8 +42,8 @@ export class IntelligentChatbot {
       /technical.*issue/i, /problem.*with/i
     ],
     integrationQuery: [
-      /integrate.*with/i, /connect.*stripe/i, /support.*zapier/i, /api/i,
-      /third.*party/i, /payment.*gateway/i, /webhook/i
+      /integrate.*with/i, /connect.*pesapal/i, /payment.*gateway/i, /api/i,
+      /third.*party/i, /webhook/i, /banking.*integration/i
     ],
     useCaseGuidance: [
       /sell.*digital.*products/i, /course/i, /ebook/i, /membership/i,
@@ -93,9 +93,9 @@ export class IntelligentChatbot {
       responses: {
         general: "Creohub offers 3 pricing tiers:\n\n🆓 **Free Trial** - 14 days, 10% platform fee\n💼 **Starter** - $14.99/month, 5% platform fee\n🚀 **Pro** - $29.99/month, 0% platform fee\n\nAll plans include unlimited products, custom storefront, and analytics.",
         specific: {
-          kenya: "In Kenya, pricing is the same: Free trial (10% fee), Starter $14.99/month (5% fee), Pro $29.99/month (0% fee). Payments accepted via M-Pesa and local banks.",
-          "south africa": "For South African creators: Free trial (10% fee), Starter $14.99/month (5% fee), Pro $29.99/month (0% fee). We support ZAR and local payment methods.",
-          nigeria: "Nigerian pricing: Free trial (10% fee), Starter $14.99/month (5% fee), Pro $29.99/month (0% fee). Accept Naira payments via local banks and Flutterwave."
+          kenya: "In Kenya, pricing is the same: Free trial (10% fee), Starter $14.99/month (5% fee), Pro $29.99/month (0% fee). Payments accepted via M-Pesa, Pesapal and local banks.",
+          "south africa": "For South African creators: Free trial (10% fee), Starter $14.99/month (5% fee), Pro $29.99/month (0% fee). We support ZAR via Pesapal and local payment methods.",
+          nigeria: "Nigerian pricing: Free trial (10% fee), Starter $14.99/month (5% fee), Pro $29.99/month (0% fee). Accept Naira payments via Pesapal, local banks and Flutterwave."
         } as Record<string, string>
       }
     },
@@ -108,9 +108,9 @@ export class IntelligentChatbot {
     },
     
     payments: {
-      keywords: ["payment", "mpesa", "mobile money", "bank", "transfer", "stripe", "flutterwave", "pesapal"],
+      keywords: ["payment", "mpesa", "mobile money", "bank", "transfer", "flutterwave", "pesapal"],
       responses: {
-        general: "We support African-focused payment methods:\n\n📱 **M-Pesa** - Kenya, Tanzania, Uganda\n🏦 **Pesapal** - Pan-African gateway\n💳 **Flutterwave** - Banks across Africa\n🌍 **Stripe** - International cards\n\nEarnings go directly to your local bank account!"
+        general: "We support African-focused payment methods:\n\n📱 **M-Pesa** - Kenya, Tanzania, Uganda\n🏦 **Pesapal** - Pan-African gateway (our primary processor)\n💳 **Flutterwave** - Banks across Africa\n🏧 **Local Banking** - Direct bank transfers\n\nEarnings go directly to your local bank account!"
       }
     },
     
@@ -146,77 +146,53 @@ export class IntelligentChatbot {
 
   analyzeIntent(question: string): { intent: string; confidence: number; entities: string[] } {
     const normalizedQuestion = question.toLowerCase().trim();
-    const words = normalizedQuestion.split(/\s+/);
     
-    let bestMatch = { intent: "general", confidence: 0, entities: [] as string[] };
-    
-    // Advanced pattern matching for common question structures
-    const questionPatterns = {
-      pricing: [
-        /how much.*cost/i, /what.*price/i, /pricing.*plan/i, /cost.*sell/i, 
-        /fee.*charge/i, /subscription.*price/i, /monthly.*cost/i, /plan.*cost/i
-      ],
-      countries: [
-        /support.*country/i, /available.*in/i, /work.*in/i, /accept.*from/i,
-        /country.*support/i, /use.*in.*africa/i, /african.*country/i
-      ],
-      payments: [
-        /payment.*method/i, /how.*pay/i, /accept.*payment/i, /mobile.*money/i,
-        /bank.*transfer/i, /credit.*card/i, /mpesa/i, /stripe/i
-      ],
-      gettingStarted: [
-        /how.*start/i, /get.*started/i, /begin.*sell/i, /create.*store/i,
-        /setup.*account/i, /first.*step/i, /how.*work/i
-      ],
-      products: [
-        /digital.*product/i, /physical.*product/i, /sell.*product/i, /upload.*product/i,
-        /what.*sell/i, /type.*product/i, /product.*support/i
-      ]
-    };
-    
-    // Check pattern matches first (higher confidence)
-    for (const [category, patterns] of Object.entries(questionPatterns)) {
+    // Check intent patterns first (highest confidence)
+    for (const [intent, patterns] of Object.entries(this.intentPatterns)) {
       for (const pattern of patterns) {
         if (pattern.test(question)) {
           return { 
-            intent: category, 
-            confidence: 0.8, 
-            entities: [category] 
+            intent, 
+            confidence: 0.9, 
+            entities: [intent] 
           };
         }
       }
     }
     
-    // Fallback to keyword matching with improved scoring
+    // Fallback to keyword matching for legacy data
+    const words = normalizedQuestion.split(/\s+/);
+    let bestMatch = { intent: "general", confidence: 0, entities: [] as string[] };
+    
     for (const [category, data] of Object.entries(this.knowledgeBase)) {
-      let matchScore = 0;
-      const foundEntities: string[] = [];
-      
-      // Weight matches based on keyword importance
-      for (const keyword of data.keywords) {
-        if (normalizedQuestion.includes(keyword)) {
-          // Give higher weight to exact matches and important terms
-          const weight = keyword.length > 4 ? 2 : 1;
-          matchScore += weight;
-          foundEntities.push(keyword);
-        }
-      }
-      
-      // Check for synonyms with lower weight
-      if ('synonyms' in data) {
-        for (const synonym of data.synonyms) {
-          if (normalizedQuestion.includes(synonym)) {
-            matchScore += 1;
-            foundEntities.push(synonym);
+      if ('keywords' in data) {
+        let matchScore = 0;
+        const foundEntities: string[] = [];
+        
+        // Weight matches based on keyword importance
+        for (const keyword of data.keywords) {
+          if (normalizedQuestion.includes(keyword)) {
+            const weight = keyword.length > 4 ? 2 : 1;
+            matchScore += weight;
+            foundEntities.push(keyword);
           }
         }
-      }
-      
-      // Calculate confidence based on match quality and question length
-      const confidence = Math.min(matchScore / Math.max(words.length, 3), 1);
-      
-      if (confidence > bestMatch.confidence && confidence > 0.2) {
-        bestMatch = { intent: category, confidence, entities: foundEntities };
+        
+        // Check for synonyms with lower weight
+        if ('synonyms' in data) {
+          for (const synonym of data.synonyms) {
+            if (normalizedQuestion.includes(synonym)) {
+              matchScore += 1;
+              foundEntities.push(synonym);
+            }
+          }
+        }
+        
+        const confidence = Math.min(matchScore / Math.max(words.length, 3), 1);
+        
+        if (confidence > bestMatch.confidence && confidence > 0.2) {
+          bestMatch = { intent: category, confidence, entities: foundEntities };
+        }
       }
     }
     
@@ -264,58 +240,77 @@ export class IntelligentChatbot {
     const intent = this.analyzeIntent(question);
     const countryContext = this.detectCountryContext(question);
     
-    let response = "";
-    let needsHumanSupport = false;
-    let suggestedQuestions: string[] = [];
+    // Handle high-confidence intent matches with new structure
+    if (intent.confidence > 0.8) {
+      const intentData = this.knowledgeBase[intent.intent as keyof typeof this.knowledgeBase];
+      
+      if (intentData && 'answer' in intentData) {
+        return {
+          answer: intentData.answer,
+          confidence: intent.confidence,
+          suggestedQuestions: this.generateSuggestions(intent.intent, countryContext),
+          needsHumanSupport: false,
+          conversationFlow: intent.intent,
+          quickActions: intentData.quickActions || []
+        };
+      }
+    }
     
-    // Handle specific intents with higher confidence threshold
+    // Handle legacy keyword-based responses
     if (intent.confidence > 0.4) {
       const categoryData = this.knowledgeBase[intent.intent as keyof typeof this.knowledgeBase];
       
-      // Check for country-specific responses
-      if (countryContext && 'responses' in categoryData && 'specific' in categoryData.responses) {
-        const specific = categoryData.responses.specific as Record<string, string>;
-        const specificResponse = specific[countryContext];
-        if (specificResponse) {
-          response = specificResponse;
+      if (categoryData && 'responses' in categoryData) {
+        let response = "";
+        
+        // Check for country-specific responses
+        if (countryContext && 'specific' in categoryData.responses) {
+          const specific = categoryData.responses.specific as Record<string, string>;
+          response = specific[countryContext] || "";
         }
-      }
-      
-      // Fallback to general response
-      if (!response && 'responses' in categoryData) {
-        if (typeof categoryData.responses === 'object' && 'general' in categoryData.responses) {
+        
+        // Fallback to general response
+        if (!response && 'general' in categoryData.responses) {
           response = categoryData.responses.general;
-        } else if (typeof categoryData.responses === 'string') {
-          response = categoryData.responses;
+        }
+        
+        if (response) {
+          return {
+            answer: response,
+            confidence: intent.confidence,
+            suggestedQuestions: this.generateSuggestions(intent.intent, countryContext),
+            needsHumanSupport: false
+          };
         }
       }
-      
-      // Generate contextual suggestions
-      suggestedQuestions = this.generateSuggestions(intent.intent, countryContext);
     }
     
     // Handle lower confidence matches with intelligent inference
-    else if (intent.confidence > 0.15) {
-      response = this.generateIntelligentInference(question, intent, countryContext);
-      suggestedQuestions = this.generateSuggestions(intent.intent, countryContext);
+    if (intent.confidence > 0.15) {
+      return {
+        answer: this.generateIntelligentInference(question, intent, countryContext),
+        confidence: intent.confidence,
+        suggestedQuestions: this.generateSuggestions(intent.intent, countryContext),
+        needsHumanSupport: false
+      };
     }
     
     // Handle technical issues
-    else if (this.detectTechnicalIssue(question)) {
-      needsHumanSupport = true;
-      response = this.generateEscalationResponse(question);
+    if (this.detectTechnicalIssue(question)) {
+      return {
+        answer: this.generateEscalationResponse(question),
+        confidence: 0.5,
+        suggestedQuestions: ["Contact technical support", "Check system status", "Try basic troubleshooting"],
+        needsHumanSupport: true
+      };
     }
     
     // Intelligent default response for unclear questions
-    else {
-      response = this.generateIntelligentDefault(question, intent.entities);
-    }
-    
     return {
-      answer: response,
-      confidence: intent.confidence,
-      suggestedQuestions,
-      needsHumanSupport
+      answer: this.generateIntelligentDefault(question, intent.entities),
+      confidence: 0.3,
+      suggestedQuestions: ["What is Creohub?", "See pricing plans", "How do I get started?"],
+      needsHumanSupport: false
     };
   }
 

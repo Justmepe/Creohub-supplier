@@ -17,6 +17,8 @@ interface SmartResponse {
   confidence: number;
   suggestedQuestions: string[];
   needsHumanSupport: boolean;
+  conversationFlow?: string;
+  quickActions?: { label: string; action: string }[];
 }
 
 export default function ChatBot() {
@@ -32,6 +34,7 @@ export default function ChatBot() {
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [conversationContext, setConversationContext] = useState<string[]>([]);
+  const [currentQuickActions, setCurrentQuickActions] = useState<{ label: string; action: string }[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +48,7 @@ export default function ChatBot() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const getIntelligentResponse = async (question: string): Promise<string> => {
+  const getIntelligentResponse = async (question: string): Promise<{ response: string; quickActions?: { label: string; action: string }[] }> => {
     try {
       const response = await apiRequest("POST", "/api/chatbot/ask", {
         question,
@@ -61,23 +64,30 @@ export default function ChatBot() {
       // Update conversation context
       setConversationContext(prev => [...prev.slice(-4), question]);
       
-      // Add suggested questions to the bot message if available
+      // Build response with suggestions and quick actions
+      let fullResponse = smartResponse.answer;
+      
       if (smartResponse.suggestedQuestions && smartResponse.suggestedQuestions.length > 0) {
-        const mainResponse = smartResponse.answer;
         const suggestions = smartResponse.suggestedQuestions
           .slice(0, 3)
           .map(q => `• ${q}`)
           .join('\n');
         
-        return `${mainResponse}\n\n**You might also ask:**\n${suggestions}`;
+        fullResponse += `\n\n**You might also ask:**\n${suggestions}`;
       }
       
-      return smartResponse.answer;
+      return { 
+        response: fullResponse, 
+        quickActions: smartResponse.quickActions 
+      };
     } catch (error) {
       console.error("Error getting intelligent response:", error);
       
       // Fallback to basic response if API fails
-      return "I'm having trouble processing your question right now. For immediate assistance, please contact our support team at **support@creohub.io**.\n\nYou can also try asking about:\n• Pricing plans\n• Getting started\n• Payment methods\n• Country support";
+      return { 
+        response: "I'm having trouble processing your question right now. For immediate assistance, please contact our support team at **support@creohub.io**.\n\nYou can also try asking about:\n• Pricing plans\n• Getting started\n• Payment methods\n• Country support",
+        quickActions: []
+      };
     }
   };
 
