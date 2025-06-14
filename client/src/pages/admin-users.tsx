@@ -63,18 +63,11 @@ export default function AdminUsers() {
     try {
       setIsDeleting(true);
       
-      let token = localStorage.getItem('auth_token');
-      
-      // If no token or invalid token, try to get it from auth context
-      if (!token || token === 'null' || token === 'undefined') {
-        if (authContext?.user?.id) {
-          // Generate token from current user ID
-          token = Buffer.from(authContext.user.id.toString()).toString('base64');
-          localStorage.setItem('auth_token', token);
-        } else {
-          throw new Error('No authentication token found');
-        }
+      if (!authContext?.user?.id) {
+        throw new Error('No authenticated user found');
       }
+      
+      const token = btoa(authContext.user.id.toString());
       
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
