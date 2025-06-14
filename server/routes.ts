@@ -398,6 +398,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Temporary endpoint to retrieve verification code when email delivery fails
+  app.post("/api/auth/get-verification-code", async (req: Request, res: Response) => {
+    try {
+      const { userId, email } = req.body;
+      
+      if (!userId || !email) {
+        return res.status(400).json({ message: "User ID and email are required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || user.email !== email) {
+        return res.status(404).json({ message: "User not found or email mismatch" });
+      }
+
+      if (user.isEmailVerified) {
+        return res.json({ 
+          verified: true, 
+          message: "Email already verified" 
+        });
+      }
+
+      // Get the latest verification code for this user
+      const [latestVerification] = await db
+        .select()
+        .from(emailVerifications)
+        .where(
+          and(
+            eq(emailVerifications.userId, userId),
+            gt(emailVerifications.expiresAt, new Date()),
+            isNull(emailVerifications.usedAt)
+          )
+        )
+        .orderBy(desc(emailVerifications.createdAt))
+        .limit(1);
+
+      if (!latestVerification) {
+        return res.json({
+          hasCode: false,
+          message: "No active verification code found. Please request a new one."
+        });
+      }
+
+      // Return the verification code (temporarily until email is fixed)
+      return res.json({
+        hasCode: true,
+        code: latestVerification.code,
+        expiresAt: latestVerification.expiresAt,
+        message: "Verification code retrieved successfully. Enter this code to verify your email."
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Add route to check authentication status with session validation
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
