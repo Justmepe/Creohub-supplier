@@ -25,7 +25,12 @@ import {
 import { generateVerificationCode, sendVerificationEmail } from "./services/email";
 import { createUserSession, validateSession, invalidateSession, cleanupExpiredSessions } from "./services/session";
 import { db } from "./db";
-import { emailVerifications, users } from "@shared/schema";
+import { 
+  emailVerifications, users, creators, products, orders, subscriptions, 
+  colorThemes, affiliateLinks, commissions, payoutMethods, 
+  withdrawalRequests, creatorEarnings, earningTransactions,
+  productSettings, userSessions 
+} from "@shared/schema";
 import { eq, and, gt, isNull } from "drizzle-orm";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
@@ -1452,24 +1457,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Cannot delete admin accounts" });
       }
 
-      // Handle foreign key constraints by providing better error information
+      // Implement cascade deletion by removing all related data first
       try {
+        // Get creator profile if exists
+        const [creator] = await db.select().from(creators).where(eq(creators.userId, targetUserId));
+        
+        if (creator) {
+          console.log(`Deleting creator data for user ${targetUserId}, creator ${creator.id}`);
+          
+          // Delete all creator-related data in proper order to avoid foreign key violations
+          
+          // 1. Delete withdrawal requests
+          await db.delete(withdrawalRequests).where(eq(withdrawalRequests.creatorId, creator.id));
+          
+          // 2. Delete payout methods
+          await db.delete(payoutMethods).where(eq(payoutMethods.creatorId, creator.id));
+          
+          // 3. Delete earning transactions
+          await db.delete(earningTransactions).where(eq(earningTransactions.creatorId, creator.id));
+          
+          // 4. Delete creator earnings
+          await db.delete(creatorEarnings).where(eq(creatorEarnings.creatorId, creator.id));
+          
+          // 5. Delete commissions (affiliate commissions)
+          await db.delete(commissions).where(eq(commissions.creatorId, creator.id));
+          
+          // 6. Delete affiliate links (where creator is the affiliate)
+          await db.delete(affiliateLinks).where(eq(affiliateLinks.affiliateCreatorId, creator.id));
+          
+          // 7. Delete orders
+          await db.delete(orders).where(eq(orders.creatorId, creator.id));
+          
+          // 8. Delete subscriptions
+          await db.delete(subscriptions).where(eq(subscriptions.creatorId, creator.id));
+          
+          // 9. Get products and delete their settings first
+          const creatorProducts = await db.select().from(products).where(eq(products.creatorId, creator.id));
+          for (const product of creatorProducts) {
+            await db.delete(productSettings).where(eq(productSettings.productId, product.id));
+          }
+          
+          // 10. Delete products
+          await db.delete(products).where(eq(products.creatorId, creator.id));
+          
+          // 11. Delete color themes
+          await db.delete(colorThemes).where(eq(colorThemes.userId, targetUserId));
+          
+          // 12. Finally delete creator profile
+          await db.delete(creators).where(eq(creators.id, creator.id));
+          
+          console.log(`Successfully deleted all creator data for user ${targetUserId}`);
+        }
+        
+        // Delete user-specific data
+        await db.delete(emailVerifications).where(eq(emailVerifications.userId, targetUserId));
+        await db.delete(userSessions).where(eq(userSessions.userId, targetUserId));
+        
+        // Now safely delete the user
         const deleted = await storage.deleteUser(targetUserId);
         if (deleted) {
-          res.json({ message: "User deleted successfully", userId: targetUserId });
-        } else {
-          res.status(500).json({ message: "Failed to delete user" });
-        }
-      } catch (dbError: any) {
-        if (dbError.message.includes('foreign key constraint') || dbError.message.includes('violates')) {
-          res.status(400).json({ 
-            message: "Cannot delete user: User has associated data that must be removed first",
-            details: "This user has creator profiles, subscriptions, or other data that prevents deletion. Please contact support for manual cleanup.",
-            errorType: "foreign_key_constraint"
+          res.json({ 
+            message: "User and all associated data deleted successfully", 
+            userId: targetUserId,
+            deletedCreatorData: !!creator
           });
         } else {
-          res.status(500).json({ message: dbError.message });
+          res.status(500).json({ message: "Failed to delete user after cleanup" });
         }
+        
+      } catch (dbError: any) {
+        console.error('User deletion error:', dbError);
+        res.status(500).json({ 
+          message: `Failed to delete user: ${dbError.message}`,
+          details: "Error occurred during data cleanup process"
+        });
       }
     } catch (error: any) {
       res.status(500).json({ message: error.message });
