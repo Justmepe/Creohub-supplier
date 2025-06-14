@@ -2250,21 +2250,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const emailSubject = `${category ? `[${category}] ` : ""}${subject || "Contact Form Submission"} - ${name}`;
+      const emailSubject = `[Creohub Support] ${category ? `${category.toUpperCase()} - ` : ""}${subject || "New Inquiry"} from ${name}`;
+      
+      const timestamp = new Date().toLocaleString('en-US', {
+        timeZone: 'UTC',
+        year: 'numeric',
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+
       const emailBody = `
-New contact form submission from Creohub:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 NEW CONTACT FORM SUBMISSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Name: ${name}
-Email: ${email}
-Category: ${category || "General"}
-Subject: ${subject || "Not specified"}
+📋 CONTACT DETAILS:
+   👤 Name:     ${name}
+   📧 Email:    ${email}
+   📂 Category: ${category || "General Inquiry"}
+   📝 Subject:  ${subject || "No subject specified"}
 
-Message:
-${message}
+💬 MESSAGE:
+${message.split('\n').map(line => `   ${line}`).join('\n')}
 
----
-This message was sent through the Creohub contact form.
-Time: ${new Date().toISOString()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 Received: ${timestamp}
+🌐 Platform: Creohub Contact Form
+💡 Reply directly to this email to respond to ${name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       `.trim();
 
       await sendEmail({
