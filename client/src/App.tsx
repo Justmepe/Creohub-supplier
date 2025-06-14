@@ -34,6 +34,7 @@ import PaymentDemo from "@/pages/payment-demo";
 import CustomerOrdersPage from "@/pages/customer-orders";
 import VerifyEmail from "@/pages/verify-email";
 import EmailVerification from "@/pages/email-verification";
+import VerificationHelp from "@/pages/verification-help";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ function App() {
               <Route path="/signup" component={Auth} />
               <Route path="/verify-email" component={VerifyEmail} />
               <Route path="/email-verification" component={EmailVerification} />
+              <Route path="/verification-help" component={VerificationHelp} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/products" component={Products} />
               <Route path="/orders" component={Orders} />
