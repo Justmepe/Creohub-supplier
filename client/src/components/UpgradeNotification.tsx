@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Crown, Zap, X, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useQuery } from "@tanstack/react-query";
 
 interface SocialProofData {
   name: string;
@@ -11,28 +12,32 @@ interface SocialProofData {
   timeAgo: string;
 }
 
-// Demo data - will be replaced with real subscriber data later
-const demoUpgrades: SocialProofData[] = [
-  { name: "David", location: "Nairobi", plan: "pro", timeAgo: "just now" },
-  { name: "Sarah", location: "Lagos", plan: "starter", timeAgo: "2 minutes ago" },
-  { name: "Michael", location: "Accra", plan: "pro", timeAgo: "5 minutes ago" },
-  { name: "Amina", location: "Kampala", plan: "starter", timeAgo: "8 minutes ago" },
-  { name: "James", location: "Dar es Salaam", plan: "pro", timeAgo: "12 minutes ago" },
-  { name: "Grace", location: "Kigali", plan: "starter", timeAgo: "15 minutes ago" },
-  { name: "Peter", location: "Addis Ababa", plan: "pro", timeAgo: "18 minutes ago" },
-  { name: "Faith", location: "Lusaka", plan: "starter", timeAgo: "22 minutes ago" },
-  { name: "Samuel", location: "Harare", plan: "pro", timeAgo: "25 minutes ago" },
-  { name: "Mary", location: "Douala", plan: "starter", timeAgo: "28 minutes ago" },
-];
+interface SocialProofResponse {
+  data: SocialProofData[];
+  config: {
+    useRealData: boolean;
+    minRealDataRequired: number;
+    mixRatio: number;
+  };
+}
 
 export default function SocialProofNotification() {
   const [currentUpgrade, setCurrentUpgrade] = useState<SocialProofData | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [upgradeIndex, setUpgradeIndex] = useState(0);
 
+  const { data: socialProofData } = useQuery<SocialProofResponse>({
+    queryKey: ["/api/social-proof"],
+    refetchInterval: 60000, // Refresh every minute to get new data
+  });
+
+  const upgrades = socialProofData?.data || [];
+
   useEffect(() => {
+    if (upgrades.length === 0) return;
+
     const showNotification = () => {
-      const upgrade = demoUpgrades[upgradeIndex];
+      const upgrade = upgrades[upgradeIndex];
       setCurrentUpgrade(upgrade);
       setIsVisible(true);
 
@@ -42,7 +47,7 @@ export default function SocialProofNotification() {
       }, 4000);
 
       // Move to next upgrade
-      setUpgradeIndex((prev) => (prev + 1) % demoUpgrades.length);
+      setUpgradeIndex((prev) => (prev + 1) % upgrades.length);
     };
 
     // Show first notification after 3 seconds
@@ -55,7 +60,7 @@ export default function SocialProofNotification() {
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, [upgradeIndex]);
+  }, [upgradeIndex, upgrades]);
 
   const handleClose = () => {
     setIsVisible(false);

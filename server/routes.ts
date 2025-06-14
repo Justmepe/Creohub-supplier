@@ -8,6 +8,7 @@ declare module "express-session" {
   }
 }
 import { storage } from "./storage";
+import { getSocialProofData, addFakeUser, socialProofConfig } from "./services/socialProof";
 import { 
   insertUserSchema, 
   insertCreatorSchema, 
@@ -2146,6 +2147,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Social Proof endpoints
+  app.get("/api/social-proof", async (req: Request, res: Response) => {
+    try {
+      const socialProofData = await getSocialProofData();
+      res.json({ data: socialProofData, config: socialProofConfig });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/social-proof/add-fake", async (req: Request, res: Response) => {
+    try {
+      const { name, location, plan } = req.body;
+      
+      if (!name || !location || !plan) {
+        return res.status(400).json({ message: "Name, location, and plan are required" });
+      }
+
+      if (!["starter", "pro"].includes(plan)) {
+        return res.status(400).json({ message: "Plan must be 'starter' or 'pro'" });
+      }
+
+      const success = await addFakeUser({ name, location, plan });
+      
+      if (success) {
+        res.json({ message: "Fake user added successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to add fake user" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.put("/api/admin/social-proof/config", async (req: Request, res: Response) => {
+    try {
+      const { useRealData, minRealDataRequired, mixRatio } = req.body;
+      
+      if (typeof useRealData === 'boolean') {
+        socialProofConfig.useRealData = useRealData;
+      }
+      if (typeof minRealDataRequired === 'number') {
+        socialProofConfig.minRealDataRequired = minRealDataRequired;
+      }
+      if (typeof mixRatio === 'number' && mixRatio >= 0 && mixRatio <= 1) {
+        socialProofConfig.mixRatio = mixRatio;
+      }
+
+      res.json({ message: "Configuration updated successfully", config: socialProofConfig });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
 
