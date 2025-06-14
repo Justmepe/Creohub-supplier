@@ -2204,6 +2204,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Intelligent Chatbot API
+  app.post("/api/chatbot/ask", async (req: Request, res: Response) => {
+    try {
+      const { question, context } = req.body;
+      
+      if (!question || typeof question !== 'string') {
+        return res.status(400).json({ message: "Question is required" });
+      }
+
+      const { intelligentBot } = await import("./services/intelligentChatbot");
+      const response = intelligentBot.generateSmartResponse(question, context);
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error processing chatbot question:", error);
+      res.status(500).json({ 
+        answer: "I'm having trouble processing your question right now. Please contact our support team at support@creohub.io for assistance.",
+        confidence: 0,
+        suggestedQuestions: [],
+        needsHumanSupport: true
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
