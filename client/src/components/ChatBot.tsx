@@ -106,7 +106,7 @@ export default function ChatBot() {
     setIsTyping(true);
 
     // Get intelligent bot response
-    const botResponse = await getIntelligentResponse(inputText);
+    const { response: botResponse, quickActions } = await getIntelligentResponse(inputText);
 
     setTimeout(() => {
       const botMessage: Message = {
@@ -117,8 +117,27 @@ export default function ChatBot() {
       };
 
       setMessages(prev => [...prev, botMessage]);
+      setCurrentQuickActions(quickActions || []);
       setIsTyping(false);
     }, 500);
+  };
+
+  const handleQuickAction = async (action: string) => {
+    // Map quick actions to actual questions
+    const actionQuestions: Record<string, string> = {
+      pricing: "What are your pricing plans?",
+      setup: "How do I get started?",
+      features: "What features do you offer?",
+      trial: "How do I start a free trial?",
+      compare: "Compare your pricing plans",
+      demo: "Can I see a demo?",
+      support: "How do I contact support?",
+      countries: "What countries do you support?",
+      payments: "What payment methods do you accept?"
+    };
+
+    const question = actionQuestions[action] || action;
+    await handleSuggestedQuestion(question);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -139,7 +158,7 @@ export default function ChatBot() {
     setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
 
-    const botResponse = await getIntelligentResponse(question);
+    const { response: botResponse, quickActions } = await getIntelligentResponse(question);
 
     setTimeout(() => {
       const botMessage: Message = {
@@ -150,6 +169,7 @@ export default function ChatBot() {
       };
 
       setMessages(prev => [...prev, botMessage]);
+      setCurrentQuickActions(quickActions || []);
       setIsTyping(false);
     }, 500);
   };
@@ -265,33 +285,52 @@ export default function ChatBot() {
         
         {/* Input Area */}
         <div className="border-t bg-white p-4 space-y-3 rounded-b-lg">
-          {/* Quick action buttons */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSuggestedQuestion("What are your pricing plans?")}
-              className="text-xs h-7 px-2"
-            >
-              Pricing
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSuggestedQuestion("Do you support South Africa?")}
-              className="text-xs h-7 px-2"
-            >
-              Countries
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSuggestedQuestion("How do I get started?")}
-              className="text-xs h-7 px-2"
-            >
-              Get Started
-            </Button>
-          </div>
+          {/* Dynamic Quick Action Buttons */}
+          {currentQuickActions.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {currentQuickActions.map((action, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickAction(action.action)}
+                  className="text-xs h-7 px-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
+          )}
+          
+          {/* Static Quick Actions when no dynamic ones */}
+          {currentQuickActions.length === 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSuggestedQuestion("What are your pricing plans?")}
+                className="text-xs h-7 px-2"
+              >
+                Pricing
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSuggestedQuestion("Do you support South Africa?")}
+                className="text-xs h-7 px-2"
+              >
+                Countries
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSuggestedQuestion("How do I get started?")}
+                className="text-xs h-7 px-2"
+              >
+                Get Started
+              </Button>
+            </div>
+          )}
           
           <div className="flex gap-2">
             <Input
