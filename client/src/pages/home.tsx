@@ -684,18 +684,18 @@ export default function Home() {
               <ul className="space-y-2 text-gray-300">
                 <li><a href="#features" className="hover:text-primary transition-colors">Features</a></li>
                 <li><a href="#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Templates</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Integrations</a></li>
+                <li><a href="mailto:support@creohub.io?subject=Templates Inquiry" className="hover:text-primary transition-colors">Templates</a></li>
+                <li><a href="mailto:support@creohub.io?subject=Integrations Inquiry" className="hover:text-primary transition-colors">Integrations</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
+                <li><a href="mailto:support@creohub.io" className="hover:text-primary transition-colors">Help Center</a></li>
+                <li><a href="mailto:support@creohub.io" className="hover:text-primary transition-colors">Contact Us</a></li>
                 <li><a href="#creators" className="hover:text-primary transition-colors">Creator Stories</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
+                <li><a href="mailto:support@creohub.io" className="hover:text-primary transition-colors">Blog</a></li>
               </ul>
             </div>
           </div>
@@ -705,8 +705,8 @@ export default function Home() {
               © 2024 Creohub. All rights reserved. Made with ❤️ in Africa.
             </div>
             <div className="flex space-x-6 text-sm text-gray-400 mt-4 md:mt-0">
-              <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+              <a href="mailto:support@creohub.io?subject=Privacy Policy Inquiry" className="hover:text-primary transition-colors">Privacy Policy</a>
+              <a href="mailto:support@creohub.io?subject=Terms of Service Inquiry" className="hover:text-primary transition-colors">Terms of Service</a>
             </div>
           </div>
         </div>
