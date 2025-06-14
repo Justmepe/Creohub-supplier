@@ -37,6 +37,7 @@ import EmailVerification from "@/pages/email-verification";
 import VerificationHelp from "@/pages/verification-help";
 import GetVerificationCode from "@/pages/get-verification-code";
 import NotFound from "@/pages/not-found";
+import SocialProofNotification from "@/components/UpgradeNotification";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,6 +91,7 @@ function App() {
             </Switch>
           </div>
           <Toaster />
+          <SocialProofNotification />
           </TooltipProvider>
         </CurrencyProvider>
       </AuthProvider>
