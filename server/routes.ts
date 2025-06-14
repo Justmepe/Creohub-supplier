@@ -237,6 +237,260 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch products" });
     }
   });
+
+  // Intelligent Recommendation Engine Endpoints
+  app.get("/api/creators/:creatorId/recommendations", async (req: Request, res: Response) => {
+    try {
+      const { creatorId } = req.params;
+      const { type = 'all', limit = 20 } = req.query;
+      
+      // Mock intelligent recommendations based on different algorithms
+      const recommendations = [
+        {
+          id: 1,
+          type: "dropshipping_product",
+          name: "Smart Fitness Tracker",
+          description: "Advanced fitness tracking with heart rate monitoring",
+          price: "3500.00",
+          images: ["/uploads/fitness-tracker.jpg"],
+          category: "Electronics",
+          score: 92,
+          reason: "Trending in Electronics with 85% market growth this month",
+          metadata: {
+            wholesalePrice: "2200.00",
+            commissionRate: "18.00",
+            trendingCategory: true,
+            recommendationType: "trending"
+          },
+          partner: {
+            id: 1,
+            companyName: "TechGear Africa",
+            logo: "/uploads/techgear-logo.png"
+          }
+        },
+        {
+          id: 2,
+          type: "dropshipping_product",
+          name: "Organic Skincare Set",
+          description: "Natural skincare products for daily routine",
+          price: "2800.00",
+          images: ["/uploads/skincare-set.jpg"],
+          category: "Beauty & Health",
+          score: 88,
+          reason: "Matches your interests in Beauty & Health and fits your target audience",
+          metadata: {
+            wholesalePrice: "1800.00",
+            commissionRate: "20.00",
+            personalizedMatch: true,
+            recommendationType: "personalized"
+          },
+          partner: {
+            id: 2,
+            companyName: "Natural Beauty Co",
+            logo: "/uploads/beauty-logo.png"
+          }
+        },
+        {
+          id: 3,
+          type: "dropshipping_product",
+          name: "African Print Laptop Bag",
+          description: "Stylish laptop bag with authentic African designs",
+          price: "1800.00",
+          images: ["/uploads/laptop-bag.jpg"],
+          category: "Fashion & Accessories",
+          score: 85,
+          reason: "Popular among creators with similar audiences and product preferences",
+          metadata: {
+            wholesalePrice: "1200.00",
+            commissionRate: "15.00",
+            similarCreatorMatch: true,
+            recommendationType: "similar_creators"
+          },
+          partner: {
+            id: 3,
+            companyName: "African Heritage Crafts",
+            logo: "/uploads/heritage-logo.png"
+          }
+        },
+        {
+          id: 4,
+          type: "dropshipping_product",
+          name: "Solar Power Bank",
+          description: "Eco-friendly portable charger with solar panel",
+          price: "2500.00",
+          images: ["/uploads/solar-powerbank.jpg"],
+          category: "Electronics",
+          score: 82,
+          reason: "Perfect timing for Mid-Year sales in Electronics",
+          metadata: {
+            wholesalePrice: "1600.00",
+            commissionRate: "17.00",
+            seasonalMatch: true,
+            recommendationType: "seasonal",
+            season: "Mid-Year"
+          },
+          partner: {
+            id: 4,
+            companyName: "EcoTech Solutions",
+            logo: "/uploads/ecotech-logo.png"
+          }
+        }
+      ];
+
+      // Filter by type if specified
+      let filteredRecommendations = recommendations;
+      if (type !== 'all') {
+        filteredRecommendations = recommendations.filter(r => 
+          r.metadata.recommendationType === type
+        );
+      }
+
+      // Apply limit
+      const limitedRecommendations = filteredRecommendations.slice(0, parseInt(limit as string));
+
+      res.json(limitedRecommendations);
+    } catch (error) {
+      console.error("Fetch recommendations error:", error);
+      res.status(500).json({ error: "Failed to fetch recommendations" });
+    }
+  });
+
+  app.post("/api/creators/:creatorId/recommendations/track", async (req: Request, res: Response) => {
+    try {
+      const { creatorId } = req.params;
+      const { action, entityType, entityId, metadata } = req.body;
+      
+      // Track user behavior for recommendation learning
+      console.log(`Tracking behavior for creator ${creatorId}:`, {
+        action,
+        entityType, 
+        entityId,
+        metadata
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Track behavior error:", error);
+      res.status(500).json({ error: "Failed to track behavior" });
+    }
+  });
+
+  app.get("/api/creators/:creatorId/preferences", async (req: Request, res: Response) => {
+    try {
+      const { creatorId } = req.params;
+      
+      // Mock creator preferences
+      const preferences = {
+        id: 1,
+        creatorId: parseInt(creatorId),
+        preferredCategories: ["Electronics", "Beauty & Health", "Fashion & Accessories"],
+        targetAudience: "young_adults",
+        budgetRange: { min: 1000, max: 5000, average: 2500 },
+        location: "kenya",
+        interests: ["technology", "beauty", "fashion", "lifestyle"],
+        brandStyle: "affordable",
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+
+      res.json(preferences);
+    } catch (error) {
+      console.error("Fetch preferences error:", error);
+      res.status(500).json({ error: "Failed to fetch preferences" });
+    }
+  });
+
+  app.put("/api/creators/:creatorId/preferences", async (req: Request, res: Response) => {
+    try {
+      const { creatorId } = req.params;
+      const preferences = req.body;
+      
+      // Update creator preferences
+      console.log(`Updating preferences for creator ${creatorId}:`, preferences);
+      
+      const updatedPreferences = {
+        ...preferences,
+        creatorId: parseInt(creatorId),
+        updatedAt: new Date().toISOString()
+      };
+
+      res.json(updatedPreferences);
+    } catch (error) {
+      console.error("Update preferences error:", error);
+      res.status(500).json({ error: "Failed to update preferences" });
+    }
+  });
+
+  app.get("/api/market-trends", async (req: Request, res: Response) => {
+    try {
+      const { region = 'africa' } = req.query;
+      
+      // Mock market trends data
+      const trends = [
+        {
+          id: 1,
+          category: "Electronics",
+          region: "africa",
+          trendScore: "85.50",
+          searchVolume: 15400,
+          salesVelocity: "125.80",
+          competitionLevel: "medium",
+          priceRange: { min: 1000, max: 8000, average: 3200 },
+          seasonality: { peak_months: [6, 7, 11, 12], low_months: [2, 3] },
+          keywords: ["smartphone", "earbuds", "smartwatch", "power bank"],
+          period: "2024-06",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 2,
+          category: "Beauty & Health",
+          region: "africa",
+          trendScore: "78.20",
+          searchVolume: 12800,
+          salesVelocity: "95.40",
+          competitionLevel: "high",
+          priceRange: { min: 800, max: 4000, average: 1900 },
+          seasonality: { peak_months: [3, 4, 10, 11], low_months: [1, 8] },
+          keywords: ["skincare", "organic", "natural", "beauty routine"],
+          period: "2024-06",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 3,
+          category: "Fashion & Accessories",
+          region: "africa",
+          trendScore: "72.90",
+          searchVolume: 18600,
+          salesVelocity: "110.20",
+          competitionLevel: "high",
+          priceRange: { min: 500, max: 3500, average: 1400 },
+          seasonality: { peak_months: [4, 5, 9, 12], low_months: [1, 2] },
+          keywords: ["african print", "accessories", "bags", "jewelry"],
+          period: "2024-06",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 4,
+          category: "Home & Garden",
+          region: "africa",
+          trendScore: "68.40",
+          searchVolume: 9200,
+          salesVelocity: "67.30",
+          competitionLevel: "low",
+          priceRange: { min: 600, max: 5000, average: 2100 },
+          seasonality: { peak_months: [3, 4, 9, 10], low_months: [6, 7] },
+          keywords: ["home decor", "kitchen", "garden", "furniture"],
+          period: "2024-06",
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      res.json(trends);
+    } catch (error) {
+      console.error("Fetch market trends error:", error);
+      res.status(500).json({ error: "Failed to fetch market trends" });
+    }
+  });
   
   // Handle client-side routing (only for non-asset requests)
   app.get("*", (req: Request, res: Response) => {
