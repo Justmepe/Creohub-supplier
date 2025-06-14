@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,15 @@ export default function ChatBot() {
   ]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
 
   const predefinedResponses = {
     pricing: "Creohub offers 3 plans:\n\n• **Free Trial** (14 days): 10% platform fee\n• **Starter** ($14.99/month): 5% platform fee\n• **Pro** ($29.99/month): 0% platform fee\n\nAll plans include unlimited products, custom storefront, and analytics!",
@@ -125,7 +134,7 @@ export default function ChatBot() {
       {/* Chat Window */}
       {isOpen && (
         <Card className="fixed bottom-6 right-6 w-80 h-96 shadow-xl z-50 flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary text-primary-foreground rounded-t-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary text-primary-foreground rounded-t-lg flex-shrink-0">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Bot className="h-4 w-4" />
               Creohub Assistant
@@ -140,9 +149,9 @@ export default function ChatBot() {
             </Button>
           </CardHeader>
           
-          <CardContent className="flex-1 p-0 flex flex-col">
+          <CardContent className="flex-1 p-0 flex flex-col min-h-0">
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4 max-h-64">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -183,11 +192,12 @@ export default function ChatBot() {
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="p-4 border-t">
+            <div className="p-4 border-t flex-shrink-0">
               <div className="flex gap-2">
                 <Input
                   value={inputText}
