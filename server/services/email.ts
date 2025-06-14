@@ -5,18 +5,18 @@ let gmailTransporter: any = null;
 let isEmailConfigured = false;
 
 if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-  // Remove any spaces from app password and convert to lowercase
-  const cleanPassword = process.env.GMAIL_APP_PASSWORD.replace(/\s/g, '').toLowerCase();
+  // Use the app password exactly as provided
+  const appPassword = process.env.GMAIL_APP_PASSWORD.trim();
   
   console.log('Configuring Gmail with user:', process.env.GMAIL_USER);
-  console.log('Password length:', cleanPassword.length);
-  console.log('Password preview:', cleanPassword.substring(0, 4) + '****' + cleanPassword.substring(cleanPassword.length - 4));
+  console.log('Password length:', appPassword.length);
+  console.log('Password preview:', appPassword.substring(0, 4) + '****' + appPassword.substring(appPassword.length - 4));
   
   gmailTransporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.GMAIL_USER,
-      pass: cleanPassword
+      pass: appPassword
     }
   });
   isEmailConfigured = true;
