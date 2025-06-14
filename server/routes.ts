@@ -1750,7 +1750,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const token = authHeader.substring(7);
-      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      let userId: number;
+      try {
+        userId = parseInt(Buffer.from(token, 'base64').toString());
+        if (isNaN(userId)) {
+          return res.status(401).json({ message: "Invalid token format" });
+        }
+      } catch (e) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+      
       const user = await storage.getUser(userId);
       
       if (!user || !user.isAdmin) {
@@ -1767,6 +1776,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Process withdrawal request
   app.put("/api/admin/withdrawals/:id/process", async (req: Request, res: Response) => {
     try {
+      // Admin authentication
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const token = authHeader.substring(7);
+      let userId: number;
+      try {
+        userId = parseInt(Buffer.from(token, 'base64').toString());
+        if (isNaN(userId)) {
+          return res.status(401).json({ message: "Invalid token format" });
+        }
+      } catch (e) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
       const withdrawalId = parseInt(req.params.id);
       const { status, transactionId, notes } = req.body;
       

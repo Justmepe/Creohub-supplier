@@ -105,10 +105,46 @@ export default function AdminDashboard() {
     }
   });
 
+  // Withdrawal processing mutation
+  const processWithdrawalMutation = useMutation({
+    mutationFn: async ({ withdrawalId, status, transactionId, notes }: {
+      withdrawalId: number;
+      status: string;
+      transactionId?: string;
+      notes?: string;
+    }) => {
+      const token = btoa(authContext?.user?.id?.toString() || '');
+      const response = await fetch(`/api/admin/withdrawals/${withdrawalId}/process`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status, transactionId, notes })
+      });
+      if (!response.ok) throw new Error('Failed to process withdrawal');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchWithdrawals();
+      toast({
+        title: "Success",
+        description: "Withdrawal request processed successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to process withdrawal request",
+        variant: "destructive",
+      });
+    }
+  });
+
   // User deletion mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      const token = localStorage.getItem('auth-token');
+      const token = btoa(authContext?.user?.id?.toString() || '');
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
@@ -446,6 +482,147 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Withdrawal Requests
+                </CardTitle>
+                <CardDescription>
+                  Review and process creator withdrawal requests
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {withdrawalRequests?.length === 0 ? (
+                  <div className="text-center py-12">
+                    <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No withdrawal requests found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {withdrawalRequests?.map((withdrawal: any) => (
+                      <div key={withdrawal.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="font-medium">Creator ID: {withdrawal.creatorId}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Requested on {new Date(withdrawal.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold">
+                              {withdrawal.currency} {parseFloat(withdrawal.amount).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Net: {withdrawal.currency} {parseFloat(withdrawal.netAmount).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Processing Fee:</span>
+                            <div>{withdrawal.currency} {parseFloat(withdrawal.processingFee || "0").toFixed(2)}</div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Status:</span>
+                            <div>
+                              <Badge variant={
+                                withdrawal.status === 'pending' ? 'secondary' :
+                                withdrawal.status === 'completed' ? 'default' :
+                                withdrawal.status === 'failed' ? 'destructive' : 'secondary'
+                              }>
+                                {withdrawal.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        {withdrawal.notes && (
+                          <div className="mb-4 p-3 bg-muted rounded">
+                            <span className="text-sm font-medium">Notes:</span>
+                            <p className="text-sm mt-1">{withdrawal.notes}</p>
+                          </div>
+                        )}
+
+                        {withdrawal.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="default">
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Approve
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Approve Withdrawal</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to approve this withdrawal of {withdrawal.currency} {parseFloat(withdrawal.amount).toLocaleString()}?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => processWithdrawalMutation.mutate({
+                                      withdrawalId: withdrawal.id,
+                                      status: 'completed',
+                                      transactionId: `TXN_${Date.now()}`,
+                                      notes: 'Approved by admin'
+                                    })}
+                                  >
+                                    Approve
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Reject
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Reject Withdrawal</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to reject this withdrawal request?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => processWithdrawalMutation.mutate({
+                                      withdrawalId: withdrawal.id,
+                                      status: 'failed',
+                                      notes: 'Rejected by admin'
+                                    })}
+                                  >
+                                    Reject
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        )}
+
+                        {withdrawal.status === 'completed' && withdrawal.transactionId && (
+                          <div className="text-sm text-muted-foreground">
+                            Transaction ID: {withdrawal.transactionId}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
