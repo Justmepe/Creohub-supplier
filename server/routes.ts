@@ -1380,16 +1380,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const token = authHeader.substring(7);
-      const userId = parseInt(Buffer.from(token, 'base64').toString());
+      console.log(`Admin users - received token: "${token}"`);
+      
+      let userId: number;
+      try {
+        const decodedToken = Buffer.from(token, 'base64').toString();
+        console.log(`Admin users - decoded token: "${decodedToken}"`);
+        userId = parseInt(decodedToken);
+        console.log(`Admin users - parsed userId: ${userId}`);
+        
+        if (isNaN(userId)) {
+          console.log(`Admin users - userId is NaN`);
+          return res.status(401).json({ message: "Invalid token format" });
+        }
+      } catch (error) {
+        console.log(`Admin users - token parsing error: ${error}`);
+        return res.status(401).json({ message: "Invalid token format" });
+      }
+      
       const user = await storage.getUser(userId);
+      console.log(`Admin users - fetched user:`, user ? { id: user.id, username: user.username, isAdmin: user.isAdmin } : null);
       
       if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Admin access required" });
       }
 
+      console.log(`Admin users - fetching all users`);
       const allUsers = await storage.getAllUsers();
+      console.log(`Admin users - found ${allUsers.length} users`);
       res.json(allUsers);
     } catch (error: any) {
+      console.log(`Admin users - error: ${error.message}`);
+      console.log(`Admin users - stack: ${error.stack}`);
       res.status(500).json({ message: error.message });
     }
   });
