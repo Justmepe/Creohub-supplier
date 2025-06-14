@@ -4,19 +4,28 @@ import * as nodemailer from 'nodemailer';
 let gmailTransporter: any = null;
 let isEmailConfigured = false;
 
-if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+// Use the Gmail user from .env and app password from secrets
+const gmailUser = process.env.GMAIL_USER || 'petersongikonyo182@gmail.com';
+const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+
+if (gmailUser && gmailPassword) {
   // Use the app password exactly as provided
-  const appPassword = process.env.GMAIL_APP_PASSWORD.trim();
+  const appPassword = gmailPassword.trim();
   
-  console.log('Configuring Gmail with user:', process.env.GMAIL_USER);
+  console.log('Configuring Gmail with user:', gmailUser);
   console.log('Password length:', appPassword.length);
   console.log('Password preview:', appPassword.substring(0, 4) + '****' + appPassword.substring(appPassword.length - 4));
   
   gmailTransporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.GMAIL_USER,
+      user: gmailUser,
       pass: appPassword
+    },
+    secure: true,
+    port: 465,
+    tls: {
+      rejectUnauthorized: false
     }
   });
   isEmailConfigured = true;
