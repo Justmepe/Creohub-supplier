@@ -1,0 +1,47 @@
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sudo netstat -tlnp | grep 8080
+tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      351577/node
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # First, stop the current server process
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pkill -f "node dist/index.js"
+ir -p server/public/assets
+
+# Copy the updated HTML file
+cat > server/public/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Creohub - African Creator Commerce Platform</title>
+    <meta name="descrroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Create the frontend assets directory
+root@srv786837:/home/creohub/htdocs/www.creohub.io# mkdir -p server/public/assets
+iption" content="Empowering African digital entrepreroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Copy the updated HTML file
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cat > server/public/index.html << 'EOF'
+> <!DOCTYPE html>
+> <html lang="en">
+> <head>
+>     <meta charset="UTF-8">
+>     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+>     <title>Creohub - African Creator Commerce Platform</title>
+>     <meta name="description" content="Empowering African digital entrepreneurs with advanced product selling capabilities using local payment methods like Pesapal, M-Pesa, and bank transfers.">
+>     <script src="https://cdn.tailwindcss.com"></script>
+> </head>
+> <body>
+>     <div id="root"></div>
+>     <script type="module" src="/assets/index.js"></script>
+> </body>
+> </html>
+> EOF
+ Copy the JavaScript frontend
+cat > server/[1]+  Terminated              PORT=8080 NODE_ENV=production node dist/index.js
+public/aroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Copy the JavaScript frontend
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cat > server/public/assets/index.js << 'EOF'
+> // Basic Creohub Frontend - Copy the complete JavaScript content from above
+> EOF
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+5:34:22 PM [express] serving on port 8080

@@ -1,0 +1,93 @@
+
+[2]+  Exit 1                  PORT=8080 NODE_ENV=production node dist/index.js
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Continue where the file was cut off - add the missing parts
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cat >> server/public/assets/index.js << 'ENDJS'
+> >               <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+> >             </div>
+> >             <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Start Free Trial</button>
+> >           </form>
+> >           <p class="text-center mt-4 text-sm text-gray-600">
+> >             Already have an account?
+> >             <a href="#" onclick="showPage('login')" class="text-blue-600 hover:underline">Sign in</a>
+> >           </p>
+> >         </div>
+> >       </div>
+> >     `;
+> >   }
+> >
+> >   window.showPage = function(page) {
+> >     const mainContent = document.getElementById('main-content');
+> >     if (!mainContent) return;
+> >
+> >     switch(page) {
+> >       case 'home':
+> >         mainContent.innerHTML = getHomePage();
+> >         break;
+> >       case 'features':
+> >         mainContent.innerHTML = getFeaturesPage();
+> >         break;
+> >       case 'pricing':
+> >         mainContent.innerHTML = getPricingPage();
+> >         break;
+> >       case 'login':
+> >         mainContent.innerHTML = getLoginPage();
+> >         break;
+> >       case 'signup':
+> >         mainContent.innerHTML = getSignupPage();
+> >         break;
+> >       default:
+> >         mainContent.innerHTML = getHomePage();
+> >     }
+> >   };
+> >
+> >   window.handleLogin = function(event) {
+> >     event.preventDefault();
+> >     alert('Login functionality connects to your Creohub API. Platform is working!');
+> >   };
+> >
+> >   window.handleSignup = function(event) {
+> >     event.preventDefault();
+> >     alert('Signup functionality connects to your Creohub API. Platform is ready!');
+> >   };
+> >
+> >   if (document.readyState === 'loading') {
+> >     document.addEventListener('DOMContentLoaded', createApp);
+> >   } else {
+> >     createApp();
+> >   }
+> > })();
+> ENDJS
+ENV=production node dist/index.js &
+
+# Wait a moment then root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Start the server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js &
+[2] 352071
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Wait a moment then test
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sleep 3
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 8080
+}
+
+Node.js v20.19.2
+[2]+  Exit 1                  PORT=8080 NODE_ENV=production node dist/index.js
+root@srv786837:/home/creohub/htdocs/www.creohub.io# curl -I http://localhost:8080
