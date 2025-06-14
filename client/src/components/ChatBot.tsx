@@ -43,44 +43,76 @@ export default function ChatBot() {
     
     features: "Creohub includes everything you need:\n\n✅ **Unlimited Products** - Digital & physical\n✅ **Custom Storefront** - Your brand, your way\n✅ **Analytics Dashboard** - Track sales & customers\n✅ **Affiliate Program** - Let others promote your products\n✅ **Theme Customization** - Colors and branding\n✅ **Email Verification** - Secure customer accounts\n✅ **Mobile Responsive** - Works on all devices",
     
-    support: "I'm here to help! For additional support:\n\n📧 **Email**: support@creohub.com\n💬 **Live Chat**: Available 9AM-6PM EAT\n📚 **Documentation**: Check our help center\n🎥 **Video Tutorials**: Coming soon!\n\nWhat specific question can I answer for you?",
+    support: "I'm here to help! For additional support:\n\n📧 **Email**: support@creohub.io\n💬 **Live Chat**: Available 9AM-6PM EAT\n📚 **Documentation**: Check our help center\n🎥 **Video Tutorials**: Coming soon!\n\nWhat specific question can I answer for you?",
     
     trial: "Your **14-day free trial** includes:\n\n• Full access to all features\n• Upload unlimited products\n• Custom storefront setup\n• Analytics dashboard\n• 10% platform fee on sales\n\nNo credit card required to start! Ready to begin your creator journey?",
   };
 
   const getBotResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
+    const message = userMessage.toLowerCase().trim();
     
-    if (message.includes("price") || message.includes("cost") || message.includes("plan")) {
+    // Pricing related
+    if (message.includes("price") || message.includes("cost") || message.includes("plan") || message.includes("subscription")) {
       return predefinedResponses.pricing;
     }
     
-    if (message.includes("start") || message.includes("begin") || message.includes("setup") || message.includes("how")) {
+    // Getting started
+    if (message.includes("start") || message.includes("begin") || message.includes("setup") || 
+        (message.includes("how") && (message.includes("create") || message.includes("make") || message.includes("build")))) {
       return predefinedResponses.setup;
     }
     
-    if (message.includes("payment") || message.includes("money") || message.includes("pay") || message.includes("mpesa") || message.includes("pesapal")) {
+    // Payment methods
+    if (message.includes("payment") || message.includes("money") || message.includes("pay") || 
+        message.includes("mpesa") || message.includes("pesapal") || message.includes("stripe") || message.includes("flutterwave")) {
       return predefinedResponses.payments;
     }
     
-    if (message.includes("feature") || message.includes("what") || message.includes("include") || message.includes("can")) {
+    // Features - more specific matching
+    if (message.includes("feature") || message.includes("include") || message.includes("benefit") || 
+        (message.includes("what") && (message.includes("get") || message.includes("offer") || message.includes("include")))) {
       return predefinedResponses.features;
     }
     
-    if (message.includes("help") || message.includes("support") || message.includes("contact")) {
+    // Support
+    if (message.includes("help") || message.includes("support") || message.includes("contact") || message.includes("email")) {
       return predefinedResponses.support;
     }
     
+    // Free trial
     if (message.includes("trial") || message.includes("free")) {
       return predefinedResponses.trial;
     }
     
-    if (message.includes("hello") || message.includes("hi") || message.includes("hey")) {
-      return "Hello! 👋 Welcome to Creohub. I'm here to help you build your creator business in Africa. What would you like to know about our platform?";
+    // Greetings
+    if (message.includes("hello") || message.includes("hi") || message.includes("hey") || message.includes("good")) {
+      return "Hello! Welcome to Creohub. I'm here to help you build your creator business in Africa. What would you like to know about our platform?";
     }
     
-    // Default response
-    return "I'd be happy to help! Here are some things I can tell you about:\n\n• **Pricing & Plans** - Our subscription options\n• **Getting Started** - How to set up your store\n• **Payment Methods** - African payment solutions\n• **Features** - What's included in Creohub\n• **Free Trial** - 14-day trial details\n• **Support** - How to get additional help\n\nWhat interests you most?";
+    // Thank you responses
+    if (message.includes("thank") || message.includes("thanks")) {
+      return "You're welcome! Is there anything else you'd like to know about Creohub? I'm here to help with questions about pricing, features, getting started, or our payment methods.";
+    }
+    
+    // Yes/No responses
+    if (message === "yes" || message === "y" || message === "sure") {
+      return "Great! What specific aspect of Creohub would you like to learn more about? I can help with pricing, features, setup process, or payment options.";
+    }
+    
+    if (message === "no" || message === "n") {
+      return "No problem! Feel free to ask me anything about Creohub whenever you're ready. I'm here to help!";
+    }
+    
+    // Default response with variety
+    const defaultResponses = [
+      "I'd be happy to help! Here are some things I can tell you about:\n\n• **Pricing & Plans** - Our subscription options\n• **Getting Started** - How to set up your store\n• **Payment Methods** - African payment solutions\n• **Features** - What's included in Creohub\n• **Free Trial** - 14-day trial details\n• **Support** - How to get additional help\n\nWhat interests you most?",
+      
+      "I'm here to assist with any questions about Creohub! You can ask me about:\n\n• Our pricing plans and fees\n• How to get started as a creator\n• Available payment methods\n• Platform features and benefits\n• Your free trial options\n• Getting support\n\nWhat would you like to know?",
+      
+      "Happy to help with your Creohub questions! I can provide information about our creator platform, including pricing, features, setup process, and payment options. What specific topic interests you?"
+    ];
+    
+    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
   const handleSendMessage = async () => {
