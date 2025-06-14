@@ -10,7 +10,7 @@ if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
   
   console.log('Configuring Gmail with user:', process.env.GMAIL_USER);
   console.log('Password length:', cleanPassword.length);
-  console.log('First 4 chars:', cleanPassword.substring(0, 4));
+  console.log('Password preview:', cleanPassword.substring(0, 4) + '****' + cleanPassword.substring(cleanPassword.length - 4));
   
   gmailTransporter = nodemailer.createTransport({
     service: 'gmail',
