@@ -1,0 +1,57 @@
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Check if the server process is still running
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ps aux | grep "node dist/index.js"
+ocesses
+pkill -f "node dist/index.js"
+
+# Check the server file to see what port it's trying to use
+cat server/index.ts | grep -A5 -B5 "port"
+
+# Start the server with explicit debugging
+PORT=8080 NODE_ENV=production node dist/index.js &
+
+# Check if it's now listening
+sleep 2
+sudo netstat -tlnp | grep 8080root      351573  0.0  0.0   7008  2432 pts/5    S+   17:27   0:00 grep --color=auto node dist/index.js
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Kill any existing processes
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pkill -f "node dist/index.js"
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Check the server file to see what port it's trying to use
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cat server/index.ts | grep -A5 -B5 "port"
+import 'dotenv/config';
+import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+--
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  const port = parseInt(process.env.PORT || "5000", 10);
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Start the server with explicit debugging
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js &
+[1] 351577
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Check if it's now listening
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sleep 2
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+5:27:43 PM [express] serving on port 8080
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sudo netstat -tlnp | grep 8080
