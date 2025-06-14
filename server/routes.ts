@@ -36,7 +36,8 @@ import {
 import { eq, and, gt, isNull, desc } from "drizzle-orm";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
-import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+// PayPal temporarily disabled for production deployment
+// import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -58,18 +59,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cleanup expired sessions every 5 minutes
   setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
   
-  // PayPal routes
-  app.get("/paypal/setup", async (req, res) => {
-    await loadPaypalDefault(req, res);
-  });
+  // PayPal routes - temporarily disabled for production deployment
+  // app.get("/paypal/setup", async (req, res) => {
+  //   await loadPaypalDefault(req, res);
+  // });
 
-  app.post("/paypal/order", async (req, res) => {
-    await createPaypalOrder(req, res);
-  });
+  // app.post("/paypal/order", async (req, res) => {
+  //   await createPaypalOrder(req, res);
+  // });
 
-  app.post("/paypal/order/:orderID/capture", async (req, res) => {
-    await capturePaypalOrder(req, res);
-  });
+  // app.post("/paypal/order/:orderID/capture", async (req, res) => {
+  //   await capturePaypalOrder(req, res);
+  // });
 
   // Pricing and subscription routes
   app.get("/api/pricing/plans", async (req: Request, res: Response) => {
@@ -1356,21 +1357,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     await pesapalCallback(req, res);
   });
 
-  // PayPal routes
-  app.get("/api/paypal/setup", async (req: Request, res: Response) => {
-    const { loadPaypalDefault } = await import("./paypal");
-    await loadPaypalDefault(req, res);
-  });
+  // PayPal routes - temporarily disabled for production deployment
+  // app.get("/api/paypal/setup", async (req: Request, res: Response) => {
+  //   const { loadPaypalDefault } = await import("./paypal");
+  //   await loadPaypalDefault(req, res);
+  // });
 
-  app.post("/api/paypal/order", async (req: Request, res: Response) => {
-    const { createPaypalOrder } = await import("./paypal");
-    await createPaypalOrder(req, res);
-  });
+  // app.post("/api/paypal/order", async (req: Request, res: Response) => {
+  //   const { createPaypalOrder } = await import("./paypal");
+  //   await createPaypalOrder(req, res);
+  // });
 
-  app.post("/api/paypal/order/:orderID/capture", async (req: Request, res: Response) => {
-    const { capturePaypalOrder } = await import("./paypal");
-    await capturePaypalOrder(req, res);
-  });
+  // app.post("/api/paypal/order/:orderID/capture", async (req: Request, res: Response) => {
+  //   const { capturePaypalOrder } = await import("./paypal");
+  //   await capturePaypalOrder(req, res);
+  // });
 
   // ADMIN ROUTES (for platform management)
   app.get("/api/admin/dashboard", async (req: Request, res: Response) => {
