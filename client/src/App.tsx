@@ -80,6 +80,7 @@ function App() {
               <Route path="/testing" component={Testing} />
               <Route path="/test-login" component={TestLogin} />
               <Route path="/admin" component={AdminDashboard} />
+              <Route path="/admin-dashboard" component={AdminDashboard} />
               <Route path="/admin-users" component={AdminUsers} />
               <Route path="/admin/users" component={AdminUsers} />
               <Route path="/admin/social-proof" component={AdminSocialProof} />
