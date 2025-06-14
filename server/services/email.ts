@@ -5,11 +5,19 @@ let gmailTransporter: any = null;
 let isEmailConfigured = false;
 
 if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  // Remove any spaces from app password
+  const cleanPassword = process.env.GMAIL_APP_PASSWORD.replace(/\s/g, '');
+  
   gmailTransporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD
+      pass: cleanPassword
+    },
+    tls: {
+      rejectUnauthorized: false
     }
   });
   isEmailConfigured = true;
