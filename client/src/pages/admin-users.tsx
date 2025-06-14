@@ -17,8 +17,11 @@ export default function AdminUsers() {
 
   // Custom fetch function with proper token handling
   const fetchUsers = async (): Promise<User[]> => {
-    const token = 'NQ=='; // Admin user ID 5
-    localStorage.setItem('auth_token', token);
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
     
     const response = await fetch('/api/admin/users', {
       headers: {
@@ -48,17 +51,16 @@ export default function AdminUsers() {
     retryDelay: 1000
   });
 
-  // Set correct token on mount
-  useEffect(() => {
-    localStorage.setItem('auth_token', 'NQ==');
-  }, []);
-
   // Handle user deletion
   const handleDeleteUser = async (userId: number, username: string) => {
     try {
       setIsDeleting(true);
       
-      const token = 'NQ==';
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {

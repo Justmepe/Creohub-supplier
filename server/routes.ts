@@ -1381,20 +1381,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const token = authHeader.substring(7);
-      let userIdString;
-      let userId;
+      let userId: number | null = null;
       
-      try {
-        userIdString = Buffer.from(token, 'base64').toString();
-        userId = parseInt(userIdString);
-        
-        if (isNaN(userId) || userIdString.trim() === '') {
-          console.log(`Invalid user ID parsed: "${userIdString}" from token: "${token}"`);
-          return res.status(401).json({ message: "Invalid token format" });
+      // Try session-based authentication first
+      userId = await validateSession(token);
+      
+      // Fallback to legacy token format
+      if (!userId) {
+        try {
+          const userIdString = Buffer.from(token, 'base64').toString();
+          const parsedUserId = parseInt(userIdString);
+          
+          if (!isNaN(parsedUserId) && userIdString.trim() !== '') {
+            userId = parsedUserId;
+          }
+        } catch (error) {
+          // Token parsing failed
         }
-      } catch (error) {
-        console.log(`Token decode error: ${error.message} from token: "${token}"`);
-        return res.status(401).json({ message: "Malformed token" });
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid token format" });
       }
       
       const user = await storage.getUser(userId);
