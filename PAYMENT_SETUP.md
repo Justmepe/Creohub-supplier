@@ -10,21 +10,20 @@ Copy `.env.example` to `.env` and add your credentials:
 cp .env.example .env
 ```
 
-## 💳 Stripe Configuration
+## 💰 Pesapal Configuration (Primary Gateway)
 
-1. **Get API Keys from Stripe Dashboard:**
-   - Go to https://dashboard.stripe.com/apikeys
-   - Copy your **Publishable key** (starts with `pk_`) → `VITE_STRIPE_PUBLIC_KEY`
-   - Copy your **Secret key** (starts with `sk_`) → `STRIPE_SECRET_KEY`
+1. **Register with Pesapal:**
+   - Go to https://www.pesapal.com/
+   - Create a merchant account
+   - Get your Consumer Key and Consumer Secret
 
-2. **Set up Webhooks:**
-   - Go to https://dashboard.stripe.com/webhooks
-   - Add endpoint: `https://yourdomain.com/api/payments/stripe/webhook`
-   - Copy webhook secret → `STRIPE_WEBHOOK_SECRET`
-
-3. **For Subscriptions (Optional):**
-   - Create products at https://dashboard.stripe.com/products
-   - Copy price ID (starts with `price_`) → `STRIPE_PRICE_ID`
+2. **Required Variables:**
+   ```env
+   PESAPAL_CONSUMER_KEY=your_pesapal_consumer_key
+   PESAPAL_CONSUMER_SECRET=your_pesapal_consumer_secret
+   PESAPAL_ENVIRONMENT=sandbox  # or production
+   PESAPAL_IPN_URL=https://yourdomain.com/api/payments/customer/pesapal/ipn
+   ```
 
 ## 📱 M-Pesa Configuration (Kenya)
 
@@ -42,17 +41,7 @@ cp .env.example .env
    MPESA_ENVIRONMENT=sandbox  # or production
    ```
 
-## 💰 PayPal Configuration
 
-1. **Get PayPal Credentials:**
-   - Go to https://developer.paypal.com/developer/applications/
-   - Create an app for sandbox/live environment
-
-2. **Required Variables:**
-   ```env
-   PAYPAL_CLIENT_ID=your_paypal_client_id
-   PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-   ```
 
 ## 🏦 Bank Transfer Configuration
 

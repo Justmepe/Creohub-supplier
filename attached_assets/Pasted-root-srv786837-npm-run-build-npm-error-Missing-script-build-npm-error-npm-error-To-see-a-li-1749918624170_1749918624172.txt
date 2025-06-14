@@ -1,0 +1,64 @@
+root@srv786837:~# npm run build
+npm error Missing script: "build"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: /root/.npm/_logs/2025-06-14T16_20_34_577Z-debug-0.log
+root@srv786837:~# npm install
+
+up to date, audited 6 packages in 652ms
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+root@srv786837:~# npm run start
+Configuring Gmail with user: petergikonyo025@gmail.com
+Password length: 16
+Password preview: lmkz****ulgbthese?
+Email configured with Gmail SMTP favorite packages
+file:///home/creohub/htdocs/www.creohub.io/dist/index.js:103
+      throw new Error("Missing PAYPAL_CLIENT_ID");
+            ^7:~#  list of scripts, run:
+root@srv786837:~# n
+Error: Missing PAYPAL_CLIENT_IDs run can be found in: /root/.npm/_logs/2025-06-14T16_21_29_776Z-debug-0.log
+    at server/paypal.ts (file:///home/creohub/htdocs/www.creohub.io/dist/index.js:103:13)
+    at __init (file:///home/creohub/htdocs/www.creohub.io/dist/index.js:4:56)
+    at file:///home/creohub/htdocs/www.creohub.io/dist/index.js:2463:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+root@srv786837:~#
+Node.js v20.19.2#
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:~#
+root@srv786837:~# client_loop: send disconnect: Connection reset
+PS C:\Windows\system32> ssh root@147.93.95.151
+root@147.93.95.151's password:
+
+########################################################
+###            Welcome to CloudPanel                 ###
+########################################################
+
+* Website:         https://www.cloudpanel.io
+* Documentation:   https://www.cloudpanel.io/docs/v2/
+* Best Practices:  https://www.cloudpanel.io/docs/v2/best-practices/
+* CloudPanel:      https://147.93.95.151:8443
+* CloudPanel CLI:  clpctl
+
+
+ System information as of Sat Jun 14 16:28:21 UTC 2025
+
+  System load:  0.06               Processes:             166
+  Usage of /:   17.1% of 95.82GB   Users logged in:       1
+  Memory usage: 24%                IPv4 address for eth0: 147.93.95.151
+  Swap usage:   0%                 IPv6 address for eth0: 2a02:4780:28:2182::1
+You have new mail.
+Last login: Sat Jun 14 16:20:08 2025 from 102.219.210.70
+root@srv786837:~# cd /home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls dist/public/index.html
+dist/public/index.html
+root@srv786837:/home/creohub/htdocs/www.creohub.io# npm run start
+
+> rest-express@1.0.0 start
+root@srv786837:/home/creohub/htdocs/www.creohub.io#

@@ -1,0 +1,71 @@
+# Rebuild the server
+npx esbuild servroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+er/indexroot@srv786837:/home/creohub/htdocs/www.creohub.io# # Remove unused payment files
+root@srv786837:/home/creohub/htdocs/www.creohub.io# rm -f server/paypal.ts
+.ts --platform=node --packages=external --bundle --formaroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Rebuild the server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+✘ [ERROR] Could not resolve "./paypal"
+
+    server/routes.ts:39:73:
+      39 │ import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+         ╵                                                                          ~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "./payments/stripe"
+
+    server/routes.ts:1276:49:
+      1276 │     const { createPaymentIntent } = await import("./payments/stripe");
+           ╵                                                  ~~~~~~~~~~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "./payments/flutterwave"
+
+    server/routes.ts:1287:56:
+      1287 │     const { initiateFlutterwavePayment } = await import("./payments/flutterwave");
+           ╵                                                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "./paypal"
+
+    server/routes.ts:1361:47:
+      1361 │     const { loadPaypalDefault } = await import("./paypal");
+           ╵                                                ~~~~~~~~~~
+
+▲ [WARNING] Duplicate member "getOrdersByCustomerEmail" in class body [duplicate-class-member]
+
+    server/storage.ts:1223:8:
+      1223 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+           ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original member "getOrdersByCustomerEmail" is here:
+
+    server/storage.ts:934:8:
+      934 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+          ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 warning and 4 errors
+node:child_process:930
+    throw err;
+    ^
+
+Error: Command failed: /home/creohub/htdocs/www.creohub.io/node_modules/@esbuild/linux-x64/bin/esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+    at genericNodeError (node:internal/errors:984:15)
+    at wrappedFn (node:internal/errors:538:14)
+    at checkExecSyncError (node:child_process:891:11)
+    at Object.execFileSync (node:child_process:927:15)
+    at Object.<anonymous> (/home/creohub/htdocs/www.creohub.io/node_modules/esbuild/bin/esbuild:221:28)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 349522,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Start your production server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# NODE_ENV=production node dist/index.js

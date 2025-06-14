@@ -283,14 +283,14 @@ export default function PaymentTest() {
               </Button>
 
               <Button
-                onClick={() => testPayPal.mutate()}
-                disabled={testPayPal.isPending}
+                onClick={() => testMpesa.mutate()}
+                disabled={testMpesa.isPending}
                 className="w-full justify-start"
                 variant="outline"
               >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Test PayPal
-                {testPayPal.isPending && <Clock className="w-4 h-4 ml-auto animate-spin" />}
+                <Smartphone className="w-4 h-4 mr-2" />
+                Test M-Pesa
+                {testMpesa.isPending && <Clock className="w-4 h-4 ml-auto animate-spin" />}
               </Button>
 
               <Button
@@ -339,14 +339,6 @@ export default function PaymentTest() {
                       </Badge>
                     )) || (
                       <>
-                        <Badge variant="outline" className="mr-2">
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Stripe
-                        </Badge>
-                        <Badge variant="outline" className="mr-2">
-                          <XCircle className="w-3 h-3 mr-1" />
-                          PayPal
-                        </Badge>
                         <Badge variant="outline">
                           <XCircle className="w-3 h-3 mr-1" />
                           M-Pesa
