@@ -27,6 +27,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import CreatorOnboarding from "@/components/forms/creator-onboarding";
 import PlatformDemo from "@/components/demo/platform-demo";
+import ChatBot from "@/components/ChatBot";
 import { detectCurrencyFromBrowser, formatCurrency, convertCurrency } from "@/../../shared/currency";
 
 export default function Home() {
@@ -728,6 +729,9 @@ export default function Home() {
       {showDemo && (
         <PlatformDemo onClose={() => setShowDemo(false)} />
       )}
+
+      {/* Chatbot */}
+      <ChatBot />
     </div>
   );
 }
