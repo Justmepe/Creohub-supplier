@@ -1,0 +1,81 @@
+root@srv786837:/home/creohub/htdocs/www.creohub.io# NODE_ENV=production node dist/index.jsnpm run build
+node:internal/modules/cjs/loader:1215
+  throw err;
+  ^
+
+Error: Cannot find module '/home/creohub/htdocs/www.creohub.io/dist/index.jsnpm'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v20.19.2
+vite v5.4.14 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readmele --format=esm --outdir=dist
+✓ 3220 modules transformed.
+../dist/public/index.html                                  0.63 kB │ gzip:   0.38 kB
+../dist/public/assets/Logo_1749474304178-CBh_vqcq.png  1,147.82 kB
+../dist/public/assets/index-DplBV4_z.css                  86.18 kB │ gzip:  14.31 kB
+../dist/public/assets/index-DbwAFaXj.js                1,320.38 kB │ gzip: 362.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.20s
+▲ [WARNING] Duplicate member "getOrdersByCustomerEmail" in class body [duplicate-class-member]
+
+    server/storage.ts:1223:8:
+      1223 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+           ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original member "getOrdersByCustomerEmail" is here:
+
+    server/storage.ts:934:8:
+      934 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+          ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 warning
+
+  dist/index.js  166.2kb
+
+⚡ Done in 19ms
+vite v5.4.14 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readmele --format=esm --outdir=dist
+✓ 3220 modules transformed.
+../dist/public/index.html                                  0.63 kB │ gzip:   0.38 kB
+../dist/public/assets/Logo_1749474304178-CBh_vqcq.png  1,147.82 kB
+../dist/public/assets/index-DplBV4_z.css                  86.18 kB │ gzip:  14.31 kB
+../dist/public/assets/index-DbwAFaXj.js                1,320.38 kB │ gzip: 362.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.34s
+▲ [WARNING] Duplicate member "getOrdersByCustomerEmail" in class body [duplicate-class-member]
+
+    server/storage.ts:1223:8:
+      1223 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+           ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original member "getOrdersByCustomerEmail" is here:
+
+    server/storage.ts:934:8:
+      934 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+          ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 warning
+
+  dist/index.js  166.2kb
+
+⚡ Done in 16ms
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Clear the terminal and run this single command:
+root@srv786837:/home/creohub/htdocs/www.creohub.io# NODE_ENV=production node dist/index.js

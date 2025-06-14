@@ -19,12 +19,12 @@ import { Request, Response } from "express";
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 
-// Temporarily disabled for development - will be enabled when secrets are provided
-if (!PAYPAL_CLIENT_ID && process.env.NODE_ENV === "production") {
-  throw new Error("Missing PAYPAL_CLIENT_ID");
+// PayPal is optional - only throw error if both are missing in production
+if (!PAYPAL_CLIENT_ID) {
+  console.log("PayPal not configured - PAYPAL_CLIENT_ID missing");
 }
-if (!PAYPAL_CLIENT_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error("Missing PAYPAL_CLIENT_SECRET");
+if (!PAYPAL_CLIENT_SECRET) {
+  console.log("PayPal not configured - PAYPAL_CLIENT_SECRET missing");
 }
 const client = new Client({
   clientCredentialsAuthCredentials: {
