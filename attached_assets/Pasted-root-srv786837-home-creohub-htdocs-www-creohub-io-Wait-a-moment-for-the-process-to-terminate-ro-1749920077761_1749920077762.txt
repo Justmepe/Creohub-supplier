@@ -1,0 +1,114 @@
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Wait a moment for the process to terminate
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sleep 2
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Start your server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=3000 NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.2
+vite v5.4.14 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest/www.creohub.io# # Build the frontend
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3220 modules transformed.
+../dist/public/index.html                                  0.63 kB │ gzip:   0.38 kB
+../dist/public/assets/Logo_1749474304178-CBh_vqcq.png  1,147.82 kB
+../dist/public/assets/index-DplBV4_z.css                  86.18 kB │ gzip:  14.31 kB
+../dist/public/assets/index-DbwAFaXj.js                1,320.38 kB │ gzip: 362.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunksart the server
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.71s
+NODE_ENV=production node dist/index.js
+  dist/index.js  25.7kbild
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+⚡ Done in 6ms
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Create the server/public directory
+root@srv786837:/home/creohub/htdocs/www.creohub.io# mkdir -p server/public
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Copy the built frontend files
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cp -r dist/* server/public/
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Verify the files are there
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls -la server/public/
+total 44
+drwxrwxr-x 3 root    root     4096 Jun 14 15:20 .
+drwxrwxr-x 5 creohub creohub  4096 Jun 14 15:59 ..
+-rw-rw-r-- 1 root    root    26342 Jun 14 16:53 index.js
+drwxrwxr-x 3 root    root     4096 Jun 14 15:20 public
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Restart the server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pkill node
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sleep 2
+root@srv786837:/home/creohub/htdocs/www.creohub.io# NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io#

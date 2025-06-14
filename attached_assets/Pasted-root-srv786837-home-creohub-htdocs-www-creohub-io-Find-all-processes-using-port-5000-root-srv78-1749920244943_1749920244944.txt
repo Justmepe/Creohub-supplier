@@ -1,0 +1,56 @@
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Find all processes using port 5000
+root@srv786837:/home/creohub/htdocs/www.creohub.io# sudo lsof -i :5000
+
+# Kill all node processes more aggressively
+sudo pkill -f node
+sudo pkill -f npm
+
+# Wait for processes to terminate
+sleep 5
+
+# Check if port is still in use
+sudo lsof -i :5000COMMAND      PID USER   FD   TYPE  DEVICE SIZE/OFF NODE NAME
+node\x20/ 350794 root   23u  IPv4 1410903      0t0  TCP *:5000 (LISTEN)
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Remove the incorrect structure
+root@srv786837:/home/creohub/htdocs/www.creohub.io# rm -rf server/public/*
+opy the frontend build correctly
+cp dist/public/index.hroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Copy the frontend build correctly
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cp dist/public/index.html server/public/
+c/
+
+# Verify the correct structure
+ls -la servroot@srv786837:/home/creohub/htdocs/www.creohub.io# cp -r dist/public/assets server/public/
+er/publiroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Verify the correct structure
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls -la server/public/
+total 16
+drwxrwxr-x 3 root    root    4096 Jun 14 16:55 .
+drwxrwxr-x 5 creohub creohub 4096 Jun 14 15:59 ..
+drwxrwxr-x 2 root    root    4096 Jun 14 16:55 assets
+-rw-rw-r-- 1 root    root     625 Jun 14 16:55 index.html
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io#

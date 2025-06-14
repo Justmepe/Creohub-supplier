@@ -1,0 +1,214 @@
+
+* Website:         https://www.cloudpanel.io
+* Documentation:   https://www.cloudpanel.io/docs/v2/
+* Best Practices:  https://www.cloudpanel.io/docs/v2/best-practices/
+* CloudPanel:      https://147.93.95.151:8443
+* CloudPanel CLI:  clpctl
+
+
+ System information as of Sat Jun 14 16:28:21 UTC 2025
+
+  System load:  0.06               Processes:             166
+  Usage of /:   17.1% of 95.82GB   Users logged in:       1
+  Memory usage: 24%                IPv4 address for eth0: 147.93.95.151
+  Swap usage:   0%                 IPv6 address for eth0: 2a02:4780:28:2182::1
+You have new mail.
+Last login: Sat Jun 14 16:20:08 2025 from 102.219.210.70
+root@srv786837:~# cd /home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls dist/public/index.html
+dist/public/index.html
+root@srv786837:/home/creohub/htdocs/www.creohub.io# npm run start
+
+> rest-express@1.0.0 start
+root@srv786837:/home/creohub/htdocs/www.creohub.io# cd /home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Remove old PayPal file
+root@srv786837:/home/creohub/htdocs/www.creohub.io# rm -f server/paypal.ts
+letely
+npx esbuild server/index.ts --platform=node --pacroot@srv786837:/home/creohub/htdocs/www.creohub.io#
+✘ [ERROR] Could not resolve "./paypal"
+root@srv786837:/home/creohub/htdocs/www.creohub.io# npx esbuild server/index.ts --platform=node --packages=external --bundle
+    server/routes.ts:39:73:
+      39 │ import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+         ╵                                                                          ~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "./payments/stripe"
+
+    server/routes.ts:1276:49:
+      1276 │     const { createPaymentIntent } = await import("./payments/stripe");
+           ╵                                                  ~~~~~~~~~~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "./payments/flutterwave"
+
+    server/routes.ts:1287:56:
+      1287 │     const { initiateFlutterwavePayment } = await import("./payments/flutterwave");
+           ╵                                                         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "./paypal"
+
+    server/routes.ts:1361:47:
+      1361 │     const { loadPaypalDefault } = await import("./paypal");
+           ╵                                                ~~~~~~~~~~
+
+▲ [WARNING] Duplicate member "getOrdersByCustomerEmail" in class body [duplicate-class-member]
+
+    server/storage.ts:1223:8:
+      1223 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+           ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original member "getOrdersByCustomerEmail" is here:
+
+    server/storage.ts:934:8:
+      934 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+          ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 warning and 4 errors
+node:child_process:930
+    throw err;
+    ^
+
+Error: Command failed: /home/creohub/htdocs/www.creohub.io/node_modules/@esbuild/linux-x64/bin/esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+    at genericNodeError (node:internal/errors:984:15)
+    at wrappedFn (node:internal/errors:538:14)
+    at checkExecSyncError (node:child_process:891:11)
+    at Object.execFileSync (node:child_process:927:15)
+    at Object.<anonymous> (/home/creohub/htdocs/www.creohub.io/node_modules/esbuild/bin/esbuild:221:28)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 350159,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Start the server
+✘ [ERROR] Could not resolve "./paypal"
+Configuring Gmail with user: petergikonyo025@gmail.com
+    server/routes.ts:39:73:
+      39 │ import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+         ╵                                                                          ~~~~~~~~~~
+file:///home/creohub/htdocs/www.creohub.io/dist/index.js:103
+✘ [ERROR] Could not resolve "./payments/stripe"");
+            ^
+    server/routes.ts:1276:49:
+      1276 │     const { createPaymentIntent } = await import("./payments/stripe");
+           ╵                                                  ~~~~~~~~~~~~~~~~~~~:103:13)
+    at __init (file:///home/creohub/htdocs/www.creohub.io/dist/index.js:4:56)
+✘ [ERROR] Could not resolve "./payments/flutterwave"st/index.js:2463:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+    server/routes.ts:1287:56:ort (node:internal/modules/esm/loader:540:24)
+      1287 │     const { initiateFlutterwavePayment } = await import("./payments/flutterwave");
+           ╵                                                         ~~~~~~~~~~~~~~~~~~~~~~~~
+Node.js v20.19.2
+✘ [ERROR] Could not resolve "./paypal"w.creohub.io# cd /home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+    server/routes.ts:1361:47:htdocs/www.creohub.io# npx esbuild server/index.ts --platform=node --packages=external --bundle
+      1361 │     const { loadPaypalDefault } = await import("./paypal");
+           ╵                                                ~~~~~~~~~~
+
+▲ [WARNING] Duplicate member "getOrdersByCustomerEmail" in class body [duplicate-class-member]
+
+    server/storage.ts:1223:8:
+      1223 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+           ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original member "getOrdersByCustomerEmail" is here:
+
+    server/storage.ts:934:8:
+      934 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+          ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 warning and 4 errors
+node:child_process:930
+    throw err;
+    ^
+
+Error: Command failed: /home/creohub/htdocs/www.creohub.io/node_modules/@esbuild/linux-x64/bin/esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+    at genericNodeError (node:internal/errors:984:15)
+    at wrappedFn (node:internal/errors:538:14)
+    at checkExecSyncError (node:child_process:891:11)
+    at Object.execFileSync (node:child_process:927:15)
+    at Object.<anonymous> (/home/creohub/htdocs/www.creohub.io/node_modules/esbuild/bin/esbuild:221:28)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 350223,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v20.19.2
+✘ [ERROR] Could not resolve "./paypal"
+PS C:\Windows\system32> ssh root@147.93.95.151
+    server/routes.ts:39:73:rd:
+      39 │ import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+         ╵                                                                          ~~~~~~~~~~
+###            Welcome to CloudPanel                 ###
+✘ [ERROR] Could not resolve "./payments/stripe"#########
+
+    server/routes.ts:1276:49:w.cloudpanel.io
+      1276 │     const { createPaymentIntent } = await import("./payments/stripe");
+           ╵                                                  ~~~~~~~~~~~~~~~~~~~
+* CloudPanel:      https://147.93.95.151:8443
+✘ [ERROR] Could not resolve "./payments/flutterwave"
+
+    server/routes.ts:1287:56:
+      1287 │     const { initiateFlutterwavePayment } = await import("./payments/flutterwave");
+           ╵                                                         ~~~~~~~~~~~~~~~~~~~~~~~~
+  System load:  0.08               Processes:             170
+✘ [ERROR] Could not resolve "./paypal"rs logged in:       1
+  Memory usage: 24%                IPv4 address for eth0: 147.93.95.151
+    server/routes.ts:1361:47:      IPv6 address for eth0: 2a02:4780:28:2182::1
+      1361 │     const { loadPaypalDefault } = await import("./paypal");
+           ╵                                                ~~~~~~~~~~
+root@srv786837:~# cd /home/creohub/htdocs/www.creohub.io
+▲ [WARNING] Duplicate member "getOrdersByCustomerEmail" in class body [duplicate-class-member]e --packages=external --bundle
+ --format=esm --outdir=dist
+    server/storage.ts:1223:8:
+      1223 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+           ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original member "getOrdersByCustomerEmail" is here:
+
+    server/storage.ts:934:8:
+      934 │   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
+          ╵         ~~~~~~~~~~~~~~~~~~~~~~~~
+
+1 warning and 4 errors
+node:child_process:930
+    throw err;
+    ^
+
+Error: Command failed: /home/creohub/htdocs/www.creohub.io/node_modules/@esbuild/linux-x64/bin/esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+    at genericNodeError (node:internal/errors:984:15)
+    at wrappedFn (node:internal/errors:538:14)
+    at checkExecSyncError (node:child_process:891:11)
+    at Object.execFileSync (node:child_process:927:15)
+    at Object.<anonymous> (/home/creohub/htdocs/www.creohub.io/node_modules/esbuild/bin/esbuild:221:28)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 350601,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io# NODE_ENV=production node dist/index.js
