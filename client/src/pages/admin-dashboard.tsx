@@ -234,11 +234,12 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs Navigation */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="creators">Creators</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="social-proof">Social Proof</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -739,6 +740,91 @@ export default function AdminDashboard() {
                       <p>No users found</p>
                     </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Social Proof Tab */}
+          <TabsContent value="social-proof" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Social Proof Management
+                </CardTitle>
+                <CardDescription>
+                  Manage social proof notifications that appear to users to drive conversions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">Social Proof System Status</h3>
+                    <p className="text-blue-800 text-sm mb-3">
+                      The social proof system displays upgrade notifications every 12 seconds using authentic African creator names and cities.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="bg-white rounded p-3 border border-blue-200">
+                        <div className="font-medium text-blue-900">Data Sources</div>
+                        <div className="text-blue-700">70% Real Users, 30% Curated</div>
+                      </div>
+                      <div className="bg-white rounded p-3 border border-blue-200">
+                        <div className="font-medium text-blue-900">Display Frequency</div>
+                        <div className="text-blue-700">Every 12 seconds</div>
+                      </div>
+                      <div className="bg-white rounded p-3 border border-blue-200">
+                        <div className="font-medium text-blue-900">Active Profiles</div>
+                        <div className="text-blue-700">15 African creators</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button 
+                      onClick={() => setLocation("/admin/social-proof")}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Advanced Management
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open("/api/social-proof", "_blank")}
+                    >
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      View API Data
+                    </Button>
+                  </div>
+
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-medium mb-3">Sample Notifications Currently Active:</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>"David from Nairobi just upgraded to Pro"</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>"Sarah from Lagos just upgraded to Starter"</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>"Michael from Accra just upgraded to Pro"</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 border rounded-lg p-4">
+                    <h4 className="font-medium mb-2 text-gray-900">How Social Proof Works</h4>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>• Notifications appear every 12 seconds in the bottom-right corner</li>
+                      <li>• Uses authentic African creator names and major African cities</li>
+                      <li>• Intelligently mixes real user data with curated examples</li>
+                      <li>• Shows both Starter ($14.99/month) and Pro ($29.99/month) upgrades</li>
+                      <li>• Automatically cycles through 15 different creator profiles</li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
