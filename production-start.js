@@ -1,9 +1,14 @@
 // Production startup script that ensures proper routing
 // This replaces the default npm start for VPS deployment
 
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Environment check
 if (process.env.NODE_ENV !== 'production') {
