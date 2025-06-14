@@ -1452,11 +1452,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Cannot delete admin accounts" });
       }
 
-      const deleted = await storage.deleteUser(targetUserId);
-      if (deleted) {
-        res.json({ message: "User deleted successfully", userId: targetUserId });
-      } else {
-        res.status(500).json({ message: "Failed to delete user" });
+      // Handle foreign key constraints by providing better error information
+      try {
+        const deleted = await storage.deleteUser(targetUserId);
+        if (deleted) {
+          res.json({ message: "User deleted successfully", userId: targetUserId });
+        } else {
+          res.status(500).json({ message: "Failed to delete user" });
+        }
+      } catch (dbError: any) {
+        if (dbError.message.includes('foreign key constraint') || dbError.message.includes('violates')) {
+          res.status(400).json({ 
+            message: "Cannot delete user: User has associated data that must be removed first",
+            details: "This user has creator profiles, subscriptions, or other data that prevents deletion. Please contact support for manual cleanup.",
+            errorType: "foreign_key_constraint"
+          });
+        } else {
+          res.status(500).json({ message: dbError.message });
+        }
       }
     } catch (error: any) {
       res.status(500).json({ message: error.message });

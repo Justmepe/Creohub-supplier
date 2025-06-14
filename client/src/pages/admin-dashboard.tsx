@@ -167,9 +167,19 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard'] });
     },
     onError: (error: any) => {
+      let title = "Error";
+      let description = error.message;
+      
+      // Handle foreign key constraint errors with better messaging
+      if (error.message.includes("foreign key constraint") || 
+          error.message.includes("associated data")) {
+        title = "Cannot Delete User";
+        description = "This user has creator profiles, products, or other data that must be removed first. Only users without associated data can be deleted.";
+      }
+      
       toast({
-        title: "Error",
-        description: error.message,
+        title,
+        description,
         variant: "destructive"
       });
     }
