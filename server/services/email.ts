@@ -5,7 +5,7 @@ let gmailTransporter: any = null;
 let isEmailConfigured = false;
 
 // Use the Gmail user from .env and app password from secrets
-const gmailUser = process.env.GMAIL_USER || 'petersongikonyo182@gmail.com';
+const gmailUser = process.env.GMAIL_USER || 'petergikonyo025@gmail.com';
 const gmailPassword = process.env.GMAIL_APP_PASSWORD;
 
 if (gmailUser && gmailPassword) {
