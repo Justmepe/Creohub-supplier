@@ -225,8 +225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Check if email is verified
-      if (!user.isEmailVerified) {
+      // Check if email is verified (bypass for admins)
+      if (!user.isEmailVerified && !user.isAdmin) {
         return res.status(403).json({ 
           message: "Please verify your email before logging in",
           requiresVerification: true,
@@ -1884,14 +1884,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Manually verify the user
       const updatedUser = await storage.updateUser(user.id, {
-        isVerified: true,
+        isEmailVerified: true,
         verificationCode: null,
         verificationCodeExpiry: null
       });
 
       res.json({ 
         message: "User email verified successfully", 
-        user: { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified }
+        user: { id: updatedUser?.id, email: updatedUser?.email, isEmailVerified: updatedUser?.isEmailVerified }
       });
 
     } catch (error: any) {
