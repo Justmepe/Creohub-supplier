@@ -60,13 +60,18 @@ export const getQueryFn: <T>(options: {
     
     const headers: Record<string, string> = {};
     
-    if (token && token !== 'null' && token !== 'undefined') {
+    // For social proof endpoint, don't require authentication
+    if (!(queryKey[0] as string).includes('/api/social-proof') && token && token !== 'null' && token !== 'undefined') {
       headers["Authorization"] = `Bearer ${token}`;
     }
+
+    console.log('Query client making request to:', queryKey[0], 'with headers:', Object.keys(headers));
 
     const res = await fetch(queryKey[0] as string, {
       headers,
     });
+
+    console.log('Query client response:', res.status, res.ok);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
