@@ -14,6 +14,13 @@ interface Message {
   suggestedQuestions?: string[];
 }
 
+interface SmartResponse {
+  answer: string;
+  confidence: number;
+  suggestedQuestions: string[];
+  needsHumanSupport: boolean;
+}
+
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -26,6 +33,7 @@ export default function ChatBot() {
   ]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [conversationContext, setConversationContext] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -36,138 +44,40 @@ export default function ChatBot() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const predefinedResponses = {
-    pricing: "Creohub offers 3 plans:\n\n• **Free Trial** (14 days): 10% platform fee\n• **Starter** ($14.99/month): 5% platform fee\n• **Pro** ($29.99/month): 0% platform fee\n\nAll plans include unlimited products, custom storefront, and analytics!",
-    
-    setup: "Getting started is easy:\n\n1. **Sign up** for your free 14-day trial\n2. **Create your creator profile** with your brand\n3. **Upload your first product** (digital or physical)\n4. **Customize your storefront** with themes\n5. **Share your store link** and start selling!\n\nNeed help with any step?",
-    
-    payments: "We support multiple African payment methods:\n\n• **Pesapal** - Pan-African payment gateway\n• **M-Pesa** - Mobile money (Kenya, Tanzania, etc.)\n• **Stripe** - International credit/debit cards\n• **Flutterwave** - African banks and mobile money\n\nEarnings are deposited directly to your bank account!",
-    
-    features: "Creohub includes everything you need:\n\n✅ **Unlimited Products** - Digital & physical\n✅ **Custom Storefront** - Your brand, your way\n✅ **Analytics Dashboard** - Track sales & customers\n✅ **Affiliate Program** - Let others promote your products\n✅ **Theme Customization** - Colors and branding\n✅ **Email Verification** - Secure customer accounts\n✅ **Mobile Responsive** - Works on all devices",
-    
-    support: "I can answer most questions about Creohub! Try asking me about:\n\n• Pricing plans and fees\n• Getting started guide\n• Payment methods and countries\n• Platform features\n• Free trial details\n\nIf I can't help with your specific question, I'll connect you with our support team at **support@creohub.io**\n\nWhat would you like to know?",
-    
-    trial: "Your **14-day free trial** includes:\n\n• Full access to all features\n• Upload unlimited products\n• Custom storefront setup\n• Analytics dashboard\n• 10% platform fee on sales\n\nNo credit card required to start! Ready to begin your creator journey?",
-    
-    countries: "Yes! Creohub welcomes creators from all African countries including:\n\n🇿🇦 **South Africa** - ZAR support, local banks, Flutterwave\n🇰🇪 **Kenya** - M-Pesa, KES, local banking\n🇳🇬 **Nigeria** - Naira, local banks, Flutterwave\n🇬🇭 **Ghana** - Cedis, mobile money, local banking\n🇺🇬 **Uganda** - UGX, mobile money integration\n\n+ All other African countries with full platform access, local currency support, and African payment methods!",
-    
-    affiliate: "**Affiliate Program** lets others promote your products:\n\n• Set commission rates (5-50%)\n• Generate unique affiliate links\n• Track sales and commissions\n• Automatic payouts to affiliates\n• Expand your reach across Africa\n\nAffiliate marketers earn when they refer customers to your products!",
-    
-    withdrawal: "**Earnings & Withdrawals:**\n\n• Minimum withdrawal: $10 USD equivalent\n• Processing time: 3-5 business days\n• Supported methods: Bank transfer, mobile money\n• Admin approval required for security\n• Track earnings in your dashboard\n• Monthly payout statements available\n\nEarnings are calculated after platform fees!",
-    
-    digital: "**Digital Products** - Perfect for creators:\n\n• eBooks, courses, software\n• Music, videos, templates\n• Instant delivery after purchase\n• No shipping costs\n• Global reach\n• Higher profit margins\n\nUpload once, sell unlimited copies!",
-    
-    physical: "**Physical Products** - Ship anywhere:\n\n• Manage inventory levels\n• Set shipping rates by region\n• Print shipping labels\n• Track deliveries\n• Handle returns/refunds\n• Integration with local couriers\n\nPerfect for handmade goods, books, merchandise!",
-  };
+  const getIntelligentResponse = async (question: string): Promise<string> => {
+    try {
+      const response = await apiRequest("POST", "/api/chatbot/ask", {
+        question,
+        context: {
+          previousQuestions: conversationContext,
+          userIntent: "general",
+          confidence: 0.5
+        }
+      });
 
-  const getBotResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase().trim();
-    
-    // Pricing related
-    if (message.includes("price") || message.includes("cost") || message.includes("plan") || message.includes("subscription")) {
-      return predefinedResponses.pricing;
-    }
-    
-    // Getting started
-    if (message.includes("start") || message.includes("begin") || message.includes("setup") || 
-        (message.includes("how") && (message.includes("create") || message.includes("make") || message.includes("build")))) {
-      return predefinedResponses.setup;
-    }
-    
-    // Payment methods
-    if (message.includes("payment") || message.includes("money") || message.includes("pay") || 
-        message.includes("mpesa") || message.includes("pesapal") || message.includes("stripe") || message.includes("flutterwave")) {
-      return predefinedResponses.payments;
-    }
-    
-    // Features - more specific matching
-    if (message.includes("feature") || message.includes("include") || message.includes("benefit") || 
-        (message.includes("what") && (message.includes("get") || message.includes("offer") || message.includes("include")))) {
-      return predefinedResponses.features;
-    }
-    
-    // Support
-    if (message.includes("help") || message.includes("support") || message.includes("contact") || message.includes("email")) {
-      return predefinedResponses.support;
-    }
-    
-    // Free trial
-    if (message.includes("trial") || message.includes("free")) {
-      return predefinedResponses.trial;
-    }
-    
-    // Country/region specific questions
-    if (message.includes("south africa") || message.includes("kenya") || message.includes("nigeria") || 
-        message.includes("ghana") || message.includes("uganda") || message.includes("country") || 
-        message.includes("accept") || message.includes("available") || message.includes("from")) {
-      return predefinedResponses.countries;
-    }
-    
-    // Affiliate program questions
-    if (message.includes("affiliate") || message.includes("referral") || message.includes("commission") || 
-        message.includes("promote") || message.includes("marketing")) {
-      return predefinedResponses.affiliate;
-    }
-    
-    // Withdrawal and earnings questions
-    if (message.includes("withdrawal") || message.includes("withdraw") || message.includes("payout") || 
-        message.includes("earning") || message.includes("money") || message.includes("bank")) {
-      return predefinedResponses.withdrawal;
-    }
-    
-    // Digital products questions
-    if (message.includes("digital") || message.includes("ebook") || message.includes("course") || 
-        message.includes("software") || message.includes("download")) {
-      return predefinedResponses.digital;
-    }
-    
-    // Physical products questions
-    if (message.includes("physical") || message.includes("shipping") || message.includes("delivery") || 
-        message.includes("inventory") || message.includes("product")) {
-      return predefinedResponses.physical;
-    }
-    
-    // Greetings
-    if (message.includes("hello") || message.includes("hi") || message.includes("hey") || message.includes("good")) {
-      return "Hello! Welcome to Creohub. I'm here to help you build your creator business in Africa. What would you like to know about our platform?";
-    }
-    
-    // Thank you responses
-    if (message.includes("thank") || message.includes("thanks")) {
-      return "You're welcome! Is there anything else you'd like to know about Creohub? I'm here to help with questions about pricing, features, getting started, or our payment methods.";
-    }
-    
-    // User indicates they need human help
-    if (message.includes("human") || message.includes("agent") || message.includes("can't help") || 
-        message.includes("not helpful") || message.includes("talk to someone")) {
-      return "I understand you need human assistance! Please contact our support team at **support@creohub.io** for personalized help. Include details about your specific question or issue, and they'll respond within 24 hours.\n\nIs there anything else I can help you with from our FAQ?";
-    }
-    
-    // Technical/specific issues that need human support
-    if (message.includes("bug") || message.includes("error") || message.includes("broken") || 
-        message.includes("not working") || message.includes("problem") || message.includes("issue")) {
-      return "For technical issues or specific problems, our support team can help you directly. Please email **support@creohub.io** with:\n\n• Description of the issue\n• Steps you tried\n• Screenshots if applicable\n\nThey'll investigate and resolve it quickly!";
-    }
-    
-    // Yes/No responses
-    if (message === "yes" || message === "y" || message === "sure") {
-      return "Great! What specific aspect of Creohub would you like to learn more about? I can help with pricing, features, setup process, or payment options.";
-    }
-    
-    if (message === "no" || message === "n") {
-      return "No problem! Feel free to ask me anything about Creohub whenever you're ready. I'm here to help!";
-    }
-    
-    // FAQ-focused default responses
-    const defaultResponses = [
-      "I can help you with common questions about Creohub! Try asking about:\n\n• **Pricing** - Plans and fees\n• **Countries** - South Africa, Kenya, Nigeria support\n• **Payments** - M-Pesa, Pesapal, Flutterwave\n• **Products** - Digital vs physical items\n• **Affiliate Program** - Earn commissions\n• **Withdrawals** - How to get paid\n\nWhat would you like to know?",
+      const smartResponse: SmartResponse = await response.json();
       
-      "I'm your Creohub FAQ assistant! I can answer questions about:\n\n• Getting started and free trial\n• Pricing plans and platform fees\n• African payment methods\n• Platform features and benefits\n• Country availability\n• Affiliate and withdrawal systems\n\nWhat specific topic interests you?",
+      // Update conversation context
+      setConversationContext(prev => [...prev.slice(-4), question]);
       
-      "Let me help you learn about Creohub! I have answers for:\n\n• **Setup Process** - How to start selling\n• **Payment Options** - African solutions\n• **Product Types** - Digital and physical\n• **Earnings** - Withdrawals and payouts\n• **Country Support** - All African nations\n\nIf I can't answer your question, I'll connect you with our support team!"
-    ];
-    
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+      // Add suggested questions to the bot message if available
+      if (smartResponse.suggestedQuestions && smartResponse.suggestedQuestions.length > 0) {
+        const mainResponse = smartResponse.answer;
+        const suggestions = smartResponse.suggestedQuestions
+          .slice(0, 3)
+          .map(q => `• ${q}`)
+          .join('\n');
+        
+        return `${mainResponse}\n\n**You might also ask:**\n${suggestions}`;
+      }
+      
+      return smartResponse.answer;
+    } catch (error) {
+      console.error("Error getting intelligent response:", error);
+      
+      // Fallback to basic response if API fails
+      return "I'm having trouble processing your question right now. For immediate assistance, please contact our support team at **support@creohub.io**.\n\nYou can also try asking about:\n• Pricing plans\n• Getting started\n• Payment methods\n• Country support";
+    }
   };
 
   const handleSendMessage = async () => {
@@ -180,22 +90,24 @@ export default function ChatBot() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputText("");
     setIsTyping(true);
 
-    // Simulate typing delay
+    // Get intelligent bot response
+    const botResponse = await getIntelligentResponse(inputText);
+
     setTimeout(() => {
-      const botResponse: Message = {
+      const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(inputText),
+        text: botResponse,
         sender: "bot",
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, botResponse]);
+      setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
-    }, 1000);
+    }, 500);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -205,106 +117,192 @@ export default function ChatBot() {
     }
   };
 
-  return (
-    <>
-      {/* Chat Button */}
-      {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 z-50"
-          size="icon"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      )}
+  const handleSuggestedQuestion = async (question: string) => {
+    setInputText(question);
+    
+    // Auto-send the suggested question
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: question,
+      sender: "user",
+      timestamp: new Date(),
+    };
 
-      {/* Chat Window */}
-      {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-80 h-96 shadow-xl z-50 flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary text-primary-foreground rounded-t-lg flex-shrink-0">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Bot className="h-4 w-4" />
-              Creohub Assistant
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(false)}
-              className="h-6 w-6 text-primary-foreground hover:bg-primary-foreground/20"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          
-          <CardContent className="flex-1 p-0 flex flex-col min-h-0">
-            {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4 max-h-64">
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm whitespace-pre-line ${
-                        message.sender === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
-                    >
-                      <div className="flex items-start gap-2">
-                        {message.sender === "bot" && (
-                          <Bot className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                        )}
-                        {message.sender === "user" && (
-                          <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                        )}
-                        <span>{message.text}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Bot className="h-4 w-4" />
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                        </div>
-                      </div>
-                    </div>
+    setMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
+
+    const botResponse = await getIntelligentResponse(question);
+
+    setTimeout(() => {
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: botResponse,
+        sender: "bot",
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+      setIsTyping(false);
+    }, 500);
+    
+    setInputText("");
+  };
+
+  const formatMessage = (text: string) => {
+    return text.split('\n').map((line, index) => {
+      // Handle bold text
+      const boldFormatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      // Handle bullet points
+      const bulletFormatted = boldFormatted.replace(/^•\s/, '• ');
+      
+      return (
+        <span key={index}>
+          <span dangerouslySetInnerHTML={{ __html: bulletFormatted }} />
+          {index < text.split('\n').length - 1 && <br />}
+        </span>
+      );
+    });
+  };
+
+  if (!isOpen) {
+    return (
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg z-50"
+        size="icon"
+      >
+        <MessageCircle className="h-6 w-6 text-white" />
+      </Button>
+    );
+  }
+
+  return (
+    <Card className="fixed bottom-6 right-6 w-96 h-[500px] shadow-xl z-50 flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Bot className="h-5 w-5 text-blue-600" />
+          Creohub Assistant
+        </CardTitle>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsOpen(false)}
+          className="h-8 w-8"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      
+      <CardContent className="flex-1 flex flex-col p-4 pt-0">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                {message.sender === "bot" && (
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-4 w-4 text-blue-600" />
                   </div>
                 )}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Input Area */}
-            <div className="p-4 border-t flex-shrink-0">
-              <div className="flex gap-2">
-                <Input
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask me anything about Creohub..."
-                  className="flex-1"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  size="icon"
-                  disabled={!inputText.trim()}
+                
+                <div
+                  className={`max-w-[280px] p-3 rounded-lg ${
+                    message.sender === "user"
+                      ? "bg-blue-600 text-white ml-8"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
                 >
-                  <Send className="h-4 w-4" />
-                </Button>
+                  <div className="text-sm leading-relaxed">
+                    {formatMessage(message.text)}
+                  </div>
+                  <div className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                </div>
+                
+                {message.sender === "user" && (
+                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </>
+            ))}
+            
+            {isTyping && (
+              <div className="flex gap-3 justify-start">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="bg-gray-100 p-3 rounded-lg">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+        
+        <div className="mt-4 space-y-3">
+          {/* Quick action buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSuggestedQuestion("What are your pricing plans?")}
+              className="text-xs"
+            >
+              Pricing Plans
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSuggestedQuestion("Do you support South Africa?")}
+              className="text-xs"
+            >
+              Country Support
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSuggestedQuestion("How do I get started?")}
+              className="text-xs"
+            >
+              Getting Started
+            </Button>
+          </div>
+          
+          <div className="flex gap-2">
+            <Input
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask me anything about Creohub..."
+              className="flex-1"
+              disabled={isTyping}
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!inputText.trim() || isTyping}
+              size="icon"
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
