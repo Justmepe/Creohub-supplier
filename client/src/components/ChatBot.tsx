@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Bot, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -11,7 +10,6 @@ interface Message {
   text: string;
   sender: "user" | "bot";
   timestamp: Date;
-  suggestedQuestions?: string[];
 }
 
 interface SmartResponse {
@@ -35,9 +33,12 @@ export default function ChatBot() {
   const [isTyping, setIsTyping] = useState(false);
   const [conversationContext, setConversationContext] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   };
 
   useEffect(() => {
@@ -118,9 +119,6 @@ export default function ChatBot() {
   };
 
   const handleSuggestedQuestion = async (question: string) => {
-    setInputText(question);
-    
-    // Auto-send the suggested question
     const userMessage: Message = {
       id: Date.now().toString(),
       text: question,
@@ -144,8 +142,6 @@ export default function ChatBot() {
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
     }, 500);
-    
-    setInputText("");
   };
 
   const formatMessage = (text: string) => {
@@ -178,7 +174,7 @@ export default function ChatBot() {
 
   return (
     <Card className="fixed bottom-6 right-6 w-96 h-[500px] shadow-xl z-50 flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b bg-white rounded-t-lg">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Bot className="h-5 w-5 text-blue-600" />
           Creohub Assistant
@@ -193,93 +189,97 @@ export default function ChatBot() {
         </Button>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-4 pt-0">
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {message.sender === "bot" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-4 w-4 text-blue-600" />
-                  </div>
-                )}
-                
-                <div
-                  className={`max-w-[280px] p-3 rounded-lg ${
-                    message.sender === "user"
-                      ? "bg-blue-600 text-white ml-8"
-                      : "bg-gray-100 text-gray-900"
-                  }`}
-                >
-                  <div className="text-sm leading-relaxed">
-                    {formatMessage(message.text)}
-                  </div>
-                  <div className="text-xs opacity-70 mt-1">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                </div>
-                
-                {message.sender === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {isTyping && (
-              <div className="flex gap-3 justify-start">
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+        {/* Messages Area */}
+        <div 
+          ref={chatContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+          style={{ maxHeight: 'calc(500px - 180px)' }}
+        >
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${
+                message.sender === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              {message.sender === "bot" && (
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                   <Bot className="h-4 w-4 text-blue-600" />
                 </div>
-                <div className="bg-gray-100 p-3 rounded-lg">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                  </div>
+              )}
+              
+              <div
+                className={`max-w-[250px] p-3 rounded-lg ${
+                  message.sender === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-900"
+                }`}
+              >
+                <div className="text-sm leading-relaxed">
+                  {formatMessage(message.text)}
+                </div>
+                <div className="text-xs opacity-70 mt-1">
+                  {message.timestamp.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
-            )}
-            
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+              
+              {message.sender === "user" && (
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                  <User className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {isTyping && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Bot className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
         
-        <div className="mt-4 space-y-3">
+        {/* Input Area */}
+        <div className="border-t bg-white p-4 space-y-3 rounded-b-lg">
           {/* Quick action buttons */}
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSuggestedQuestion("What are your pricing plans?")}
-              className="text-xs"
+              className="text-xs h-7 px-2"
             >
-              Pricing Plans
+              Pricing
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSuggestedQuestion("Do you support South Africa?")}
-              className="text-xs"
+              className="text-xs h-7 px-2"
             >
-              Country Support
+              Countries
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSuggestedQuestion("How do I get started?")}
-              className="text-xs"
+              className="text-xs h-7 px-2"
             >
-              Getting Started
+              Get Started
             </Button>
           </div>
           
@@ -289,14 +289,14 @@ export default function ChatBot() {
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask me anything about Creohub..."
-              className="flex-1"
+              className="flex-1 text-sm"
               disabled={isTyping}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputText.trim() || isTyping}
               size="icon"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 h-10 w-10"
             >
               <Send className="h-4 w-4" />
             </Button>
