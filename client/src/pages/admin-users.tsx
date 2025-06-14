@@ -25,7 +25,12 @@ export default function AdminUsers() {
     const token = btoa(authContext.user.id.toString()); // Base64 encode user ID
     localStorage.setItem('auth_token', token);
     
-    console.log('Fetching users with token for user ID:', authContext.user.id);
+    console.log('Admin users fetch details:', {
+      userId: authContext.user.id,
+      token: token,
+      tokenDecoded: atob(token),
+      url: '/api/admin/users'
+    });
     
     const response = await fetch('/api/admin/users', {
       headers: {
@@ -34,7 +39,11 @@ export default function AdminUsers() {
       }
     });
 
-    console.log('Users fetch response:', response.status, response.ok);
+    console.log('Users fetch response:', {
+      status: response.status,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));

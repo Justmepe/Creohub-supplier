@@ -1375,35 +1375,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/users", async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers.authorization;
-      
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       const token = authHeader.substring(7);
-      let userId: number | null = null;
-      
-      // Try session-based authentication first
-      userId = await validateSession(token);
-      
-      // Fallback to legacy token format
-      if (!userId) {
-        try {
-          const userIdString = Buffer.from(token, 'base64').toString();
-          const parsedUserId = parseInt(userIdString);
-          
-          if (!isNaN(parsedUserId) && userIdString.trim() !== '') {
-            userId = parsedUserId;
-          }
-        } catch (error) {
-          // Token parsing failed
-        }
-      }
-      
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid token format" });
-      }
-      
+      const userId = parseInt(Buffer.from(token, 'base64').toString());
       const user = await storage.getUser(userId);
       
       if (!user || !user.isAdmin) {
@@ -1413,7 +1390,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allUsers = await storage.getAllUsers();
       res.json(allUsers);
     } catch (error: any) {
-      console.log(`Admin users error: ${error.message}`);
       res.status(500).json({ message: error.message });
     }
   });
