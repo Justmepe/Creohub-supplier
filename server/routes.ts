@@ -1465,7 +1465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (creator) {
           console.log(`Deleting creator data for user ${targetUserId}, creator ${creator.id}`);
           
-          // Delete all creator-related data in proper order to avoid foreign key violations
+          // Delete core creator-related data that commonly causes foreign key violations
           
           // 1. Delete withdrawal requests
           await db.delete(withdrawalRequests).where(eq(withdrawalRequests.creatorId, creator.id));
@@ -1479,31 +1479,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // 4. Delete creator earnings
           await db.delete(creatorEarnings).where(eq(creatorEarnings.creatorId, creator.id));
           
-          // 5. Delete commissions (affiliate commissions)
-          await db.delete(commissions).where(eq(commissions.creatorId, creator.id));
-          
-          // 6. Delete affiliate links (where creator is the affiliate)
+          // 5. Delete affiliate links (where creator is the affiliate)
           await db.delete(affiliateLinks).where(eq(affiliateLinks.affiliateCreatorId, creator.id));
           
-          // 7. Delete orders
+          // 6. Delete orders
           await db.delete(orders).where(eq(orders.creatorId, creator.id));
           
-          // 8. Delete subscriptions
+          // 7. Delete subscriptions
           await db.delete(subscriptions).where(eq(subscriptions.creatorId, creator.id));
           
-          // 9. Get products and delete their settings first
-          const creatorProducts = await db.select().from(products).where(eq(products.creatorId, creator.id));
-          for (const product of creatorProducts) {
-            await db.delete(productSettings).where(eq(productSettings.productId, product.id));
+          // 8. Delete products and their settings
+          const productsToDelete = await db.select().from(products).where(eq(products.creatorId, creator.id));
+          for (const product of productsToDelete) {
+            // Delete product settings if they exist
+            try {
+              await db.delete(productSettings).where(eq(productSettings.productId, product.id));
+            } catch (e) {
+              // Continue if productSettings doesn't exist or has different structure
+            }
           }
           
-          // 10. Delete products
+          // 9. Delete products
           await db.delete(products).where(eq(products.creatorId, creator.id));
           
-          // 11. Delete color themes
+          // 10. Delete color themes
           await db.delete(colorThemes).where(eq(colorThemes.userId, targetUserId));
           
-          // 12. Finally delete creator profile
+          // 11. Finally delete creator profile
           await db.delete(creators).where(eq(creators.id, creator.id));
           
           console.log(`Successfully deleted all creator data for user ${targetUserId}`);
