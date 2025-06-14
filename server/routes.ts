@@ -20,6 +20,10 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Serve static assets first (before any API routes)
+  app.use("/assets", express.static(path.join(process.cwd(), "server/public/assets")));
+  app.use(express.static(path.join(process.cwd(), "server/public")));
+  
   // Payment configuration (African focus)
   app.get("/api/payments/config", async (req: Request, res: Response) => {
     try {
@@ -51,8 +55,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files
   app.use("/uploads", express.static(uploadDir));
   
-  // Handle client-side routing
+  // Handle client-side routing (only for non-asset requests)
   app.get("*", (req: Request, res: Response) => {
+    // Skip serving HTML for asset requests
+    if (req.path.startsWith('/assets/')) {
+      return res.status(404).send('Asset not found');
+    }
     res.sendFile(path.join(process.cwd(), "server/public/index.html"));
   });
 
