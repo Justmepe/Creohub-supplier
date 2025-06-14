@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Crown, Zap, Plus, Settings, Users, Eye } from "lucide-react";
+import { Crown, Zap, Plus, Settings, Users, Eye, ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface SocialProofData {
@@ -30,6 +31,7 @@ interface SocialProofResponse {
 export default function AdminSocialProof() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   const [newUser, setNewUser] = useState({
     name: "",
@@ -122,13 +124,24 @@ export default function AdminSocialProof() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Users className="w-8 h-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">Social Proof Management</h1>
-          <p className="text-muted-foreground">
-            Manage fake users and configure data sources for social proof notifications
-          </p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setLocation("/admin-dashboard")}
+            className="mr-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Admin Dashboard
+          </Button>
+          <Users className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">Social Proof Management</h1>
+            <p className="text-muted-foreground">
+              Manage fake users and configure data sources for social proof notifications
+            </p>
+          </div>
         </div>
       </div>
 
