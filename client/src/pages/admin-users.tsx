@@ -22,6 +22,18 @@ export default function AdminUsers() {
       throw new Error('No authenticated user found');
     }
     
+    console.log('Current user details:', {
+      userId: authContext.user.id,
+      isAdmin: authContext.user.isAdmin,
+      username: authContext.user.username,
+      email: authContext.user.email
+    });
+    
+    // Check if current user is admin
+    if (!authContext.user.isAdmin) {
+      throw new Error('Admin access required. Current user is not an admin.');
+    }
+    
     const token = btoa(authContext.user.id.toString()); // Base64 encode user ID
     localStorage.setItem('auth_token', token);
     
