@@ -84,14 +84,23 @@ export default function VerifyEmail() {
     setIsResending(true);
     
     try {
-      await apiRequest("POST", "/api/auth/resend-verification", {
+      const response = await apiRequest("POST", "/api/auth/resend-verification", {
         userId: parseInt(userId)
       });
+      const data = await response.json();
       
-      toast({
-        title: "Code Sent",
-        description: "New verification code sent to your email",
-      });
+      if (data.emailDelivered) {
+        toast({
+          title: "Code Sent",
+          description: "New verification code sent to your email",
+        });
+      } else {
+        toast({
+          title: "Code Generated",
+          description: "Verification code generated. If you're not receiving emails, please contact support for assistance.",
+          variant: "default",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",

@@ -31,7 +31,7 @@ import {
   withdrawalRequests, creatorEarnings, earningTransactions,
   productSettings, userSessions 
 } from "@shared/schema";
-import { eq, and, gt, isNull } from "drizzle-orm";
+import { eq, and, gt, isNull, desc } from "drizzle-orm";
 import { PRICING_PLANS, getPlanById, calculateTransactionFee, canAddProduct, isTrialExpired, isSubscriptionActive } from "@shared/pricing";
 import { detectCurrencyFromBrowser } from "@shared/currency";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
@@ -333,12 +333,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt
       });
       
-      await sendVerificationEmail(user.email, verificationCode, 'registration');
+      const emailSent = await sendVerificationEmail(user.email, verificationCode, 'registration');
       
       res.json({ 
-        message: "Verification code sent to your email",
+        message: emailSent ? "Verification code sent to your email" : "Verification code generated. Check server logs or contact support.",
         userId: user.id,
-        email: user.email
+        email: user.email,
+        emailDelivered: emailSent
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Endpoint for users to check their verification status and get help when emails fail
+  app.get("/api/auth/verification-status/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.isEmailVerified) {
+        return res.json({ 
+          verified: true, 
+          message: "Email already verified" 
+        });
+      }
+
+      // Get the latest verification code for this user
+      const [latestVerification] = await db
+        .select()
+        .from(emailVerifications)
+        .where(
+          and(
+            eq(emailVerifications.userId, userId),
+            gt(emailVerifications.expiresAt, new Date()),
+            isNull(emailVerifications.usedAt)
+          )
+        )
+        .orderBy(desc(emailVerifications.createdAt))
+        .limit(1);
+
+      if (!latestVerification) {
+        return res.json({
+          verified: false,
+          message: "No active verification code found. Please request a new one.",
+          hasActiveCode: false
+        });
+      }
+
+      return res.json({
+        verified: false,
+        message: "Verification code is active. Check your email or contact support if you're not receiving emails.",
+        hasActiveCode: true,
+        email: user.email,
+        expiresAt: latestVerification.expiresAt,
+        supportMessage: "If you're not receiving emails, verification codes are temporarily displayed in server console logs. Contact support for assistance."
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
