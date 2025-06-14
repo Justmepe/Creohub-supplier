@@ -17,11 +17,15 @@ export default function AdminUsers() {
 
   // Custom fetch function with proper token handling
   const fetchUsers = async (): Promise<User[]> => {
-    const token = localStorage.getItem('auth_token');
-    
-    if (!token) {
-      throw new Error('No authentication token found');
+    // Always use the current user ID to generate a fresh token
+    if (!authContext?.user?.id) {
+      throw new Error('No authenticated user found');
     }
+    
+    const token = btoa(authContext.user.id.toString()); // Base64 encode user ID
+    localStorage.setItem('auth_token', token);
+    
+    console.log('Fetching users with token for user ID:', authContext.user.id);
     
     const response = await fetch('/api/admin/users', {
       headers: {
@@ -29,6 +33,8 @@ export default function AdminUsers() {
         'Content-Type': 'application/json'
       }
     });
+
+    console.log('Users fetch response:', response.status, response.ok);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
@@ -45,10 +51,11 @@ export default function AdminUsers() {
 
   // Fetch all users for user management
   const { data: allUsers, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: ['admin-users', authContext?.user?.id],
     queryFn: fetchUsers,
     retry: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
+    enabled: !!authContext?.user?.id // Only run query when user is authenticated
   });
 
   // Handle user deletion
@@ -56,9 +63,17 @@ export default function AdminUsers() {
     try {
       setIsDeleting(true);
       
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        throw new Error('No authentication token found');
+      let token = localStorage.getItem('auth_token');
+      
+      // If no token or invalid token, try to get it from auth context
+      if (!token || token === 'null' || token === 'undefined') {
+        if (authContext?.user?.id) {
+          // Generate token from current user ID
+          token = Buffer.from(authContext.user.id.toString()).toString('base64');
+          localStorage.setItem('auth_token', token);
+        } else {
+          throw new Error('No authentication token found');
+        }
       }
       
       const response = await fetch(`/api/admin/users/${userId}`, {
