@@ -36,35 +36,34 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      // Create mailto link with form data
-      const subject = encodeURIComponent(`${formData.category ? `[${formData.category}] ` : ""}${formData.subject || "Contact Form Submission"}`);
-      const body = encodeURIComponent(
-        `Name: ${formData.name}\n` +
-        `Email: ${formData.email}\n` +
-        `Category: ${formData.category || "General"}\n\n` +
-        `Message:\n${formData.message}`
-      );
-      
-      const mailtoLink = `mailto:support@creohub.io?subject=${subject}&body=${body}`;
-      window.location.href = mailtoLink;
+      const response = await apiRequest("POST", "/api/contact/submit", formData);
+      const result = await response.json();
 
-      toast({
-        title: "Email Client Opened",
-        description: "Your default email client should open with the message pre-filled.",
-      });
+      if (result.success) {
+        toast({
+          title: "Message Sent Successfully",
+          description: result.message,
+        });
 
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        category: "",
-        message: ""
-      });
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          category: "",
+          message: ""
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "There was a problem opening your email client. Please email us directly at support@creohub.io",
+        description: "There was a problem sending your message. Please try again or email us directly at support@creohub.io",
         variant: "destructive"
       });
     } finally {

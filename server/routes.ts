@@ -2228,6 +2228,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact form submission
+  app.post("/api/contact/submit", async (req: Request, res: Response) => {
+    try {
+      const { name, email, subject, category, message } = req.body;
+
+      if (!name || !email || !message) {
+        return res.status(400).json({
+          success: false,
+          message: "Name, email, and message are required fields."
+        });
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Please provide a valid email address."
+        });
+      }
+
+      const emailSubject = `${category ? `[${category}] ` : ""}${subject || "Contact Form Submission"} - ${name}`;
+      const emailBody = `
+New contact form submission from Creohub:
+
+Name: ${name}
+Email: ${email}
+Category: ${category || "General"}
+Subject: ${subject || "Not specified"}
+
+Message:
+${message}
+
+---
+This message was sent through the Creohub contact form.
+Time: ${new Date().toISOString()}
+      `.trim();
+
+      await sendEmail("support@creohub.io", emailSubject, emailBody, email);
+
+      res.json({
+        success: true,
+        message: "Thank you for your message! We'll get back to you within 24 hours."
+      });
+    } catch (error) {
+      console.error('Error sending contact email:', error);
+      res.status(500).json({
+        success: false,
+        message: "There was an error sending your message. Please try again or email us directly at support@creohub.io"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
