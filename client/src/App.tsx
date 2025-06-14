@@ -27,6 +27,7 @@ import AdminSetup from "@/pages/admin-setup";
 import AdminTest from "@/pages/admin-test";
 import AdminRegister from "@/pages/admin-register";
 import AdminUsers from "@/pages/admin-users";
+import AdminSocialProof from "@/pages/admin/social-proof";
 import PaymentTest from "@/pages/payment-test";
 import PaymentSuccess from "@/pages/payment-success";
 import PaymentFailed from "@/pages/payment-failed";
@@ -81,6 +82,7 @@ function App() {
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin-users" component={AdminUsers} />
               <Route path="/admin/users" component={AdminUsers} />
+              <Route path="/admin/social-proof" component={AdminSocialProof} />
               <Route path="/admin/register" component={AdminRegister} />
               <Route path="/payment-test" component={PaymentTest} />
               <Route path="/payment/success" component={PaymentSuccess} />
