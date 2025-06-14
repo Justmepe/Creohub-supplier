@@ -43,11 +43,19 @@ export default function ChatBot() {
     
     features: "Creohub includes everything you need:\n\n✅ **Unlimited Products** - Digital & physical\n✅ **Custom Storefront** - Your brand, your way\n✅ **Analytics Dashboard** - Track sales & customers\n✅ **Affiliate Program** - Let others promote your products\n✅ **Theme Customization** - Colors and branding\n✅ **Email Verification** - Secure customer accounts\n✅ **Mobile Responsive** - Works on all devices",
     
-    support: "I'm here to help! For additional support:\n\n📧 **Email**: support@creohub.io\n💬 **Live Chat**: Available 9AM-6PM EAT\n📚 **Documentation**: Check our help center\n🎥 **Video Tutorials**: Coming soon!\n\nWhat specific question can I answer for you?",
+    support: "I can answer most questions about Creohub! Try asking me about:\n\n• Pricing plans and fees\n• Getting started guide\n• Payment methods and countries\n• Platform features\n• Free trial details\n\nIf I can't help with your specific question, I'll connect you with our support team at **support@creohub.io**\n\nWhat would you like to know?",
     
     trial: "Your **14-day free trial** includes:\n\n• Full access to all features\n• Upload unlimited products\n• Custom storefront setup\n• Analytics dashboard\n• 10% platform fee on sales\n\nNo credit card required to start! Ready to begin your creator journey?",
     
     countries: "Yes! Creohub welcomes creators from all African countries including:\n\n🇿🇦 **South Africa** - ZAR support, local banks, Flutterwave\n🇰🇪 **Kenya** - M-Pesa, KES, local banking\n🇳🇬 **Nigeria** - Naira, local banks, Flutterwave\n🇬🇭 **Ghana** - Cedis, mobile money, local banking\n🇺🇬 **Uganda** - UGX, mobile money integration\n\n+ All other African countries with full platform access, local currency support, and African payment methods!",
+    
+    affiliate: "**Affiliate Program** lets others promote your products:\n\n• Set commission rates (5-50%)\n• Generate unique affiliate links\n• Track sales and commissions\n• Automatic payouts to affiliates\n• Expand your reach across Africa\n\nAffiliate marketers earn when they refer customers to your products!",
+    
+    withdrawal: "**Earnings & Withdrawals:**\n\n• Minimum withdrawal: $10 USD equivalent\n• Processing time: 3-5 business days\n• Supported methods: Bank transfer, mobile money\n• Admin approval required for security\n• Track earnings in your dashboard\n• Monthly payout statements available\n\nEarnings are calculated after platform fees!",
+    
+    digital: "**Digital Products** - Perfect for creators:\n\n• eBooks, courses, software\n• Music, videos, templates\n• Instant delivery after purchase\n• No shipping costs\n• Global reach\n• Higher profit margins\n\nUpload once, sell unlimited copies!",
+    
+    physical: "**Physical Products** - Ship anywhere:\n\n• Manage inventory levels\n• Set shipping rates by region\n• Print shipping labels\n• Track deliveries\n• Handle returns/refunds\n• Integration with local couriers\n\nPerfect for handmade goods, books, merchandise!",
   };
 
   const getBotResponse = (userMessage: string): string => {
@@ -93,6 +101,30 @@ export default function ChatBot() {
       return predefinedResponses.countries;
     }
     
+    // Affiliate program questions
+    if (message.includes("affiliate") || message.includes("referral") || message.includes("commission") || 
+        message.includes("promote") || message.includes("marketing")) {
+      return predefinedResponses.affiliate;
+    }
+    
+    // Withdrawal and earnings questions
+    if (message.includes("withdrawal") || message.includes("withdraw") || message.includes("payout") || 
+        message.includes("earning") || message.includes("money") || message.includes("bank")) {
+      return predefinedResponses.withdrawal;
+    }
+    
+    // Digital products questions
+    if (message.includes("digital") || message.includes("ebook") || message.includes("course") || 
+        message.includes("software") || message.includes("download")) {
+      return predefinedResponses.digital;
+    }
+    
+    // Physical products questions
+    if (message.includes("physical") || message.includes("shipping") || message.includes("delivery") || 
+        message.includes("inventory") || message.includes("product")) {
+      return predefinedResponses.physical;
+    }
+    
     // Greetings
     if (message.includes("hello") || message.includes("hi") || message.includes("hey") || message.includes("good")) {
       return "Hello! Welcome to Creohub. I'm here to help you build your creator business in Africa. What would you like to know about our platform?";
@@ -101,6 +133,18 @@ export default function ChatBot() {
     // Thank you responses
     if (message.includes("thank") || message.includes("thanks")) {
       return "You're welcome! Is there anything else you'd like to know about Creohub? I'm here to help with questions about pricing, features, getting started, or our payment methods.";
+    }
+    
+    // User indicates they need human help
+    if (message.includes("human") || message.includes("agent") || message.includes("can't help") || 
+        message.includes("not helpful") || message.includes("talk to someone")) {
+      return "I understand you need human assistance! Please contact our support team at **support@creohub.io** for personalized help. Include details about your specific question or issue, and they'll respond within 24 hours.\n\nIs there anything else I can help you with from our FAQ?";
+    }
+    
+    // Technical/specific issues that need human support
+    if (message.includes("bug") || message.includes("error") || message.includes("broken") || 
+        message.includes("not working") || message.includes("problem") || message.includes("issue")) {
+      return "For technical issues or specific problems, our support team can help you directly. Please email **support@creohub.io** with:\n\n• Description of the issue\n• Steps you tried\n• Screenshots if applicable\n\nThey'll investigate and resolve it quickly!";
     }
     
     // Yes/No responses
@@ -112,13 +156,13 @@ export default function ChatBot() {
       return "No problem! Feel free to ask me anything about Creohub whenever you're ready. I'm here to help!";
     }
     
-    // Default response with variety
+    // FAQ-focused default responses
     const defaultResponses = [
-      "I'd be happy to help! Here are some things I can tell you about:\n\n• **Pricing & Plans** - Our subscription options\n• **Getting Started** - How to set up your store\n• **Payment Methods** - African payment solutions\n• **Features** - What's included in Creohub\n• **Free Trial** - 14-day trial details\n• **Support** - How to get additional help\n\nWhat interests you most?",
+      "I can help you with common questions about Creohub! Try asking about:\n\n• **Pricing** - Plans and fees\n• **Countries** - South Africa, Kenya, Nigeria support\n• **Payments** - M-Pesa, Pesapal, Flutterwave\n• **Products** - Digital vs physical items\n• **Affiliate Program** - Earn commissions\n• **Withdrawals** - How to get paid\n\nWhat would you like to know?",
       
-      "I'm here to assist with any questions about Creohub! You can ask me about:\n\n• Our pricing plans and fees\n• How to get started as a creator\n• Available payment methods\n• Platform features and benefits\n• Your free trial options\n• Getting support\n\nWhat would you like to know?",
+      "I'm your Creohub FAQ assistant! I can answer questions about:\n\n• Getting started and free trial\n• Pricing plans and platform fees\n• African payment methods\n• Platform features and benefits\n• Country availability\n• Affiliate and withdrawal systems\n\nWhat specific topic interests you?",
       
-      "Happy to help with your Creohub questions! I can provide information about our creator platform, including pricing, features, setup process, and payment options. What specific topic interests you?"
+      "Let me help you learn about Creohub! I have answers for:\n\n• **Setup Process** - How to start selling\n• **Payment Options** - African solutions\n• **Product Types** - Digital and physical\n• **Earnings** - Withdrawals and payouts\n• **Country Support** - All African nations\n\nIf I can't answer your question, I'll connect you with our support team!"
     ];
     
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
