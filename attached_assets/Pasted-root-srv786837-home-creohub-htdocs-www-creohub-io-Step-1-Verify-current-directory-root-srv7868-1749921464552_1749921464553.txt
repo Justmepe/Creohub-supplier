@@ -1,0 +1,81 @@
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 1: Verify current directory
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pwd
+/home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 2: Check if the updated files exist
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls -la server/index.ts server/routes.ts
+t for th-rw-rw-r-- 1 creohub creohub 2400 Jun 14 13:14 server/index.ts
+-rw-rw-r-- 1 creohub creohub 1828 Jun 14 16:48 server/routes.ts
+
+  dist/index.js  25.7kbx.ts --proot@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 3: Build the server (wait for this to complete)
+⚡ Done in 7ms7:/home/creohub/htdocs/www.creohub.io# npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 4: Only after build succeeds, start the server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 1: Verify current directory
+root@srv786837:/home/creohub/htdocs/www.creohub.io# pwd
+/home/creohub/htdocs/www.creohub.io
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 2: Check if the updated files exist
+root@srv786837:/home/creohub/htdocs/www.creohub.io# ls -la server/index.ts server/routes.ts
+t for th-rw-rw-r-- 1 creohub creohub 2400 Jun 14 13:14 server/index.ts
+-rw-rw-r-- 1 creohub creohub 1828 Jun 14 16:48 server/routes.ts
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 3: Build the server (wait for this to complete)
+root@srv786837:/home/creohub/htdocs/www.creohub.io# npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+tart the server
+
+  dist/index.js  25.7kb
+
+⚡ Done in 5ms
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
+root@srv786837:/home/creohub/htdocs/www.creohub.io# # Step 4: Only after build succeeds, start the server
+root@srv786837:/home/creohub/htdocs/www.creohub.io# PORT=8080 NODE_ENV=production node dist/index.js
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.2
+root@srv786837:/home/creohub/htdocs/www.creohub.io#
