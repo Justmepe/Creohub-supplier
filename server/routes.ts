@@ -492,14 +492,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Handle client-side routing (only for non-asset requests)
-  app.get("*", (req: Request, res: Response) => {
-    // Skip serving HTML for asset requests
-    if (req.path.startsWith('/assets/')) {
-      return res.status(404).send('Asset not found');
-    }
-    res.sendFile(path.join(process.cwd(), "server/public/index.html"));
-  });
+  // Handle client-side routing only in production mode
+  // In development, Vite handles this automatically
+  if (process.env.NODE_ENV === 'production') {
+    app.get("*", (req: Request, res: Response) => {
+      // Skip serving HTML for asset requests
+      if (req.path.startsWith('/assets/')) {
+        return res.status(404).send('Asset not found');
+      }
+      res.sendFile(path.join(process.cwd(), "server/public/index.html"));
+    });
+  }
 
   const httpServer = createServer(app);
   return httpServer;
