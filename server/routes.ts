@@ -231,6 +231,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get creator by user ID
+  app.get("/api/creators/user/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const creator = await storage.getCreatorByUserId(userId);
+      
+      if (!creator) {
+        return res.status(404).json({ error: "Creator not found" });
+      }
+      
+      res.json(creator);
+    } catch (error) {
+      console.error("Get creator by user ID error:", error);
+      res.status(500).json({ error: "Failed to get creator" });
+    }
+  });
+
   app.post("/api/creators/:creatorId/dropshipping/add-product", async (req: Request, res: Response) => {
     try {
       const { creatorId } = req.params;

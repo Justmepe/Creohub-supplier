@@ -152,13 +152,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuth();
   }, []);
 
-  const handleSetUser = (user: User | null) => {
+  const handleSetUser = async (user: User | null) => {
     setUser(user);
     if (typeof window !== 'undefined') {
       if (user) {
         localStorage.setItem('user', JSON.stringify(user));
+        
+        // Fetch creator profile for this user
+        try {
+          const response = await fetch(`/api/creators/user/${user.id}`);
+          if (response.ok) {
+            const creatorData = await response.json();
+            setCreator(creatorData);
+            localStorage.setItem('creator', JSON.stringify(creatorData));
+          } else if (response.status === 404) {
+            // User doesn't have a creator profile yet
+            setCreator(null);
+            localStorage.removeItem('creator');
+          }
+        } catch (error) {
+          console.error('Failed to fetch creator profile:', error);
+          setCreator(null);
+          localStorage.removeItem('creator');
+        }
       } else {
         localStorage.removeItem('user');
+        setCreator(null);
+        localStorage.removeItem('creator');
       }
     }
   };
