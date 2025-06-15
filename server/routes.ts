@@ -124,6 +124,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files
   app.use("/uploads", express.static(uploadDir));
 
+  // Creator API routes
+  app.get("/api/creators/user/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const creator = await storage.getCreatorByUserId(userId);
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      res.json(creator);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch creator" });
+    }
+  });
+
+  app.get("/api/creators/:id(\\d+)", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const creator = await storage.getCreator(creatorId);
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      res.json(creator);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch creator" });
+    }
+  });
+
+  app.get("/api/creators/:handle", async (req: Request, res: Response) => {
+    try {
+      const handle = req.params.handle;
+      const creator = await storage.getCreatorByHandle(handle);
+      
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+
+      res.json(creator);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch creator" });
+    }
+  });
+
+  app.get("/api/creators/:id/products", async (req: Request, res: Response) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      const products = await storage.getProductsByCreator(creatorId);
+      
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
   // Dropshipping Partner Management
   app.post("/api/dropshipping/partners/apply", async (req: Request, res: Response) => {
     try {
