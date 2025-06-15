@@ -18,6 +18,15 @@ const upload = multer({
   limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
 });
 
+// Authentication middleware
+const requireAuth = (req: any, res: Response, next: any) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  req.user = req.session.user;
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Authentication routes
@@ -610,6 +619,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(withdrawals);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch withdrawals" });
+    }
+  });
+
+  // Product Sync and Management API
+  app.post("/api/dropshipping/partners/:id/sync", requireAuth, async (req: any, res: Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const { productSyncService } = await import("./product-sync");
+      
+      const result = await productSyncService.syncProducts(partnerId, req.user.id);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/dropshipping/partners/:id/csv-import", requireAuth, upload.single("csv"), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "CSV file is required" });
+      }
+
+      const partnerId = parseInt(req.params.id);
+      const csvData = req.file.buffer.toString('utf-8');
+      const { productSyncService } = await import("./product-sync");
+      
+      const result = await productSyncService.processCsvImport(partnerId, csvData, req.user.id);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/dropshipping/partners/:id/sync-logs", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const logs = await storage.getProductSyncLogs(partnerId);
+      res.json(logs);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch sync logs" });
+    }
+  });
+
+  app.post("/api/dropshipping/products", requireAuth, async (req: any, res: Response) => {
+    try {
+      const productData = {
+        ...req.body,
+        importSource: "manual"
+      };
+      const product = await storage.createDropshippingProduct(productData);
+      res.status(201).json(product);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  app.put("/api/dropshipping/products/:id", requireAuth, async (req: any, res: Response) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await storage.updateDropshippingProduct(productId, req.body);
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+
+  app.get("/api/dropshipping/partners/:id/products", async (req: Request, res: Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const products = await storage.getDropshippingProductsByPartner(partnerId);
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch products" });
     }
   });
   

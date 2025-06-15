@@ -149,7 +149,13 @@ export interface IStorage {
   createDropshippingProduct(product: any): Promise<any>;
   getDropshippingProducts(): Promise<any[]>;
   getDropshippingProductsByPartner(partnerId: number): Promise<any[]>;
+  getDropshippingProductByExternalId(partnerId: number, externalId: string): Promise<any>;
   updateDropshippingProduct(id: number, updates: any): Promise<any>;
+
+  // Product Sync Logs
+  createProductSyncLog(log: any): Promise<any>;
+  getProductSyncLogs(partnerId: number): Promise<any[]>;
+  updateProductSyncLog(id: number, updates: any): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
@@ -169,6 +175,7 @@ export class MemStorage implements IStorage {
   private withdrawalRequests: Map<number, WithdrawalRequest>;
   private dropshippingPartners: Map<number, any>;
   private dropshippingProducts: Map<number, any>;
+  private productSyncLogs: Map<number, any>;
   private currentUserId: number;
   private currentCreatorId: number;
   private currentProductId: number;
@@ -181,6 +188,7 @@ export class MemStorage implements IStorage {
   private currentColorThemeId: number;
   private currentDropshippingPartnerId: number;
   private currentDropshippingProductId: number;
+  private currentProductSyncLogId: number;
 
   constructor() {
     this.users = new Map();
@@ -199,6 +207,7 @@ export class MemStorage implements IStorage {
     this.withdrawalRequests = new Map();
     this.dropshippingPartners = new Map();
     this.dropshippingProducts = new Map();
+    this.productSyncLogs = new Map();
     this.currentUserId = 1;
     this.currentCreatorId = 1;
     this.currentProductId = 1;
@@ -210,6 +219,7 @@ export class MemStorage implements IStorage {
     this.currentProductSettingsId = 1;
     this.currentColorThemeId = 1;
     this.currentDropshippingPartnerId = 1;
+    this.currentProductSyncLogId = 1;
     this.currentDropshippingProductId = 1;
     
     // Initialize with admin test account immediately
@@ -855,6 +865,12 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getDropshippingProductByExternalId(partnerId: number, externalId: string): Promise<any> {
+    return Array.from(this.dropshippingProducts.values()).find(product => 
+      product.partnerId === partnerId && product.externalId === externalId
+    );
+  }
+
   async updateDropshippingProduct(id: number, updates: any): Promise<any> {
     const product = this.dropshippingProducts.get(id);
     if (!product) return undefined;
@@ -866,6 +882,37 @@ export class MemStorage implements IStorage {
     };
     this.dropshippingProducts.set(id, updatedProduct);
     return updatedProduct;
+  }
+
+  // Product Sync Logs
+  async createProductSyncLog(log: any): Promise<any> {
+    const id = this.currentProductSyncLogId++;
+    const newLog = {
+      id,
+      ...log,
+      createdAt: new Date(),
+    };
+    this.productSyncLogs.set(id, newLog);
+    return newLog;
+  }
+
+  async getProductSyncLogs(partnerId: number): Promise<any[]> {
+    return Array.from(this.productSyncLogs.values())
+      .filter(log => log.partnerId === partnerId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async updateProductSyncLog(id: number, updates: any): Promise<any> {
+    const log = this.productSyncLogs.get(id);
+    if (!log) return undefined;
+    
+    const updatedLog = {
+      ...log,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.productSyncLogs.set(id, updatedLog);
+    return updatedLog;
   }
 
   private initializeSupplierPartnersAndProducts() {
