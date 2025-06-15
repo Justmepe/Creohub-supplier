@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import ProductCard from "@/components/storefront/product-card";
 import CartDrawer from "@/components/cart/cart-drawer";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Globe, 
@@ -24,6 +25,8 @@ import { useEffect } from "react";
 
 export default function Storefront() {
   const { handle } = useParams();
+  const [location, setLocation] = useLocation();
+  const { user: currentUser } = useAuth();
 
   const { data: creator, isLoading: creatorLoading, error: creatorError } = useQuery({
     queryKey: [`/api/creators/${handle}`],
@@ -115,10 +118,17 @@ export default function Storefront() {
       <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <Button variant="ghost" asChild>
-            <Link href="/dashboard">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
+            {currentUser && creator?.userId === currentUser.id ? (
+              <Link href="/dashboard">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Link>
+            ) : (
+              <Link href="/">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Link>
+            )}
           </Button>
         </div>
       </div>
