@@ -239,6 +239,16 @@ export const dropshippingPartners = pgTable("dropshipping_partners", {
   paymentAccountDetails: jsonb("payment_account_details"), // Bank details for receiving payments
   taxInfo: jsonb("tax_info"), // Tax registration details
   verificationDocuments: jsonb("verification_documents"), // Document URLs
+  // Product Import Configuration
+  productImportMethod: text("product_import_method").default("manual"), // manual, api, csv, xml
+  apiEndpoint: text("api_endpoint"), // For automatic product sync
+  apiKey: text("api_key"), // For authenticated API access
+  apiFormat: text("api_format"), // json, xml, csv
+  syncFrequency: text("sync_frequency").default("daily"), // hourly, daily, weekly, manual
+  lastSyncAt: timestamp("last_sync_at"),
+  syncStatus: text("sync_status").default("idle"), // idle, syncing, success, error
+  syncErrorMessage: text("sync_error_message"),
+  productMapping: jsonb("product_mapping"), // Field mapping configuration
   isActive: boolean("is_active").default(true),
   approvedAt: timestamp("approved_at"),
   approvedBy: integer("approved_by").references(() => users.id),
@@ -249,6 +259,8 @@ export const dropshippingPartners = pgTable("dropshipping_partners", {
 export const dropshippingProducts = pgTable("dropshipping_products", {
   id: serial("id").primaryKey(),
   partnerId: integer("partner_id").references(() => dropshippingPartners.id).notNull(),
+  externalId: text("external_id"), // ID from supplier's system
+  importSource: text("import_source").default("manual"), // manual, api, csv, xml
   name: text("name").notNull(),
   description: text("description"),
   category: text("category"),
@@ -327,6 +339,26 @@ export const dropshippingPayments = pgTable("dropshipping_payments", {
   paymentMethod: text("payment_method"), // bank_transfer, mobile_money
   processedAt: timestamp("processed_at"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Product Import Sync Logs
+export const productSyncLogs = pgTable("product_sync_logs", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").references(() => dropshippingPartners.id).notNull(),
+  syncType: text("sync_type").notNull(), // manual, scheduled, api, csv, xml
+  status: text("status").notNull(), // started, success, error, partial
+  totalProducts: integer("total_products").default(0),
+  successCount: integer("success_count").default(0),
+  errorCount: integer("error_count").default(0),
+  skippedCount: integer("skipped_count").default(0),
+  newProducts: integer("new_products").default(0),
+  updatedProducts: integer("updated_products").default(0),
+  errorDetails: jsonb("error_details"), // Array of error messages
+  syncDuration: integer("sync_duration"), // Time taken in seconds
+  dataSource: text("data_source"), // API endpoint, file name, etc.
+  triggeredBy: integer("triggered_by").references(() => users.id), // User who triggered sync
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
 });
 
 // Intelligent Recommendation Engine

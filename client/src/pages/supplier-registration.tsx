@@ -24,6 +24,10 @@ const supplierFormSchema = z.object({
   description: z.string().min(50, "Please provide a detailed description (min 50 characters)"),
   website: z.string().url("Please enter a valid website URL").optional().or(z.literal("")),
   defaultCommissionRate: z.string().min(1, "Commission rate is required"),
+  productImportMethod: z.enum(["manual", "api", "csv"]),
+  apiEndpoint: z.string().url("Please enter a valid API endpoint").optional().or(z.literal("")),
+  apiKey: z.string().optional(),
+  syncFrequency: z.enum(["hourly", "daily", "weekly", "manual"]).optional(),
 });
 
 type SupplierFormData = z.infer<typeof supplierFormSchema>;
@@ -44,6 +48,10 @@ export default function SupplierRegistration() {
       description: "",
       website: "",
       defaultCommissionRate: "15",
+      productImportMethod: "manual",
+      apiEndpoint: "",
+      apiKey: "",
+      syncFrequency: "daily",
     },
   });
 
@@ -345,6 +353,120 @@ export default function SupplierRegistration() {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Product Import Configuration */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Product Management</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="productImportMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How do you want to manage your products? *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select product management method" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="manual">Manual Entry - Add products individually through dashboard</SelectItem>
+                            <SelectItem value="api">Automatic Import - Connect your website/API for auto-sync</SelectItem>
+                            <SelectItem value="csv">CSV Upload - Bulk upload via spreadsheet files</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("productImportMethod") === "api" && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="apiEndpoint"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API Endpoint URL *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://yourwebsite.com/api/products"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <p className="text-sm text-gray-500">
+                              Your product feed URL that returns JSON format
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="apiKey"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API Key (if required)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="password"
+                                placeholder="Your API authentication key (optional)"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="syncFrequency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sync Frequency *</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="How often to sync products" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="hourly">Every Hour</SelectItem>
+                                <SelectItem value="daily">Daily</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="manual">Manual Only</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+
+                  {form.watch("productImportMethod") === "csv" && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">CSV Upload Information</h4>
+                      <p className="text-sm text-blue-700">
+                        After approval, you'll receive a CSV template with required fields for bulk product upload. 
+                        You can update your inventory by uploading new CSV files through your supplier dashboard.
+                      </p>
+                    </div>
+                  )}
+
+                  {form.watch("productImportMethod") === "manual" && (
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-green-900 mb-2">Manual Product Entry</h4>
+                      <p className="text-sm text-green-700">
+                        You'll add products one by one through your supplier dashboard. This gives you full control 
+                        over product details, pricing, and descriptions for the Creohub marketplace.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <Button 
