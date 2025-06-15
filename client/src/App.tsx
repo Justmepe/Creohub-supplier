@@ -38,6 +38,8 @@ import EmailVerification from "@/pages/email-verification";
 import VerificationHelp from "@/pages/verification-help";
 import GetVerificationCode from "@/pages/get-verification-code";
 import Contact from "@/pages/contact";
+import Recommendations from "@/pages/recommendations";
+import DropshippingMarketplace from "@/pages/dropshipping-marketplace";
 import NotFound from "@/pages/not-found";
 import SocialProofNotification from "@/components/UpgradeNotification";
 
@@ -92,6 +94,9 @@ function App() {
               <Route path="/payment-demo" component={PaymentDemo} />
               <Route path="/track-orders" component={CustomerOrdersPage} />
               <Route path="/contact" component={Contact} />
+              <Route path="/recommendations" component={Recommendations} />
+              <Route path="/dropshipping" component={DropshippingMarketplace} />
+              <Route path="/marketplace" component={DropshippingMarketplace} />
               <Route component={NotFound} />
             </Switch>
           </div>

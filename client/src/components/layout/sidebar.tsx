@@ -14,6 +14,7 @@ import {
   User,
   BarChart3,
   Store,
+  Lightbulb,
   ExternalLink,
   Menu,
   Home,
@@ -48,6 +49,18 @@ const navigation = [
     href: "/orders",
     icon: ShoppingBag,
     description: "Track sales"
+  },
+  {
+    name: "AI Recommendations",
+    href: "/recommendations",
+    icon: Lightbulb,
+    description: "Smart product suggestions"
+  },
+  {
+    name: "Dropshipping",
+    href: "/dropshipping",
+    icon: Store,
+    description: "Browse marketplace"
   },
   {
     name: "Analytics",
