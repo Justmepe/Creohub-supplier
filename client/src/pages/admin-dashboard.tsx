@@ -90,6 +90,15 @@ export default function AdminDashboard() {
     }
   });
 
+  // Fetch dropshipping partners for supplier management
+  const { data: dropshippingPartners, refetch: refetchPartners } = useQuery({
+    queryKey: ['/api/admin/dropshipping/partners'],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/dropshipping/partners");
+      return response.json();
+    }
+  });
+
   // Fetch all withdrawal requests for payment management
   const { data: withdrawalRequests, refetch: refetchWithdrawals } = useQuery({
     queryKey: ['/api/admin/withdrawals'],
@@ -197,6 +206,49 @@ export default function AdminDashboard() {
     }
   };
 
+  // Supplier approval mutations
+  const approveSupplierMutation = useMutation({
+    mutationFn: async (partnerId: number) => {
+      const response = await apiRequest("PUT", `/api/admin/dropshipping/partners/${partnerId}/approve`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Supplier Approved",
+        description: "The supplier has been approved and can now add products.",
+      });
+      refetchPartners();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve supplier",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const rejectSupplierMutation = useMutation({
+    mutationFn: async (partnerId: number) => {
+      const response = await apiRequest("PUT", `/api/admin/dropshipping/partners/${partnerId}/reject`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Supplier Rejected",
+        description: "The supplier application has been rejected.",
+      });
+      refetchPartners();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reject supplier",
+        variant: "destructive"
+      });
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -234,9 +286,10 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs Navigation */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="creators">Creators</TabsTrigger>
+            <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="social-proof">Social Proof</TabsTrigger>
@@ -432,6 +485,101 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+
+          {/* Suppliers Tab */}
+          <TabsContent value="suppliers" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Supplier Management</CardTitle>
+                <CardDescription>
+                  Manage dropshipping partner applications and approvals
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {dropshippingPartners?.map((partner: any) => (
+                    <div key={partner.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                          {partner.companyName.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{partner.companyName}</h3>
+                          <p className="text-sm text-gray-600">{partner.contactEmail}</p>
+                          <p className="text-sm text-gray-500">{partner.businessType} • {partner.address}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant={partner.productImportMethod === 'automated' ? 'default' : 'secondary'}>
+                              {partner.productImportMethod === 'automated' ? 'Automated Import' : 'Manual Entry'}
+                            </Badge>
+                            {partner.website && (
+                              <Badge variant="outline">
+                                Has Website
+                              </Badge>
+                            )}
+                            <span className="text-xs text-gray-500">
+                              Commission: {partner.defaultCommissionRate}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {partner.status === 'approved' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Approved
+                          </Badge>
+                        ) : partner.status === 'pending' ? (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Pending
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-red-100 text-red-800">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Rejected
+                          </Badge>
+                        )}
+                        
+                        {partner.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="default" 
+                              size="sm"
+                              onClick={() => approveSupplierMutation.mutate(partner.id)}
+                              disabled={approveSupplierMutation.isPending}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => rejectSupplierMutation.mutate(partner.id)}
+                              disabled={rejectSupplierMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                        
+                        <Button variant="ghost" size="sm">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {!dropshippingPartners?.length && (
+                    <div className="text-center py-8 text-gray-500">
+                      No supplier applications yet
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Creators Tab */}
