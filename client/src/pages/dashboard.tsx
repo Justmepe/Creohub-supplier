@@ -112,20 +112,6 @@ export default function Dashboard() {
                 Manage your store and track your performance
               </p>
             </div>
-            <div className="flex gap-4">
-              <Button variant="outline" asChild>
-                <Link href={`/storefront/${activeCreator.storeHandle}`}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Store
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link href="/products/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
-                </Link>
-              </Button>
-            </div>
           </div>
         </div>
 
