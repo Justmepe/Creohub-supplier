@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface DropshippingProduct {
   id: number;
+  partnerId: number;
   name: string;
   description: string;
   category: string;
@@ -33,10 +34,24 @@ interface DropshippingProduct {
   images: string[];
   stock: number;
   commissionRate: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
   partner: {
     id: number;
     companyName: string;
-    logo: string;
+    businessType: string;
+  };
+}
+
+interface MarketplaceResponse {
+  products: DropshippingProduct[];
+  pagination: {
+    currentPage: number;
+    totalProducts: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
   };
 }
 
@@ -48,9 +63,9 @@ interface AddProductForm {
 }
 
 export default function DropshippingMarketplace() {
+  const { user: creator } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { creator } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<DropshippingProduct | null>(null);
@@ -61,7 +76,7 @@ export default function DropshippingMarketplace() {
     customDescription: "",
   });
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: marketplaceData, isLoading } = useQuery({
     queryKey: ["/api/dropshipping/marketplace", { search: searchTerm, category: selectedCategory }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -69,9 +84,13 @@ export default function DropshippingMarketplace() {
       if (selectedCategory) params.append("category", selectedCategory);
       
       const response = await apiRequest("GET", `/api/dropshipping/marketplace?${params}`);
-      return response.json();
+      const data = await response.json() as MarketplaceResponse;
+      return data;
     },
   });
+
+  const products = marketplaceData?.products || [];
+  const pagination = marketplaceData?.pagination;
 
   const { data: partners = [] } = useQuery({
     queryKey: ["/api/dropshipping/partners"],
@@ -104,30 +123,31 @@ export default function DropshippingMarketplace() {
         queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator.id}/products`] });
       }
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to add product to your store.",
+        description: error.message || "Failed to add product to store.",
         variant: "destructive",
       });
     },
   });
 
-  const handleAddProduct = (product: DropshippingProduct) => {
-    setSelectedProduct(product);
-    setAddProductForm({
-      dropshippingProductId: product.id,
-      sellingPrice: product.suggestedRetailPrice,
-      customName: product.name,
-      customDescription: product.description,
-    });
+  const handleAddProduct = () => {
+    if (!selectedProduct) return;
+    
+    const form = {
+      ...addProductForm,
+      dropshippingProductId: selectedProduct.id,
+    };
+    
+    addProductMutation.mutate(form);
   };
 
   const calculateProfit = () => {
     if (!selectedProduct || !addProductForm.sellingPrice) return 0;
     const sellingPrice = parseFloat(addProductForm.sellingPrice);
     const wholesalePrice = parseFloat(selectedProduct.wholesalePrice);
-    return sellingPrice - wholesalePrice;
+    return Math.max(0, sellingPrice - wholesalePrice);
   };
 
   const calculateCommission = () => {
@@ -179,7 +199,7 @@ export default function DropshippingMarketplace() {
             <div className="flex items-center">
               <TrendingUp className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Verified Partners</p>
+                <p className="text-sm font-medium text-gray-600">Active Partners</p>
                 <p className="text-2xl font-bold text-gray-900">{partners.length}</p>
               </div>
             </div>
@@ -187,66 +207,89 @@ export default function DropshippingMarketplace() {
         </Card>
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Commission</p>
-                <p className="text-2xl font-bold text-gray-900">15%</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Star className="h-8 w-8 text-yellow-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Become a Supplier</p>
+                  <p className="text-sm text-gray-500">Join our marketplace</p>
+                </div>
               </div>
+              <Link href="/supplier-registration">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                  Apply Now
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {/* Supplier Partnership CTA Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 mb-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold mb-2">Are you a supplier?</h3>
+            <p className="text-blue-100">
+              Join our verified supplier network and reach thousands of creators across Africa. 
+              Earn competitive commissions on every sale.
+            </p>
+          </div>
+          <Link href="/supplier-registration">
+            <Button variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
+              <Plus className="h-4 w-4 mr-2" />
+              Become a Supplier
+            </Button>
+          </Link>
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Categories</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
       </div>
 
-      {/* Products Grid */}
+      {/* Search and Filter Section */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {isLoading ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-t-lg"></div>
-              <CardContent className="p-4">
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded mb-4"></div>
-                <div className="flex justify-between">
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  <div className="h-4 bg-gray-200 rounded w-16"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-12">
+          <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+          <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product: DropshippingProduct) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {products.map((product) => (
             <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img
-                  src={product.images[0] || "/placeholder-product.jpg"}
+                  src={product.images[0] || "/placeholder-product.png"}
                   alt={product.name}
                   className="w-full h-48 object-cover"
                 />
@@ -259,13 +302,14 @@ export default function DropshippingMarketplace() {
                 <CardDescription className="line-clamp-2">{product.description}</CardDescription>
               </CardHeader>
               <CardContent className="pb-2">
-                <div className="flex items-center mb-2">
-                  <img
-                    src={product.partner.logo || "/placeholder-logo.png"}
-                    alt={product.partner.companyName}
-                    className="w-6 h-6 rounded mr-2"
-                  />
-                  <span className="text-sm text-gray-600">{product.partner.companyName}</span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <Package className="w-4 h-4 mr-2 text-blue-600" />
+                    <span className="text-sm font-medium">{product.partner.companyName}</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {product.partner.businessType}
+                  </Badge>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
@@ -283,105 +327,139 @@ export default function DropshippingMarketplace() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => handleAddProduct(product)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add to Store
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Add Product to Your Store</DialogTitle>
-                      <DialogDescription>
-                        Customize the product details for your store
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="customName">Product Name</Label>
-                        <Input
-                          id="customName"
-                          value={addProductForm.customName}
-                          onChange={(e) => setAddProductForm(prev => ({ 
-                            ...prev, 
-                            customName: e.target.value 
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="customDescription">Description</Label>
-                        <Textarea
-                          id="customDescription"
-                          value={addProductForm.customDescription}
-                          onChange={(e) => setAddProductForm(prev => ({ 
-                            ...prev, 
-                            customDescription: e.target.value 
-                          }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="sellingPrice">Your Selling Price ({selectedProduct?.currency})</Label>
-                        <Input
-                          id="sellingPrice"
-                          type="number"
-                          step="0.01"
-                          value={addProductForm.sellingPrice}
-                          onChange={(e) => setAddProductForm(prev => ({ 
-                            ...prev, 
-                            sellingPrice: e.target.value 
-                          }))}
-                        />
-                        {selectedProduct && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Minimum: {selectedProduct.currency} {selectedProduct.minimumPrice}
-                          </p>
-                        )}
-                      </div>
-                      {selectedProduct && addProductForm.sellingPrice && (
-                        <div className="bg-blue-50 p-3 rounded-lg space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Your Profit:</span>
-                            <span className="font-medium text-green-600">
-                              {selectedProduct.currency} {calculateProfit().toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Your Commission:</span>
-                            <span className="font-medium text-blue-600">
-                              {selectedProduct.currency} {calculateCommission().toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <DialogFooter>
-                      <Button
-                        type="submit"
-                        onClick={() => addProductMutation.mutate(addProductForm)}
-                        disabled={addProductMutation.isPending}
-                      >
-                        {addProductMutation.isPending ? "Adding..." : "Add Product"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  onClick={() => setSelectedProduct(product)}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add to Store
+                </Button>
               </CardFooter>
             </Card>
           ))}
         </div>
       )}
 
-      {products.length === 0 && !isLoading && (
-        <div className="text-center py-12">
-          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-          <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-4 mb-8">
+          <Button
+            variant="outline"
+            disabled={!pagination.hasPrev}
+            onClick={() => {
+              // Add pagination logic here when needed
+            }}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-gray-600">
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            disabled={!pagination.hasNext}
+            onClick={() => {
+              // Add pagination logic here when needed
+            }}
+          >
+            Next
+          </Button>
         </div>
       )}
+
+      {/* Add Product Dialog */}
+      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Product to Store</DialogTitle>
+            <DialogDescription>
+              Configure how this product will appear in your store.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedProduct && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <img
+                  src={selectedProduct.images[0] || "/placeholder-product.png"}
+                  alt={selectedProduct.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div>
+                  <h4 className="font-medium">{selectedProduct.name}</h4>
+                  <p className="text-sm text-gray-600">
+                    Wholesale: {selectedProduct.currency} {selectedProduct.wholesalePrice}
+                  </p>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="selling-price">Your Selling Price *</Label>
+                <Input
+                  id="selling-price"
+                  type="number"
+                  step="0.01"
+                  min={selectedProduct.minimumPrice}
+                  placeholder={`Min: ${selectedProduct.currency} ${selectedProduct.minimumPrice}`}
+                  value={addProductForm.sellingPrice}
+                  onChange={(e) => setAddProductForm(prev => ({ ...prev, sellingPrice: e.target.value }))}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Minimum price: {selectedProduct.currency} {selectedProduct.minimumPrice}
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="custom-name">Custom Product Name (optional)</Label>
+                <Input
+                  id="custom-name"
+                  placeholder={selectedProduct.name}
+                  value={addProductForm.customName}
+                  onChange={(e) => setAddProductForm(prev => ({ ...prev, customName: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="custom-description">Custom Description (optional)</Label>
+                <Textarea
+                  id="custom-description"
+                  placeholder={selectedProduct.description}
+                  value={addProductForm.customDescription}
+                  onChange={(e) => setAddProductForm(prev => ({ ...prev, customDescription: e.target.value }))}
+                />
+              </div>
+
+              {addProductForm.sellingPrice && (
+                <div className="p-3 bg-blue-50 rounded-lg space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Your profit per sale:</span>
+                    <span className="font-medium">
+                      {selectedProduct.currency} {calculateProfit().toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Commission to supplier:</span>
+                    <span className="font-medium text-orange-600">
+                      {selectedProduct.currency} {calculateCommission().toFixed(2)} ({selectedProduct.commissionRate}%)
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedProduct(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddProduct}
+              disabled={!addProductForm.sellingPrice || addProductMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {addProductMutation.isPending ? "Adding..." : "Add to Store"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
