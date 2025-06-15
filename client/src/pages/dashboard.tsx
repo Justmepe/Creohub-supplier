@@ -26,28 +26,19 @@ export default function Dashboard() {
   const { formatPrice } = useCurrency();
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { data: products, isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/products`],
     enabled: !!activeCreator?.id,
   });
 
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/orders`],
     enabled: !!activeCreator?.id,
   });
 
-  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+  const { data: analytics = {}, isLoading: analyticsLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/analytics`],
     enabled: !!activeCreator?.id,
-  });
-
-  const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery({
-    queryKey: [`/api/creators/${activeCreator?.id}/subscriptions`],
-    enabled: !!activeCreator?.id,
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/creators/${activeCreator?.id}/subscriptions`);
-      return response.json();
-    }
   });
 
   if (!user) {
@@ -87,7 +78,7 @@ export default function Dashboard() {
   const recentProducts = products?.slice(0, 5) || [];
   const viewsCount = analytics?.views || 0;
 
-  const sidebarItems = [
+  const navigationItems = [
     { id: "overview", label: "Overview", icon: TrendingUp },
     { id: "products", label: "Products", icon: Package },
     { id: "orders", label: "Orders", icon: ShoppingBag },
@@ -180,12 +171,12 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Main Content with Sidebar */}
+        {/* Main Layout with Sidebar */}
         <div className="flex gap-6">
-          {/* Sidebar Navigation */}
+          {/* Vertical Sidebar Navigation */}
           <div className="w-64 bg-white rounded-lg shadow-sm border p-4">
             <nav className="space-y-2">
-              {sidebarItems.map((item) => {
+              {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
@@ -197,7 +188,7 @@ export default function Dashboard() {
                         : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
-                    <Icon className="h-4 w-4 mr-3" />
+                    <Icon className="h-5 w-5 mr-3" />
                     {item.label}
                   </button>
                 );
@@ -207,140 +198,37 @@ export default function Dashboard() {
 
           {/* Content Area */}
           <div className="flex-1 bg-white rounded-lg shadow-sm border p-6">
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-                <div className="grid lg:grid-cols-2 gap-6">
-                  {/* Recent Orders */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Orders</CardTitle>
-                      <CardDescription>Your latest customer orders</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {ordersLoading ? (
-                        <div className="space-y-3">
-                          {[...Array(3)].map((_, i) => (
-                            <div key={i} className="animate-pulse">
-                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : recentOrders.length > 0 ? (
-                        <div className="space-y-4">
-                          {recentOrders.map((order: any) => (
-                            <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div>
-                                <p className="font-medium">{order.customerEmail}</p>
-                                <p className="text-sm text-gray-600">
-                                  {new Date(order.createdAt).toLocaleDateString()}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-semibold">
-                                  {formatPrice(parseFloat(order.totalAmount))}
-                                </p>
-                                <Badge variant={order.paymentStatus === 'completed' ? 'default' : 'secondary'}>
-                                  {order.paymentStatus}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                          <p className="text-lg font-medium text-gray-600 mb-2">No orders yet</p>
-                          <p className="text-gray-500">Orders from customers will appear here</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Recent Products */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Products</CardTitle>
-                      <CardDescription>Your latest added products</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {productsLoading ? (
-                        <div className="space-y-3">
-                          {[...Array(3)].map((_, i) => (
-                            <div key={i} className="animate-pulse">
-                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : recentProducts.length > 0 ? (
-                        <div className="space-y-4">
-                          {recentProducts.map((product: any) => (
-                            <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div>
-                                <p className="font-medium">{product.name}</p>
-                                <p className="text-sm text-gray-600">{product.category}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-semibold">
-                                  {formatPrice(parseFloat(product.price))}
-                                </p>
-                                <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                                  {product.isActive ? 'Active' : 'Inactive'}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                          <p className="text-lg font-medium text-gray-600 mb-2">No products yet</p>
-                          <p className="text-gray-500">Start by adding your first product</p>
-                          <Button className="mt-4" asChild>
-                            <Link href="/products/new">Add Product</Link>
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "products" && (
-              <ProductUpload />
-            )}
-
-            {activeTab === "orders" && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold">Orders</h2>
-                </div>
-                {ordersLoading ? (
-                  <div className="space-y-4">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="animate-pulse p-4 border rounded-lg">
-                        <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          {activeTab === "overview" && (
+            <div className="space-y-6">
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Recent Orders */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Orders</CardTitle>
+                    <CardDescription>Your latest customer orders</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {ordersLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                ) : orders && orders.length > 0 ? (
-                  <div className="space-y-4">
-                    {orders.map((order: any) => (
-                      <Card key={order.id}>
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-4">
+                    ) : recentOrders.length > 0 ? (
+                      <div className="space-y-4">
+                        {recentOrders.map((order: any) => (
+                          <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
                             <div>
-                              <h3 className="font-semibold">Order #{order.id}</h3>
-                              <p className="text-sm text-gray-600">{order.customerEmail}</p>
-                              <p className="text-sm text-gray-500">
+                              <p className="font-medium">{order.customerEmail}</p>
+                              <p className="text-sm text-gray-600">
                                 {new Date(order.createdAt).toLocaleDateString()}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-semibold">
+                              <p className="font-semibold">
                                 {formatPrice(parseFloat(order.totalAmount))}
                               </p>
                               <Badge variant={order.paymentStatus === 'completed' ? 'default' : 'secondary'}>
@@ -348,58 +236,161 @@ export default function Dashboard() {
                               </Badge>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-600 mb-2">No orders yet</p>
-                    <p className="text-gray-500">Orders from customers will appear here</p>
-                  </div>
-                )}
-              </div>
-            )}
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-600 mb-2">No orders yet</p>
+                        <p className="text-gray-500">Orders from customers will appear here</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {activeTab === "subscriptions" && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold">Subscription Plan</h2>
-                </div>
+                {/* Recent Products */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Current Plan: {activeCreator.planType}</CardTitle>
-                    <CardDescription>
-                      Status: {activeCreator.subscriptionStatus}
-                    </CardDescription>
+                    <CardTitle>Recent Products</CardTitle>
+                    <CardDescription>Your latest added products</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {activeCreator.planType === 'free' && (
+                    {productsLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : recentProducts.length > 0 ? (
                       <div className="space-y-4">
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                          <p className="text-sm text-blue-800">
-                            You're on the free trial. Upgrade to unlock more features and reduce fees.
-                          </p>
-                        </div>
-                        <Button asChild>
-                          <Link href="/pricing">Upgrade Plan</Link>
+                        {recentProducts.map((product: any) => (
+                          <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-gray-600">{product.category}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">
+                                {formatPrice(parseFloat(product.price))}
+                              </p>
+                              <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                                {product.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-600 mb-2">No products yet</p>
+                        <p className="text-gray-500">Start by adding your first product</p>
+                        <Button className="mt-4" asChild>
+                          <Link href="/products/new">Add Product</Link>
                         </Button>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </div>
-            )}
+            </div>
+          )}
 
-            {activeTab === "analytics" && (
-              <AnalyticsCards 
-                creatorId={activeCreator.id}
-                totalRevenue={totalRevenue}
-                totalOrders={totalOrders}
-                viewsCount={viewsCount}
-              />
-            )}
+          {activeTab === "products" && (
+            <ProductUpload />
+          )}
+
+          {activeTab === "orders" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Orders</h2>
+              </div>
+              {ordersLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="animate-pulse p-4 border rounded-lg">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : orders && orders.length > 0 ? (
+                <div className="space-y-4">
+                  {orders.map((order: any) => (
+                    <Card key={order.id}>
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-semibold">Order #{order.id}</h3>
+                            <p className="text-sm text-gray-600">{order.customerEmail}</p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-semibold">
+                              {formatPrice(parseFloat(order.totalAmount))}
+                            </p>
+                            <Badge variant={order.paymentStatus === 'completed' ? 'default' : 'secondary'}>
+                              {order.paymentStatus}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-600 mb-2">No orders yet</p>
+                  <p className="text-gray-500">Orders from customers will appear here</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "subscriptions" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Subscription Plan</h2>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current Plan: {activeCreator.planType}</CardTitle>
+                  <CardDescription>
+                    Status: {activeCreator.subscriptionStatus}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {activeCreator.planType === 'free' && (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          You're on the free trial. Upgrade to unlock more features and reduce fees.
+                        </p>
+                      </div>
+                      <Button asChild>
+                        <Link href="/pricing">Upgrade Plan</Link>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "analytics" && (
+            <AnalyticsCards 
+              creatorId={activeCreator.id}
+              totalRevenue={totalRevenue}
+              totalOrders={totalOrders}
+              viewsCount={viewsCount}
+            />
+          )}
           </div>
         </div>
       </div>
