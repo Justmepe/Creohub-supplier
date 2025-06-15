@@ -296,11 +296,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: customDescription || originalProduct.description,
         price: sellingPrice,
         currency: "KES",
+        type: "physical", // Required field
         category: originalProduct.category,
         images: originalProduct.images,
-        isDropshipping: true,
-        dropshippingProductId: dropshippingProductId,
-        wholesalePrice: originalProduct.wholesalePrice,
         stock: originalProduct.stock
       };
 
