@@ -368,12 +368,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { creatorId } = req.params;
       const { type = 'all', limit = 20 } = req.query;
       
-      // Mock intelligent recommendations based on different algorithms
-      const recommendations = [
-        {
-          id: 1,
+      // Get creator's current products and performance data for AI analysis
+      const creatorProducts = await storage.getCreatorProducts(parseInt(creatorId));
+      const creatorCategories = [...new Set(creatorProducts.map(p => p.category))];
+      
+      // Get all available dropshipping products from real suppliers
+      const allDropshippingProducts = await storage.getDropshippingProducts();
+      const activeProducts = allDropshippingProducts.filter(product => product.isActive);
+      
+      // Get all partners for enhanced recommendations
+      const allPartners = await storage.getDropshippingPartners();
+      const partnersMap = new Map(allPartners.map(partner => [partner.id, partner]));
+      
+      // AI-powered recommendation scoring algorithm
+      const recommendations = activeProducts.map(product => {
+        const partner = partnersMap.get(product.partnerId);
+        if (!partner) return null;
+        
+        let score = 0;
+        let reason = "";
+        let recommendationType = "general";
+        
+        // Category matching analysis (35% weight)
+        if (creatorCategories.includes(product.category)) {
+          score += 35;
+          reason = `Perfect match for your ${product.category} focus`;
+          recommendationType = "personalized";
+        } else {
+          score += 10;
+          reason = `Expand into ${product.category} market`;
+          recommendationType = "diversification";
+        }
+        
+        // Profit margin scoring (30% weight)
+        const wholesalePrice = parseFloat(product.wholesalePrice);
+        const suggestedPrice = parseFloat(product.suggestedRetailPrice);
+        const profitMargin = ((suggestedPrice - wholesalePrice) / suggestedPrice) * 100;
+        
+        if (profitMargin > 45) {
+          score += 30;
+          reason += " with exceptional profit margins";
+        } else if (profitMargin > 35) {
+          score += 25;
+          reason += " with excellent margins";
+        } else if (profitMargin > 25) {
+          score += 20;
+          reason += " with good profit potential";
+        } else {
+          score += 10;
+        }
+        
+        // Commission rate analysis (20% weight)
+        const commissionRate = parseFloat(product.commissionRate);
+        if (commissionRate >= 20) {
+          score += 20;
+          reason += " and premium commission";
+          recommendationType = "trending";
+        } else if (commissionRate >= 15) {
+          score += 15;
+          reason += " and solid commission";
+        } else if (commissionRate >= 10) {
+          score += 10;
+        }
+        
+        // Stock availability (10% weight)
+        if (product.stock > 100) {
+          score += 10;
+        } else if (product.stock > 50) {
+          score += 7;
+        } else if (product.stock > 20) {
+          score += 5;
+        }
+        
+        // Partner credibility (5% weight)
+        if (partner.businessType === "manufacturer") {
+          score += 5;
+          reason += " from verified manufacturer";
+        } else if (partner.businessType === "wholesaler") {
+          score += 4;
+        } else if (partner.businessType === "distributor") {
+          score += 3;
+        }
+        
+        return {
+          id: product.id,
           type: "dropshipping_product",
-          name: "Smart Fitness Tracker",
+          name: product.name,
+          description: product.description,
+          price: product.suggestedRetailPrice,
+          images: product.images,
+          category: product.category,
+          score: Math.min(score, 100),
+          reason: reason,
+          metadata: {
+            wholesalePrice: product.wholesalePrice,
+            commissionRate: product.commissionRate,
+            stock: product.stock,
+            recommendationType: recommendationType,
+            profitMargin: profitMargin.toFixed(1),
+            partnerId: partner.id
+          },
+          partner: {
+            id: partner.id,
+            companyName: partner.companyName,
+            businessType: partner.businessType
+          }
+        };
+      }).filter(product => product !== null).sort((a, b) => b.score - a.score);
+      
+      // Use real recommendations or fallback to empty array
+      const finalRecommendations = recommendations.length > 0 ? recommendations : [];
           description: "Advanced fitness tracking with heart rate monitoring",
           price: "3500.00",
           images: ["/uploads/fitness-tracker.jpg"],
