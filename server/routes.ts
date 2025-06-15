@@ -784,6 +784,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to reject partner" });
     }
   });
+
+  // Create test supplier account
+  app.post("/api/admin/create-test-supplier", async (req: Request, res: Response) => {
+    try {
+      // Create test user for supplier
+      const testUser = await storage.createUser({
+        email: "supplier@test.com",
+        password: "supplier123",
+        username: "testsupplier",
+        isEmailVerified: true
+      });
+
+      // Create dropshipping partner
+      const partnerData = {
+        userId: testUser.id,
+        companyName: "Test Supply Co.",
+        businessLicense: "TSC-2024-001",
+        contactEmail: "supplier@test.com",
+        contactPhone: "+254700123456",
+        address: "123 Business Street, Nairobi, Kenya",
+        businessType: "wholesale",
+        description: "Test supplier for electronics and gadgets",
+        website: "https://testsupply.co.ke",
+        defaultCommissionRate: 15,
+        status: "approved",
+        isActive: true
+      };
+
+      const supplier = await storage.createDropshippingPartner(partnerData);
+
+      // Create some test products for the supplier
+      const testProducts = [
+        {
+          partnerId: supplier.id,
+          name: "Wireless Bluetooth Headphones",
+          description: "High-quality wireless headphones with noise cancellation",
+          category: "Electronics",
+          wholesalePrice: "2500.00",
+          suggestedRetailPrice: "4000.00",
+          commissionRate: 15,
+          stock: 50,
+          images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"],
+          isActive: true,
+          importSource: "manual"
+        },
+        {
+          partnerId: supplier.id,
+          name: "Smart Phone Case",
+          description: "Protective phone case with wireless charging support",
+          category: "Phone Accessories",
+          wholesalePrice: "800.00",
+          suggestedRetailPrice: "1500.00",
+          commissionRate: 15,
+          stock: 100,
+          images: ["https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400"],
+          isActive: true,
+          importSource: "manual"
+        },
+        {
+          partnerId: supplier.id,
+          name: "Portable Power Bank",
+          description: "20000mAh fast charging power bank with LED display",
+          category: "Electronics",
+          wholesalePrice: "1200.00",
+          suggestedRetailPrice: "2200.00",
+          commissionRate: 15,
+          stock: 75,
+          images: ["https://images.unsplash.com/photo-1609592842029-16b6de6523b3?w=400"],
+          isActive: true,
+          importSource: "manual"
+        }
+      ];
+
+      for (const productData of testProducts) {
+        await storage.createDropshippingProduct(productData);
+      }
+
+      res.json({
+        message: "Test supplier account created successfully",
+        credentials: {
+          email: "supplier@test.com",
+          password: "supplier123",
+          username: "testsupplier"
+        },
+        supplier: supplier,
+        productsCreated: testProducts.length
+      });
+    } catch (error: any) {
+      console.error("Test supplier creation error:", error);
+      res.status(500).json({ message: "Failed to create test supplier account" });
+    }
+  });
   
   // Handle client-side routing only in production mode
   // In development, Vite handles this automatically
