@@ -239,12 +239,78 @@ export class MemStorage implements IStorage {
       avatar: null,
       isCreator: false,
       isAdmin: true,
+      isEmailVerified: true,
       role: 'admin',
+      lastActiveAt: new Date(),
       createdAt: new Date()
     };
     this.users.set(adminUser.id, adminUser);
     
+    // Add some test users for demonstration
+    const testUsers = [
+      {
+        username: "john_creator",
+        email: "john@example.com",
+        password: "password123",
+        fullName: "John Smith",
+        bio: "Digital creator and entrepreneur",
+        isCreator: true,
+        isAdmin: false,
+        role: 'creator'
+      },
+      {
+        username: "sarah_user",
+        email: "sarah@example.com", 
+        password: "password123",
+        fullName: "Sarah Johnson",
+        bio: "Regular platform user",
+        isCreator: false,
+        isAdmin: false,
+        role: 'user'
+      },
+      {
+        username: "mike_creator",
+        email: "mike@example.com",
+        password: "password123", 
+        fullName: "Mike Davis",
+        bio: "Content creator and marketer",
+        isCreator: true,
+        isAdmin: false,
+        role: 'creator'
+      },
+      {
+        username: "lisa_user",
+        email: "lisa@example.com",
+        password: "password123",
+        fullName: "Lisa Williams",
+        bio: null,
+        isCreator: false,
+        isAdmin: false,
+        role: 'user'
+      }
+    ];
+
+    testUsers.forEach(userData => {
+      const user: User = {
+        id: this.currentUserId++,
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        fullName: userData.fullName,
+        bio: userData.bio,
+        avatar: null,
+        isCreator: userData.isCreator,
+        isAdmin: userData.isAdmin,
+        isEmailVerified: true,
+        role: userData.role,
+        lastActiveAt: new Date(),
+        createdAt: new Date()
+      };
+      this.users.set(user.id, user);
+    });
+    
     console.log(`Admin user created: ${adminUser.username} with ID: ${adminUser.id}`);
+    console.log(`Added ${testUsers.length} test users for demonstration`);
   }
 
   // Users
