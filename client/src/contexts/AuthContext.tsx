@@ -94,41 +94,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [user]);
 
-  // Check for existing token and hydrate from localStorage
+  // Check for existing session and hydrate authentication state
   useEffect(() => {
     const checkAuth = async () => {
       if (typeof window !== 'undefined') {
         try {
-          const token = localStorage.getItem('auth_token');
+          // Check if we have a valid session with the server
+          const response = await fetch('/api/auth/me', {
+            credentials: 'include' // Include session cookies
+          });
           
-          if (token) {
-            // Check if token is valid
-            const response = await fetch('/api/auth/me', {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
-              setUser(data.user);
-              localStorage.setItem('user', JSON.stringify(data.user));
-            } else {
-              // Token is invalid, remove it
-              localStorage.removeItem('auth_token');
-              localStorage.removeItem('user');
-            }
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
           } else {
-            // No token, try localStorage user as fallback
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-              try {
-                setUser(JSON.parse(savedUser));
-              } catch (error) {
-                console.error('Failed to parse saved user:', error);
-                localStorage.removeItem('user');
-              }
-            }
+            // Session is invalid, clear local storage
+            localStorage.removeItem('user');
+            localStorage.removeItem('creator');
+            setUser(null);
+            setCreator(null);
           }
           
           // Load creator profile from localStorage
@@ -194,7 +179,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Call server logout endpoint to clear session
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
     setUser(null);
     setCreator(null);
     if (typeof window !== 'undefined') {
