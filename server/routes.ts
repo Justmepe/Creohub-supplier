@@ -296,10 +296,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: customDescription || originalProduct.description,
         price: sellingPrice,
         currency: "KES",
-        type: "physical", // Required field
+        type: "physical",
         category: originalProduct.category,
         images: originalProduct.images,
-        stock: originalProduct.stock
+        stock: originalProduct.stock,
+        isActive: true
       };
 
       // Add the product to the creator's store

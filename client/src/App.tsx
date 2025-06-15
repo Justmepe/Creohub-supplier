@@ -40,6 +40,7 @@ import GetVerificationCode from "@/pages/get-verification-code";
 import Contact from "@/pages/contact";
 import Recommendations from "@/pages/recommendations";
 import DropshippingMarketplace from "@/pages/dropshipping-marketplace";
+import SupplierRegistration from "@/pages/supplier-registration";
 import NotFound from "@/pages/not-found";
 import SocialProofNotification from "@/components/UpgradeNotification";
 
@@ -97,6 +98,8 @@ function App() {
               <Route path="/recommendations" component={Recommendations} />
               <Route path="/dropshipping" component={DropshippingMarketplace} />
               <Route path="/marketplace" component={DropshippingMarketplace} />
+              <Route path="/supplier-registration" component={SupplierRegistration} />
+              <Route path="/become-supplier" component={SupplierRegistration} />
               <Route component={NotFound} />
             </Switch>
           </div>
