@@ -772,10 +772,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async authenticateUser(email: string, password: string): Promise<User | undefined> {
+    console.log(`Authenticating user with email: ${email}`);
     const [user] = await db.select().from(users).where(eq(users.email, email));
+    console.log(`Found user:`, user ? { id: user.id, email: user.email, username: user.username } : 'null');
     if (user && user.password === password) {
+      console.log(`Password match successful for user: ${user.email}`);
       return user;
     }
+    console.log(`Authentication failed - ${user ? 'password mismatch' : 'user not found'}`);
     return undefined;
   }
 

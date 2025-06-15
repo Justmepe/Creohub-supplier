@@ -23,7 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
+      console.log("Login request body:", req.body);
       const { email, password } = req.body;
+      console.log(`Login attempt - email: ${email}, password: ${password}`);
       
       if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
