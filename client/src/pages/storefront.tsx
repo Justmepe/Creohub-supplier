@@ -28,6 +28,8 @@ export default function Storefront() {
   const { data: creator, isLoading: creatorLoading, error: creatorError } = useQuery({
     queryKey: [`/api/creators/${handle}`],
     enabled: !!handle,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
     queryFn: async () => {
       const response = await apiRequest("GET", `/api/creators/${handle}`);
       return response.json();
@@ -37,6 +39,8 @@ export default function Storefront() {
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${creator?.id}/products`],
     enabled: !!creator?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
     queryFn: async () => {
       const response = await apiRequest("GET", `/api/creators/${creator?.id}/products`);
       return response.json();

@@ -789,9 +789,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // In development, Vite handles this automatically
   if (process.env.NODE_ENV === 'production') {
     app.get("*", (req: Request, res: Response) => {
-      // Skip serving HTML for asset requests
-      if (req.path.startsWith('/assets/')) {
-        return res.status(404).send('Asset not found');
+      // Skip serving HTML for API routes and asset requests
+      if (req.path.startsWith('/api/') || req.path.startsWith('/assets/')) {
+        return res.status(404).send('Not found');
       }
       res.sendFile(path.join(process.cwd(), "server/public/index.html"));
     });

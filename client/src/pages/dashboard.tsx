@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   const productsArray = Array.isArray(products) ? products : [];
   const ordersArray = Array.isArray(orders) ? orders : [];
-  const analyticsData = analytics || {};
+  const analyticsData = analytics as any || {};
   
   const totalProducts = productsArray.length;
   const totalOrders = ordersArray.length;
