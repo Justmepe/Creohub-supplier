@@ -118,49 +118,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dropshipping Partner Management
   app.post("/api/dropshipping/partners/apply", async (req: Request, res: Response) => {
     try {
-      const partnerData = req.body;
-      
-      // Create partner application (would use proper database in production)
-      const partner = {
-        id: Date.now(),
-        ...partnerData,
+      const { 
+        companyName, 
+        businessLicense, 
+        contactEmail, 
+        contactPhone, 
+        address, 
+        businessType, 
+        description, 
+        website, 
+        defaultCommissionRate 
+      } = req.body;
+
+      // Create supplier partner application
+      const partnerData = {
+        userId: req.session?.userId || 1, // Default for now, would need auth
+        companyName,
+        businessLicense: businessLicense || null,
+        contactEmail,
+        contactPhone,
+        address,
+        businessType,
+        description,
+        website: website || null,
+        defaultCommissionRate,
         status: "pending",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        isActive: false // Will be activated after approval
       };
 
-      res.json({ success: true, partner });
+      const newPartner = await storage.createDropshippingPartner(partnerData);
+
+      res.json({ 
+        success: true, 
+        partner: newPartner,
+        message: "Supplier application submitted successfully. You will be contacted within 2-3 business days." 
+      });
     } catch (error) {
       console.error("Partner application error:", error);
-      res.status(500).json({ error: "Failed to submit partner application" });
+      res.status(500).json({ error: "Failed to submit application" });
     }
   });
 
   app.get("/api/dropshipping/partners", async (req: Request, res: Response) => {
     try {
-      // Mock approved partners data
-      const partners = [
-        {
-          id: 1,
-          companyName: "Kenya Electronics Ltd",
-          businessType: "wholesaler",
-          logo: "/uploads/partner1-logo.png",
-          description: "Leading electronics supplier in East Africa",
-          defaultCommissionRate: "15.00",
-          status: "approved"
-        },
-        {
-          id: 2,
-          companyName: "African Crafts Co",
-          businessType: "manufacturer",
-          logo: "/uploads/partner2-logo.png",
-          description: "Authentic African crafts and accessories",
-          defaultCommissionRate: "20.00",
-          status: "approved"
-        }
-      ];
+      // Get approved partners from storage
+      const allPartners = await storage.getDropshippingPartners();
+      const approvedPartners = allPartners.filter(partner => 
+        partner.status === "approved" && partner.isActive
+      );
 
-      res.json(partners);
+      res.json(approvedPartners);
     } catch (error) {
       console.error("Fetch partners error:", error);
       res.status(500).json({ error: "Failed to fetch partners" });

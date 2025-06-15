@@ -137,6 +137,19 @@ export interface IStorage {
 
   // Customer orders by email
   getOrdersByCustomerEmail(email: string): Promise<Order[]>;
+
+  // Dropshipping Partners
+  createDropshippingPartner(partner: any): Promise<any>;
+  getDropshippingPartners(): Promise<any[]>;
+  getDropshippingPartner(id: number): Promise<any>;
+  updateDropshippingPartner(id: number, updates: any): Promise<any>;
+  approveDropshippingPartner(id: number, approvedBy: number): Promise<any>;
+
+  // Dropshipping Products
+  createDropshippingProduct(product: any): Promise<any>;
+  getDropshippingProducts(): Promise<any[]>;
+  getDropshippingProductsByPartner(partnerId: number): Promise<any[]>;
+  updateDropshippingProduct(id: number, updates: any): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
@@ -154,6 +167,8 @@ export class MemStorage implements IStorage {
   private earningTransactions: Map<number, EarningTransaction>;
   private payoutMethods: Map<number, PayoutMethod>;
   private withdrawalRequests: Map<number, WithdrawalRequest>;
+  private dropshippingPartners: Map<number, any>;
+  private dropshippingProducts: Map<number, any>;
   private currentUserId: number;
   private currentCreatorId: number;
   private currentProductId: number;
@@ -164,6 +179,8 @@ export class MemStorage implements IStorage {
   private currentCommissionId: number;
   private currentProductSettingsId: number;
   private currentColorThemeId: number;
+  private currentDropshippingPartnerId: number;
+  private currentDropshippingProductId: number;
 
   constructor() {
     this.users = new Map();
@@ -180,6 +197,8 @@ export class MemStorage implements IStorage {
     this.earningTransactions = new Map();
     this.payoutMethods = new Map();
     this.withdrawalRequests = new Map();
+    this.dropshippingPartners = new Map();
+    this.dropshippingProducts = new Map();
     this.currentUserId = 1;
     this.currentCreatorId = 1;
     this.currentProductId = 1;
@@ -190,9 +209,12 @@ export class MemStorage implements IStorage {
     this.currentCommissionId = 1;
     this.currentProductSettingsId = 1;
     this.currentColorThemeId = 1;
+    this.currentDropshippingPartnerId = 1;
+    this.currentDropshippingProductId = 1;
     
     // Initialize with admin test account immediately
     this.initializeAdminAccount();
+    this.initializeSupplierPartnersAndProducts();
   }
 
   private initializeAdminAccount() {
@@ -758,6 +780,92 @@ export class MemStorage implements IStorage {
 
   async getAllWithdrawalRequests(): Promise<WithdrawalRequest[]> {
     return Array.from(this.withdrawalRequests.values());
+  }
+
+  // Dropshipping Partners
+  async createDropshippingPartner(partner: any): Promise<any> {
+    const id = this.currentDropshippingPartnerId++;
+    const newPartner = {
+      id,
+      ...partner,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.dropshippingPartners.set(id, newPartner);
+    return newPartner;
+  }
+
+  async getDropshippingPartners(): Promise<any[]> {
+    return Array.from(this.dropshippingPartners.values());
+  }
+
+  async getDropshippingPartner(id: number): Promise<any> {
+    return this.dropshippingPartners.get(id);
+  }
+
+  async updateDropshippingPartner(id: number, updates: any): Promise<any> {
+    const partner = this.dropshippingPartners.get(id);
+    if (!partner) return undefined;
+    
+    const updatedPartner = {
+      ...partner,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.dropshippingPartners.set(id, updatedPartner);
+    return updatedPartner;
+  }
+
+  async approveDropshippingPartner(id: number, approvedBy: number): Promise<any> {
+    const partner = this.dropshippingPartners.get(id);
+    if (!partner) return undefined;
+    
+    const updatedPartner = {
+      ...partner,
+      status: "approved",
+      isActive: true,
+      approvedBy,
+      approvedAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.dropshippingPartners.set(id, updatedPartner);
+    return updatedPartner;
+  }
+
+  // Dropshipping Products
+  async createDropshippingProduct(product: any): Promise<any> {
+    const id = this.currentDropshippingProductId++;
+    const newProduct = {
+      id,
+      ...product,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.dropshippingProducts.set(id, newProduct);
+    return newProduct;
+  }
+
+  async getDropshippingProducts(): Promise<any[]> {
+    return Array.from(this.dropshippingProducts.values());
+  }
+
+  async getDropshippingProductsByPartner(partnerId: number): Promise<any[]> {
+    return Array.from(this.dropshippingProducts.values()).filter(product => 
+      product.partnerId === partnerId
+    );
+  }
+
+  async updateDropshippingProduct(id: number, updates: any): Promise<any> {
+    const product = this.dropshippingProducts.get(id);
+    if (!product) return undefined;
+    
+    const updatedProduct = {
+      ...product,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.dropshippingProducts.set(id, updatedProduct);
+    return updatedProduct;
   }
 }
 
