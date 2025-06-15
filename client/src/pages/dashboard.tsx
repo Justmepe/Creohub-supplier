@@ -189,18 +189,55 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 h-12 bg-gray-100">
-              <TabsTrigger value="overview" className="text-sm font-medium">Overview</TabsTrigger>
-              <TabsTrigger value="products" className="text-sm font-medium">Products</TabsTrigger>
-              <TabsTrigger value="orders" className="text-sm font-medium">Orders</TabsTrigger>
-              <TabsTrigger value="subscriptions" className="text-sm font-medium">Plans</TabsTrigger>
-              <TabsTrigger value="analytics" className="text-sm font-medium">Analytics</TabsTrigger>
-            </TabsList>
+        {/* Main Content with Sidebar */}
+        <div className="flex gap-6">
+          <Tabs defaultValue="overview" className="w-full">
+            {/* Sidebar Navigation */}
+            <div className="w-64 bg-white rounded-lg shadow-sm border p-4">
+              <nav className="space-y-2">
+                <TabsList className="grid w-full grid-rows-5 h-auto bg-transparent space-y-1 p-0">
+                  <TabsTrigger 
+                    value="overview" 
+                    className="w-full justify-start text-left px-4 py-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-3" />
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="products" 
+                    className="w-full justify-start text-left px-4 py-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200"
+                  >
+                    <Package className="h-4 w-4 mr-3" />
+                    Products
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="orders" 
+                    className="w-full justify-start text-left px-4 py-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200"
+                  >
+                    <ShoppingBag className="h-4 w-4 mr-3" />
+                    Orders
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="subscriptions" 
+                    className="w-full justify-start text-left px-4 py-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200"
+                  >
+                    <Calendar className="h-4 w-4 mr-3" />
+                    Plans
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="analytics" 
+                    className="w-full justify-start text-left px-4 py-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200"
+                  >
+                    <DollarSign className="h-4 w-4 mr-3" />
+                    Analytics
+                  </TabsTrigger>
+                </TabsList>
+              </nav>
+            </div>
 
-            <TabsContent value="overview" className="space-y-6">
+            {/* Content Area */}
+            <div className="flex-1 bg-white rounded-lg shadow-sm border p-6">
+              <TabsContent value="overview" className="space-y-6">
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Recent Orders */}
                 <Card>
@@ -492,6 +529,7 @@ export default function Dashboard() {
                 viewsCount={viewsCount}
               />
             </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>
