@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Upload, Download, Sync, Package, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Plus, Upload, Download, RefreshCw, Package, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -69,12 +69,12 @@ export default function SupplierDashboard() {
   });
 
   // Fetch products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<any[]>({
     queryKey: [`/api/dropshipping/partners/${partnerId}/products`],
   });
 
   // Fetch sync logs
-  const { data: syncLogs = [], isLoading: logsLoading } = useQuery({
+  const { data: syncLogs = [], isLoading: logsLoading } = useQuery<any[]>({
     queryKey: [`/api/dropshipping/partners/${partnerId}/sync-logs`],
   });
 
@@ -207,7 +207,7 @@ export default function SupplierDashboard() {
             disabled={syncProductsMutation.isPending}
             variant="outline"
           >
-            <Sync className="w-4 h-4 mr-2" />
+            <RefreshCw className="w-4 h-4 mr-2" />
             {syncProductsMutation.isPending ? "Syncing..." : "Sync Products"}
           </Button>
           <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
