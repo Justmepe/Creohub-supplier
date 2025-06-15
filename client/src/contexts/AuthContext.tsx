@@ -108,23 +108,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const data = await response.json();
             setUser(data.user);
             localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Fetch creator profile for this user
+            try {
+              const creatorResponse = await fetch(`/api/creators/user/${data.user.id}`, {
+                credentials: 'include'
+              });
+              if (creatorResponse.ok) {
+                const creatorData = await creatorResponse.json();
+                setCreator(creatorData);
+                localStorage.setItem('creator', JSON.stringify(creatorData));
+              } else if (creatorResponse.status === 404) {
+                // User doesn't have a creator profile yet
+                setCreator(null);
+                localStorage.removeItem('creator');
+              }
+            } catch (error) {
+              console.error('Failed to fetch creator profile:', error);
+              setCreator(null);
+              localStorage.removeItem('creator');
+            }
           } else {
             // Session is invalid, clear local storage
             localStorage.removeItem('user');
             localStorage.removeItem('creator');
             setUser(null);
             setCreator(null);
-          }
-          
-          // Load creator profile from localStorage
-          const savedCreator = localStorage.getItem('creator');
-          if (savedCreator) {
-            try {
-              setCreator(JSON.parse(savedCreator));
-            } catch (error) {
-              console.error('Failed to parse saved creator:', error);
-              localStorage.removeItem('creator');
-            }
           }
         } catch (error) {
           console.error('Error checking authentication:', error);

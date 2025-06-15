@@ -30,7 +30,7 @@ import {
 import { Link } from "wouter";
 
 export default function Dashboard() {
-  const { user, creator: activeCreator } = useAuth();
+  const { user, creator: activeCreator, isHydrated } = useAuth();
   const { formatPrice } = useCurrency();
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
@@ -47,6 +47,18 @@ export default function Dashboard() {
     queryKey: [`/api/creators/${activeCreator?.id}/analytics`],
     enabled: !!activeCreator?.id,
   });
+
+  // Show loading while authentication is hydrating
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <div>Please log in to access the dashboard.</div>;
