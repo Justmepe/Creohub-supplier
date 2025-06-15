@@ -28,7 +28,9 @@ import {
   Eye,
   Users,
   Palette,
-  Wallet
+  Wallet,
+  Store,
+  Lightbulb
 } from "lucide-react";
 
 export default function Navbar() {
@@ -45,6 +47,8 @@ export default function Navbar() {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Products", href: "/products", icon: Package },
     { name: "Orders", href: "/orders", icon: ShoppingBag },
+    { name: "Dropshipping", href: "/dropshipping", icon: Store },
+    { name: "AI Recommendations", href: "/recommendations", icon: Lightbulb },
     { name: "Affiliate", href: "/affiliate", icon: Users },
     { name: "Withdrawals", href: "/withdrawals", icon: Wallet },
     { name: "Themes", href: "/themes", icon: Palette },
