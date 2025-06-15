@@ -13,6 +13,9 @@ import {
   payoutMethods,
   withdrawalRequests,
   earningTransactions,
+  dropshippingPartners,
+  dropshippingProducts,
+  productSyncLogs,
   type User, 
   type InsertUser,
   type Creator,
@@ -42,7 +45,7 @@ import {
   type InsertEarningTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, or } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -1692,6 +1695,106 @@ export class DatabaseStorage implements IStorage {
   // Customer orders by email
   async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
     return await db.select().from(orders).where(eq(orders.customerEmail, email));
+  }
+
+  // Dropshipping Partners
+  async createDropshippingPartner(partner: any): Promise<any> {
+    const [newPartner] = await db
+      .insert(dropshippingPartners)
+      .values(partner)
+      .returning();
+    return newPartner;
+  }
+
+  async getDropshippingPartners(): Promise<any[]> {
+    return await db.select().from(dropshippingPartners);
+  }
+
+  async getDropshippingPartner(id: number): Promise<any> {
+    const [partner] = await db.select().from(dropshippingPartners).where(eq(dropshippingPartners.id, id));
+    return partner || undefined;
+  }
+
+  async updateDropshippingPartner(id: number, updates: any): Promise<any> {
+    const [partner] = await db
+      .update(dropshippingPartners)
+      .set(updates)
+      .where(eq(dropshippingPartners.id, id))
+      .returning();
+    return partner || undefined;
+  }
+
+  async approveDropshippingPartner(id: number, approvedBy: number): Promise<any> {
+    const [partner] = await db
+      .update(dropshippingPartners)
+      .set({
+        status: 'approved',
+        approvedBy,
+        approvedAt: new Date()
+      })
+      .where(eq(dropshippingPartners.id, id))
+      .returning();
+    return partner || undefined;
+  }
+
+  // Dropshipping Products
+  async createDropshippingProduct(product: any): Promise<any> {
+    const [newProduct] = await db
+      .insert(dropshippingProducts)
+      .values(product)
+      .returning();
+    return newProduct;
+  }
+
+  async getDropshippingProducts(): Promise<any[]> {
+    return await db.select().from(dropshippingProducts);
+  }
+
+  async getDropshippingProductsByPartner(partnerId: number): Promise<any[]> {
+    return await db.select().from(dropshippingProducts).where(eq(dropshippingProducts.partnerId, partnerId));
+  }
+
+  async updateDropshippingProduct(id: number, updates: any): Promise<any> {
+    const [product] = await db
+      .update(dropshippingProducts)
+      .set(updates)
+      .where(eq(dropshippingProducts.id, id))
+      .returning();
+    return product || undefined;
+  }
+
+  async deleteDropshippingProduct(id: number): Promise<boolean> {
+    const result = await db.delete(dropshippingProducts).where(eq(dropshippingProducts.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Product Sync Logs
+  async createProductSyncLog(log: any): Promise<any> {
+    const [newLog] = await db
+      .insert(productSyncLogs)
+      .values(log)
+      .returning();
+    return newLog;
+  }
+
+  async getProductSyncLogs(partnerId: number): Promise<any[]> {
+    return await db.select().from(productSyncLogs).where(eq(productSyncLogs.partnerId, partnerId));
+  }
+
+  async getDropshippingProductByExternalId(partnerId: number, externalId: string): Promise<any> {
+    const [product] = await db.select().from(dropshippingProducts).where(
+      and(eq(dropshippingProducts.partnerId, partnerId), eq(dropshippingProducts.externalId, externalId))
+    );
+    return product || undefined;
+  }
+
+  async updateProductSyncLog(id: number, updates: any): Promise<any> {
+    const [log] = await db
+      .update(productSyncLogs)
+      .set(updates)
+      .where(eq(productSyncLogs.id, id))
+      .returning();
+    return log || undefined;
   }
 }
 
