@@ -17,14 +17,21 @@ import {
   DollarSign,
   Eye,
   Calendar,
-  Package
+  Package,
+  Truck,
+  Building,
+  Bot,
+  Users,
+  CreditCard,
+  Palette,
+  Settings
 } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Dashboard() {
   const { user, creator: activeCreator } = useAuth();
   const { formatPrice } = useCurrency();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("products");
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: [`/api/creators/${activeCreator?.id}/products`],
@@ -79,11 +86,15 @@ export default function Dashboard() {
   const viewsCount = analytics?.views || 0;
 
   const navigationItems = [
-    { id: "overview", label: "Overview", icon: TrendingUp },
     { id: "products", label: "Products", icon: Package },
     { id: "orders", label: "Orders", icon: ShoppingBag },
-    { id: "subscriptions", label: "Plans", icon: Calendar },
-    { id: "analytics", label: "Analytics", icon: DollarSign },
+    { id: "dropshipping", label: "Dropshipping", icon: Truck },
+    { id: "supplier-dashboard", label: "Supplier Dashboard", icon: Building },
+    { id: "ai-recommendations", label: "AI Recommendations", icon: Bot },
+    { id: "affiliate", label: "Affiliate", icon: Users },
+    { id: "withdrawals", label: "Withdrawals", icon: CreditCard },
+    { id: "themes", label: "Themes", icon: Palette },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (
@@ -174,7 +185,7 @@ export default function Dashboard() {
         {/* Main Layout with Sidebar */}
         <div className="flex gap-6">
           {/* Vertical Sidebar Navigation */}
-          <div className="w-64 bg-white rounded-lg shadow-sm border p-4">
+          <div className="w-72 bg-white rounded-lg shadow-sm border p-4">
             <nav className="space-y-2">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
@@ -182,123 +193,31 @@ export default function Dashboard() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                    className={`w-full flex items-center px-3 py-2.5 text-left rounded-lg transition-colors text-sm ${
                       activeTab === item.id
                         ? "bg-blue-50 text-blue-700 border border-blue-200"
                         : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
-                    <Icon className="h-5 w-5 mr-3" />
-                    {item.label}
+                    <Icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                    <span className="truncate">{item.label}</span>
                   </button>
                 );
               })}
+              
+              <div className="pt-2 mt-4 border-t border-gray-200">
+                <Button variant="outline" className="w-full text-sm" asChild>
+                  <Link href={`/storefront/${activeCreator.storeHandle}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Store
+                  </Link>
+                </Button>
+              </div>
             </nav>
           </div>
 
           {/* Content Area */}
           <div className="flex-1 bg-white rounded-lg shadow-sm border p-6">
-          {activeTab === "overview" && (
-            <div className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                {/* Recent Orders */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Orders</CardTitle>
-                    <CardDescription>Your latest customer orders</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {ordersLoading ? (
-                      <div className="space-y-3">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="animate-pulse">
-                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : recentOrders.length > 0 ? (
-                      <div className="space-y-4">
-                        {recentOrders.map((order: any) => (
-                          <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                              <p className="font-medium">{order.customerEmail}</p>
-                              <p className="text-sm text-gray-600">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {formatPrice(parseFloat(order.totalAmount))}
-                              </p>
-                              <Badge variant={order.paymentStatus === 'completed' ? 'default' : 'secondary'}>
-                                {order.paymentStatus}
-                              </Badge>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-lg font-medium text-gray-600 mb-2">No orders yet</p>
-                        <p className="text-gray-500">Orders from customers will appear here</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Recent Products */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Products</CardTitle>
-                    <CardDescription>Your latest added products</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {productsLoading ? (
-                      <div className="space-y-3">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="animate-pulse">
-                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : recentProducts.length > 0 ? (
-                      <div className="space-y-4">
-                        {recentProducts.map((product: any) => (
-                          <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-sm text-gray-600">{product.category}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {formatPrice(parseFloat(product.price))}
-                              </p>
-                              <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                                {product.isActive ? 'Active' : 'Inactive'}
-                              </Badge>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-lg font-medium text-gray-600 mb-2">No products yet</p>
-                        <p className="text-gray-500">Start by adding your first product</p>
-                        <Button className="mt-4" asChild>
-                          <Link href="/products/new">Add Product</Link>
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
-
           {activeTab === "products" && (
             <ProductUpload />
           )}
@@ -353,43 +272,129 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeTab === "subscriptions" && (
+          {activeTab === "dropshipping" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Subscription Plan</h2>
+                <h2 className="text-2xl font-bold">Dropshipping</h2>
+                <Button asChild>
+                  <Link href="/dropshipping">View Marketplace</Link>
+                </Button>
               </div>
               <Card>
-                <CardHeader>
-                  <CardTitle>Current Plan: {activeCreator.planType}</CardTitle>
-                  <CardDescription>
-                    Status: {activeCreator.subscriptionStatus}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {activeCreator.planType === 'free' && (
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          You're on the free trial. Upgrade to unlock more features and reduce fees.
-                        </p>
-                      </div>
-                      <Button asChild>
-                        <Link href="/pricing">Upgrade Plan</Link>
-                      </Button>
-                    </div>
-                  )}
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <Truck className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">Dropshipping Marketplace</p>
+                    <p className="text-gray-500">Find suppliers and add products to your store</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           )}
 
-          {activeTab === "analytics" && (
-            <AnalyticsCards 
-              creatorId={activeCreator.id}
-              totalRevenue={totalRevenue}
-              totalOrders={totalOrders}
-              viewsCount={viewsCount}
-            />
+          {activeTab === "supplier-dashboard" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Supplier Dashboard</h2>
+                <Button asChild>
+                  <Link href="/supplier-dashboard">Manage Suppliers</Link>
+                </Button>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">Supplier Management</p>
+                    <p className="text-gray-500">Manage your supplier partnerships and products</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "ai-recommendations" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">AI Recommendations</h2>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <Bot className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">AI Product Recommendations</p>
+                    <p className="text-gray-500">Get AI-powered suggestions for trending products</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "affiliate" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Affiliate Program</h2>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">Affiliate Management</p>
+                    <p className="text-gray-500">Manage your affiliate partners and commissions</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "withdrawals" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Withdrawals</h2>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <CreditCard className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">Withdraw Earnings</p>
+                    <p className="text-gray-500">Request withdrawals and manage payout methods</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "themes" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Store Themes</h2>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <Palette className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">Customize Your Store</p>
+                    <p className="text-gray-500">Choose and customize themes for your storefront</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Settings</h2>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-600 mb-2">Account Settings</p>
+                    <p className="text-gray-500">Manage your account preferences and store settings</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
           </div>
         </div>
