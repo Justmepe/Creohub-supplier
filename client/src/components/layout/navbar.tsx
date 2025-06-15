@@ -12,51 +12,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { CurrencySelector } from "@/components/ui/currency-selector";
 import { 
-  Menu, 
-  Home, 
-  LayoutDashboard, 
-  Package, 
-  ShoppingBag, 
-  Settings, 
   LogOut,
   User,
-  ExternalLink,
-  Eye,
-  Users,
-  Palette,
-  Wallet,
-  Store,
-  Lightbulb
+  Settings
 } from "lucide-react";
 
 export default function Navbar() {
   const { user, creator, setUser, setCreator } = useAuth();
-  const [location] = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     setUser(null);
     setCreator(null);
   };
-
-  const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Products", href: "/products", icon: Package },
-    { name: "Orders", href: "/orders", icon: ShoppingBag },
-    { name: "Dropshipping", href: "/dropshipping", icon: Store },
-    { name: "Supplier Dashboard", href: "/supplier-dashboard", icon: Store },
-    { name: "AI Recommendations", href: "/recommendations", icon: Lightbulb },
-    { name: "Affiliate", href: "/affiliate", icon: Users },
-    { name: "Withdrawals", href: "/withdrawals", icon: Wallet },
-    { name: "Themes", href: "/themes", icon: Palette },
-    { name: "Settings", href: "/settings", icon: Settings },
-  ];
-
-  const isActive = (href: string) => location === href;
 
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -76,33 +46,6 @@ export default function Navbar() {
               <Badge variant="outline" className="ml-2 sm:ml-3 hidden sm:inline-flex">
                 {creator.storeName}
               </Badge>
-            )}
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2">
-            {user && creator && (
-              <>
-                {navigation.map((item) => (
-                  <Link key={item.name} href={item.href}>
-                    <Button
-                      variant={isActive(item.href) ? "default" : "ghost"}
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span className="hidden xl:inline">{item.name}</span>
-                    </Button>
-                  </Link>
-                ))}
-
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/storefront/${creator.storeHandle}`}>
-                    <Eye className="h-4 w-4" />
-                    <span className="hidden md:inline ml-1">View Store</span>
-                  </Link>
-                </Button>
-              </>
             )}
           </div>
 
@@ -135,6 +78,11 @@ export default function Navbar() {
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
                       </p>
+                      {creator && (
+                        <p className="text-xs leading-none text-muted-foreground">
+                          Store: {creator.storeName}
+                        </p>
+                      )}
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -144,14 +92,12 @@ export default function Navbar() {
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  {creator && (
-                    <DropdownMenuItem asChild>
-                      <Link href={`/storefront/${creator.storeHandle}`}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Store
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -172,91 +118,6 @@ export default function Navbar() {
                 </Button>
               </div>
             )}
-
-            {/* Mobile menu button */}
-            <div className="lg:hidden">
-              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <div className="flex items-center space-x-2 p-4 border-b">
-                    <img 
-                      src={logoPath} 
-                      alt="Creohub" 
-                      className="h-6 w-6"
-                    />
-                    <h2 className="text-lg font-bold text-primary">Creohub</h2>
-                  </div>
-                  <div className="flex flex-col space-y-4 mt-4">
-                    {user && creator && (
-                      <>
-                        <div className="flex items-center space-x-3 p-4 border-b">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatar || undefined} alt={user.username} />
-                            <AvatarFallback>
-                              {user.fullName?.charAt(0) || user.username.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{user.fullName || user.username}</p>
-                            <p className="text-sm text-gray-500">{creator.storeName}</p>
-                          </div>
-                        </div>
-
-                        {navigation.map((item) => (
-                          <Link key={item.name} href={item.href}>
-                            <Button
-                              variant={isActive(item.href) ? "default" : "ghost"}
-                              className="w-full justify-start"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              <item.icon className="mr-2 h-4 w-4" />
-                              {item.name}
-                            </Button>
-                          </Link>
-                        ))}
-
-                        <Button variant="outline" asChild className="w-full justify-start">
-                          <Link href={`/storefront/${creator.storeHandle}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Store
-                            <ExternalLink className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-
-                        <div className="border-t pt-4">
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start"
-                            onClick={handleLogout}
-                          >
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Log out
-                          </Button>
-                        </div>
-                      </>
-                    )}
-
-                    {!user && (
-                      <div className="space-y-2">
-                        <Button variant="ghost" asChild className="w-full">
-                          <Link href="/supplier-registration">Become a Supplier</Link>
-                        </Button>
-                        <Button variant="ghost" asChild className="w-full">
-                          <Link href="/auth">Sign In</Link>
-                        </Button>
-                        <Button asChild className="w-full">
-                          <Link href="/auth">Get Started</Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
           </div>
         </div>
       </div>
