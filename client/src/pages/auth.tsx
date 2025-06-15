@@ -57,7 +57,11 @@ export default function Auth() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
-      const response = await apiRequest("POST", "/api/auth/login", data);
+      const loginData = {
+        email: data.username, // Map username field to email for server
+        password: data.password
+      };
+      const response = await apiRequest("POST", "/api/auth/login", loginData);
       return response.json();
     },
     onSuccess: async (data) => {
