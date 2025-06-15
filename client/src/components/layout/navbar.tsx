@@ -98,7 +98,7 @@ export default function Navbar() {
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/storefront/${creator.storeHandle}`}>
                     <Eye className="h-4 w-4" />
-                    <span className="hidden xl:inline ml-1">Store</span>
+                    <span className="hidden md:inline ml-1">View Store</span>
                   </Link>
                 </Button>
               </>
