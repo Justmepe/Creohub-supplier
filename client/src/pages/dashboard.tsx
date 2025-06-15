@@ -211,7 +211,116 @@ export default function Dashboard() {
           {/* Content Area */}
           <div className="flex-1 bg-white rounded-lg shadow-sm border p-6">
           {activeTab === "products" && (
-            <ProductUpload />
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Products</h2>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Product
+                </Button>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Package className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Total Products</h3>
+                        <p className="text-2xl font-bold text-blue-600">{totalProducts}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Active in your store</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Eye className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Published</h3>
+                        <p className="text-2xl font-bold text-green-600">{totalProducts}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Visible to customers</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="h-6 w-6 text-yellow-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Sold This Month</h3>
+                        <p className="text-2xl font-bold text-yellow-600">0</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Products purchased</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Products</CardTitle>
+                  <CardDescription>Manage your product catalog</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {productsLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="animate-pulse p-4 border rounded-lg">
+                          <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : productsArray.length > 0 ? (
+                    <div className="space-y-4">
+                      {productsArray.map((product: any) => (
+                        <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <Package className="h-6 w-6 text-gray-600" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold">{product.name}</h3>
+                              <p className="text-sm text-gray-600">{formatPrice(parseFloat(product.price))}</p>
+                              <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                                {product.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="outline" size="sm">Edit</Button>
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-lg font-medium text-gray-600 mb-2">No products yet</p>
+                      <p className="text-gray-500 mb-4">Start by adding your first product to your store</p>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Product
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {activeTab === "orders" && (
