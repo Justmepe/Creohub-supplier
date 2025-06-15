@@ -24,7 +24,9 @@ import {
   Users,
   CreditCard,
   Palette,
-  Settings
+  Settings,
+  User,
+  ExternalLink
 } from "lucide-react";
 import { Link } from "wouter";
 
