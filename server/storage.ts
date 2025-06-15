@@ -42,7 +42,7 @@ import {
   type InsertEarningTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -228,8 +228,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.email === email);
   }
 
-  async authenticateUser(email: string, password: string): Promise<User | undefined> {
-    const user = Array.from(this.users.values()).find(user => user.email === email);
+  async authenticateUser(emailOrUsername: string, password: string): Promise<User | undefined> {
+    const user = Array.from(this.users.values()).find(user => 
+      user.email === emailOrUsername || user.username === emailOrUsername
+    );
     if (user && user.password === password) {
       return user;
     }
@@ -776,9 +778,11 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async authenticateUser(email: string, password: string): Promise<User | undefined> {
-    console.log(`Authenticating user with email: ${email}`);
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+  async authenticateUser(emailOrUsername: string, password: string): Promise<User | undefined> {
+    console.log(`Authenticating user with email/username: ${emailOrUsername}`);
+    const [user] = await db.select().from(users).where(
+      or(eq(users.email, emailOrUsername), eq(users.username, emailOrUsername))
+    );
     console.log(`Found user:`, user ? { id: user.id, email: user.email, username: user.username } : 'null');
     if (user && user.password === password) {
       console.log(`Password match successful for user: ${user.email}`);
