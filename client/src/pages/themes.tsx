@@ -76,14 +76,18 @@ export default function ThemesPage() {
   const queryClient = useQueryClient();
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 
-  // Fetch user's color themes
+  // Fetch user's color themes with optimized settings
   const { data: themes = [], isLoading } = useQuery<ColorTheme[]>({
     queryKey: ["/api/themes"],
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
   });
 
-  // Fetch active theme
+  // Fetch active theme with optimized settings
   const { data: activeTheme } = useQuery<ColorTheme>({
     queryKey: ["/api/themes/active"],
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    retry: 1,
   });
 
   // Create theme mutation

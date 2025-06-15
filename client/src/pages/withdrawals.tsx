@@ -79,7 +79,7 @@ export default function WithdrawalsPage() {
     },
   });
 
-  // Queries
+  // Queries with optimized settings
   const { data: earningsData, isLoading: earningsLoading } = useQuery({
     queryKey: ["earnings", creator?.id],
     queryFn: async () => {
@@ -87,6 +87,8 @@ export default function WithdrawalsPage() {
       return response.json();
     },
     enabled: !!creator?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
   });
 
   const { data: payoutMethods, isLoading: methodsLoading } = useQuery({
@@ -96,6 +98,8 @@ export default function WithdrawalsPage() {
       return response.json();
     },
     enabled: !!creator?.id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
   });
 
   const { data: withdrawals, isLoading: withdrawalsLoading } = useQuery({
@@ -105,6 +109,8 @@ export default function WithdrawalsPage() {
       return response.json();
     },
     enabled: !!creator?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
   });
 
   // Mutations
