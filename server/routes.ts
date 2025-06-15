@@ -178,60 +178,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { category, search, page = 1, limit = 20 } = req.query;
       
-      // Mock marketplace products
-      const products = [
-        {
-          id: 1,
-          name: "Bluetooth Wireless Earbuds",
-          description: "High-quality wireless earbuds with noise cancellation",
-          category: "Electronics",
-          wholesalePrice: "2500.00",
-          suggestedRetailPrice: "4000.00",
-          minimumPrice: "3000.00",
-          currency: "KES",
-          images: ["/uploads/earbuds1.jpg", "/uploads/earbuds2.jpg"],
-          stock: 150,
-          commissionRate: "15.00",
-          partner: {
-            id: 1,
-            companyName: "Kenya Electronics Ltd",
-            logo: "/uploads/partner1-logo.png"
-          }
-        },
-        {
-          id: 2,
-          name: "Handwoven Basket Set",
-          description: "Traditional Kenyan baskets made from natural materials",
-          category: "Home & Garden",
-          wholesalePrice: "1200.00",
-          suggestedRetailPrice: "2000.00",
-          minimumPrice: "1500.00",
-          currency: "KES",
-          images: ["/uploads/basket1.jpg", "/uploads/basket2.jpg"],
-          stock: 75,
-          commissionRate: "20.00",
-          partner: {
-            id: 2,
-            companyName: "African Crafts Co",
-            logo: "/uploads/partner2-logo.png"
-          }
-        }
-      ];
+      // Get all active dropshipping products from storage
+      const allProducts = await storage.getDropshippingProducts();
+      const activeProducts = allProducts.filter(product => product.isActive);
+
+      // Get all partners to include partner information
+      const allPartners = await storage.getDropshippingPartners();
+      const partnersMap = new Map(allPartners.map(partner => [partner.id, partner]));
+
+      // Enhance products with partner information
+      const productsWithPartners = activeProducts.map(product => {
+        const partner = partnersMap.get(product.partnerId);
+        return {
+          ...product,
+          partner: partner ? {
+            id: partner.id,
+            companyName: partner.companyName,
+            businessType: partner.businessType
+          } : null
+        };
+      }).filter(product => product.partner); // Only include products with valid partners
 
       // Filter by search if provided
-      let filteredProducts = products;
+      let filteredProducts = productsWithPartners;
       if (search) {
-        filteredProducts = products.filter(p => 
+        filteredProducts = productsWithPartners.filter(p => 
           p.name.toLowerCase().includes(search.toString().toLowerCase()) ||
-          p.description.toLowerCase().includes(search.toString().toLowerCase())
+          p.description.toLowerCase().includes(search.toString().toLowerCase()) ||
+          p.category.toLowerCase().includes(search.toString().toLowerCase())
         );
       }
 
+      // Filter by category if provided
       if (category) {
         filteredProducts = filteredProducts.filter(p => p.category === category);
       }
 
-      res.json(filteredProducts);
+      // Implement pagination
+      const pageNumber = parseInt(page.toString()) || 1;
+      const limitNumber = parseInt(limit.toString()) || 20;
+      const startIndex = (pageNumber - 1) * limitNumber;
+      const endIndex = startIndex + limitNumber;
+      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+      res.json({
+        products: paginatedProducts,
+        pagination: {
+          currentPage: pageNumber,
+          totalProducts: filteredProducts.length,
+          totalPages: Math.ceil(filteredProducts.length / limitNumber),
+          hasNext: endIndex < filteredProducts.length,
+          hasPrev: pageNumber > 1
+        }
+      });
     } catch (error) {
       console.error("Fetch marketplace products error:", error);
       res.status(500).json({ error: "Failed to fetch marketplace products" });

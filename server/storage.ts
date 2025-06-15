@@ -867,6 +867,127 @@ export class MemStorage implements IStorage {
     this.dropshippingProducts.set(id, updatedProduct);
     return updatedProduct;
   }
+
+  private initializeSupplierPartnersAndProducts() {
+    // Create sample approved supplier partners
+    const partner1 = {
+      id: this.currentDropshippingPartnerId++,
+      userId: 1,
+      companyName: "Kenya Electronics Ltd",
+      businessLicense: "BL/2024/001",
+      contactEmail: "sales@kenyaelectronics.co.ke",
+      contactPhone: "+254700123456",
+      address: "Industrial Area, Nairobi, Kenya",
+      businessType: "wholesaler",
+      description: "Leading electronics supplier in East Africa with 15+ years experience",
+      website: "https://kenyaelectronics.co.ke",
+      defaultCommissionRate: "15.00",
+      status: "approved",
+      isActive: true,
+      approvedBy: 1,
+      approvedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.dropshippingPartners.set(partner1.id, partner1);
+
+    const partner2 = {
+      id: this.currentDropshippingPartnerId++,
+      userId: 1,
+      companyName: "African Crafts Co",
+      businessLicense: "BL/2024/002",
+      contactEmail: "info@africancrafts.co.ke",
+      contactPhone: "+254722345678",
+      address: "Maasai Market, Nairobi, Kenya",
+      businessType: "manufacturer",
+      description: "Authentic African crafts and accessories made by local artisans",
+      website: "https://africancrafts.co.ke",
+      defaultCommissionRate: "20.00",
+      status: "approved",
+      isActive: true,
+      approvedBy: 1,
+      approvedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.dropshippingPartners.set(partner2.id, partner2);
+
+    // Create sample dropshipping products for these partners
+    const products = [
+      {
+        id: this.currentDropshippingProductId++,
+        partnerId: partner1.id,
+        name: "Bluetooth Wireless Earbuds",
+        description: "High-quality wireless earbuds with noise cancellation and 6-hour battery life",
+        category: "Electronics",
+        wholesalePrice: "2500.00",
+        suggestedRetailPrice: "4000.00",
+        minimumPrice: "3000.00",
+        currency: "KES",
+        images: ["/uploads/earbuds1.jpg", "/uploads/earbuds2.jpg"],
+        stock: 150,
+        commissionRate: "15.00",
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: this.currentDropshippingProductId++,
+        partnerId: partner1.id,
+        name: "Smartphone Power Bank 20000mAh",
+        description: "Portable power bank with fast charging and LED display",
+        category: "Electronics",
+        wholesalePrice: "1800.00",
+        suggestedRetailPrice: "2800.00",
+        minimumPrice: "2200.00",
+        currency: "KES",
+        images: ["/uploads/powerbank1.jpg"],
+        stock: 80,
+        commissionRate: "15.00",
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: this.currentDropshippingProductId++,
+        partnerId: partner2.id,
+        name: "Handwoven Basket Set",
+        description: "Traditional Kenyan baskets made from natural materials by local artisans",
+        category: "Home & Decor",
+        wholesalePrice: "1200.00",
+        suggestedRetailPrice: "2000.00",
+        minimumPrice: "1500.00",
+        currency: "KES",
+        images: ["/uploads/basket1.jpg", "/uploads/basket2.jpg"],
+        stock: 25,
+        commissionRate: "20.00",
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: this.currentDropshippingProductId++,
+        partnerId: partner2.id,
+        name: "Maasai Beaded Jewelry Set",
+        description: "Authentic Maasai beaded necklace and bracelet set",
+        category: "Fashion & Accessories",
+        wholesalePrice: "800.00",
+        suggestedRetailPrice: "1400.00",
+        minimumPrice: "1000.00",
+        currency: "KES",
+        images: ["/uploads/jewelry1.jpg"],
+        stock: 40,
+        commissionRate: "20.00",
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    products.forEach(product => {
+      this.dropshippingProducts.set(product.id, product);
+    });
+  }
 }
 
 // Database Storage Implementation
@@ -1367,4 +1488,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
