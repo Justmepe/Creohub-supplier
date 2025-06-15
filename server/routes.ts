@@ -694,6 +694,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch products" });
     }
   });
+
+  // Admin routes for dropshipping partner management
+  app.get("/api/admin/dropshipping/partners", async (req: Request, res: Response) => {
+    try {
+      const partners = await storage.getDropshippingPartners();
+      res.json(partners);
+    } catch (error) {
+      console.error("Failed to fetch dropshipping partners:", error);
+      res.status(500).json({ error: "Failed to fetch dropshipping partners" });
+    }
+  });
+
+  app.put("/api/admin/dropshipping/partners/:id/approve", async (req: Request, res: Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      await storage.updateDropshippingPartner(partnerId, { status: 'approved' });
+      res.json({ success: true, message: "Partner approved successfully" });
+    } catch (error) {
+      console.error("Failed to approve partner:", error);
+      res.status(500).json({ error: "Failed to approve partner" });
+    }
+  });
+
+  app.put("/api/admin/dropshipping/partners/:id/reject", async (req: Request, res: Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      await storage.updateDropshippingPartner(partnerId, { status: 'rejected' });
+      res.json({ success: true, message: "Partner rejected successfully" });
+    } catch (error) {
+      console.error("Failed to reject partner:", error);
+      res.status(500).json({ error: "Failed to reject partner" });
+    }
+  });
   
   // Handle client-side routing only in production mode
   // In development, Vite handles this automatically
