@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Search, Filter, Plus, Star, Package, DollarSign, TrendingUp } from "lucide-react";
+import { Search, Filter, Plus, Star, Package, DollarSign, TrendingUp, ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Link } from "wouter";
 
 interface DropshippingProduct {
   id: number;
@@ -140,6 +141,14 @@ export default function DropshippingMarketplace() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="sm" className="mr-3">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dropshipping Marketplace</h1>
         <p className="text-gray-600">
           Browse products from verified suppliers and add them to your store without handling inventory.
