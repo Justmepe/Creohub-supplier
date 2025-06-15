@@ -62,6 +62,7 @@ export interface IStorage {
   createCreator(creator: InsertCreator): Promise<Creator>;
   updateCreator(id: number, updates: Partial<Creator>): Promise<Creator | undefined>;
   getCreators(): Promise<Creator[]>;
+  getAllCreators(): Promise<Creator[]>;
 
   // Products
   getProduct(id: number): Promise<Product | undefined>;
@@ -342,6 +343,10 @@ export class MemStorage implements IStorage {
   }
 
   async getCreators(): Promise<Creator[]> {
+    return Array.from(this.creators.values());
+  }
+
+  async getAllCreators(): Promise<Creator[]> {
     return Array.from(this.creators.values());
   }
 
@@ -875,6 +880,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCreators(): Promise<Creator[]> {
+    return await db.select().from(creators);
+  }
+
+  async getAllCreators(): Promise<Creator[]> {
     return await db.select().from(creators);
   }
 
