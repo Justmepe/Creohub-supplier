@@ -368,87 +368,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { creatorId } = req.params;
       const { type = 'all', limit = 20 } = req.query;
       
-      // Get creator's current products and performance data for AI analysis
-      const creatorProducts = await storage.getCreatorProducts(parseInt(creatorId));
-      const creatorCategories = [...new Set(creatorProducts.map(p => p.category))];
-      
       // Get all available dropshipping products from real suppliers
       const allDropshippingProducts = await storage.getDropshippingProducts();
       const activeProducts = allDropshippingProducts.filter(product => product.isActive);
       
       // Get all partners for enhanced recommendations
       const allPartners = await storage.getDropshippingPartners();
-      const partnersMap = new Map(allPartners.map(partner => [partner.id, partner]));
       
-      // AI-powered recommendation scoring algorithm
+      // Simple recommendations based on available products
       const recommendations = activeProducts.map(product => {
-        const partner = partnersMap.get(product.partnerId);
+        const partner = allPartners.find(p => p.id === product.partnerId);
         if (!partner) return null;
         
-        let score = 0;
-        let reason = "";
-        let recommendationType = "general";
-        
-        // Category matching analysis (35% weight)
-        if (creatorCategories.includes(product.category)) {
-          score += 35;
-          reason = `Perfect match for your ${product.category} focus`;
-          recommendationType = "personalized";
-        } else {
-          score += 10;
-          reason = `Expand into ${product.category} market`;
-          recommendationType = "diversification";
-        }
-        
-        // Profit margin scoring (30% weight)
         const wholesalePrice = parseFloat(product.wholesalePrice);
         const suggestedPrice = parseFloat(product.suggestedRetailPrice);
         const profitMargin = ((suggestedPrice - wholesalePrice) / suggestedPrice) * 100;
-        
-        if (profitMargin > 45) {
-          score += 30;
-          reason += " with exceptional profit margins";
-        } else if (profitMargin > 35) {
-          score += 25;
-          reason += " with excellent margins";
-        } else if (profitMargin > 25) {
-          score += 20;
-          reason += " with good profit potential";
-        } else {
-          score += 10;
-        }
-        
-        // Commission rate analysis (20% weight)
-        const commissionRate = parseFloat(product.commissionRate);
-        if (commissionRate >= 20) {
-          score += 20;
-          reason += " and premium commission";
-          recommendationType = "trending";
-        } else if (commissionRate >= 15) {
-          score += 15;
-          reason += " and solid commission";
-        } else if (commissionRate >= 10) {
-          score += 10;
-        }
-        
-        // Stock availability (10% weight)
-        if (product.stock > 100) {
-          score += 10;
-        } else if (product.stock > 50) {
-          score += 7;
-        } else if (product.stock > 20) {
-          score += 5;
-        }
-        
-        // Partner credibility (5% weight)
-        if (partner.businessType === "manufacturer") {
-          score += 5;
-          reason += " from verified manufacturer";
-        } else if (partner.businessType === "wholesaler") {
-          score += 4;
-        } else if (partner.businessType === "distributor") {
-          score += 3;
-        }
         
         return {
           id: product.id,
@@ -458,13 +392,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           price: product.suggestedRetailPrice,
           images: product.images,
           category: product.category,
-          score: Math.min(score, 100),
-          reason: reason,
+          score: Math.min(70 + profitMargin, 100),
+          reason: `Great ${product.category} opportunity with ${profitMargin.toFixed(1)}% margin`,
           metadata: {
             wholesalePrice: product.wholesalePrice,
             commissionRate: product.commissionRate,
             stock: product.stock,
-            recommendationType: recommendationType,
+            recommendationType: "general",
             profitMargin: profitMargin.toFixed(1),
             partnerId: partner.id
           },
@@ -474,107 +408,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             businessType: partner.businessType
           }
         };
-      }).filter(product => product !== null).sort((a, b) => b.score - a.score);
-      
-      // Use real recommendations or fallback to empty array
-      const finalRecommendations = recommendations.length > 0 ? recommendations : [];
-          description: "Advanced fitness tracking with heart rate monitoring",
-          price: "3500.00",
-          images: ["/uploads/fitness-tracker.jpg"],
-          category: "Electronics",
-          score: 92,
-          reason: "Trending in Electronics with 85% market growth this month",
-          metadata: {
-            wholesalePrice: "2200.00",
-            commissionRate: "18.00",
-            trendingCategory: true,
-            recommendationType: "trending"
-          },
-          partner: {
-            id: 1,
-            companyName: "TechGear Africa",
-            logo: "/uploads/techgear-logo.png"
-          }
-        },
-        {
-          id: 2,
-          type: "dropshipping_product",
-          name: "Organic Skincare Set",
-          description: "Natural skincare products for daily routine",
-          price: "2800.00",
-          images: ["/uploads/skincare-set.jpg"],
-          category: "Beauty & Health",
-          score: 88,
-          reason: "Matches your interests in Beauty & Health and fits your target audience",
-          metadata: {
-            wholesalePrice: "1800.00",
-            commissionRate: "20.00",
-            personalizedMatch: true,
-            recommendationType: "personalized"
-          },
-          partner: {
-            id: 2,
-            companyName: "Natural Beauty Co",
-            logo: "/uploads/beauty-logo.png"
-          }
-        },
-        {
-          id: 3,
-          type: "dropshipping_product",
-          name: "African Print Laptop Bag",
-          description: "Stylish laptop bag with authentic African designs",
-          price: "1800.00",
-          images: ["/uploads/laptop-bag.jpg"],
-          category: "Fashion & Accessories",
-          score: 85,
-          reason: "Popular among creators with similar audiences and product preferences",
-          metadata: {
-            wholesalePrice: "1200.00",
-            commissionRate: "15.00",
-            similarCreatorMatch: true,
-            recommendationType: "similar_creators"
-          },
-          partner: {
-            id: 3,
-            companyName: "African Heritage Crafts",
-            logo: "/uploads/heritage-logo.png"
-          }
-        },
-        {
-          id: 4,
-          type: "dropshipping_product",
-          name: "Solar Power Bank",
-          description: "Eco-friendly portable charger with solar panel",
-          price: "2500.00",
-          images: ["/uploads/solar-powerbank.jpg"],
-          category: "Electronics",
-          score: 82,
-          reason: "Perfect timing for Mid-Year sales in Electronics",
-          metadata: {
-            wholesalePrice: "1600.00",
-            commissionRate: "17.00",
-            seasonalMatch: true,
-            recommendationType: "seasonal",
-            season: "Mid-Year"
-          },
-          partner: {
-            id: 4,
-            companyName: "EcoTech Solutions",
-            logo: "/uploads/ecotech-logo.png"
-          }
-        }
-      ];
-
-      // Filter by type if specified
-      let filteredRecommendations = recommendations;
-      if (type !== 'all') {
-        filteredRecommendations = recommendations.filter(r => 
-          r.metadata.recommendationType === type
-        );
-      }
+      }).filter(product => product !== null);
 
       // Apply limit
-      const limitedRecommendations = filteredRecommendations.slice(0, parseInt(limit as string));
+      const limitedRecommendations = recommendations.slice(0, parseInt(limit as string));
 
       res.json(limitedRecommendations);
     } catch (error) {

@@ -156,6 +156,9 @@ export default function Home() {
                 <a href="#features" className="text-neutral hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Features</a>
                 <a href="#pricing" className="text-neutral hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Pricing</a>
                 <a href="#creators" className="text-neutral hover:text-primary px-3 py-2 rounded-md text-sm font-medium">For Creators</a>
+                <Link href="/supplier-registration" className="text-neutral hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                  For Suppliers
+                </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">
