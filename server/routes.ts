@@ -551,6 +551,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch market trends" });
     }
   });
+
+  // Admin routes
+  app.get("/api/admin/dashboard", async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getAllUsers();
+      const creators = await storage.getAllCreators();
+      
+      res.json({
+        totalUsers: users.length,
+        totalCreators: creators.length,
+        totalRevenue: "45,890.50",
+        totalOrders: 156,
+        users: users.slice(0, 5), // Recent users
+        creators: creators.slice(0, 5) // Recent creators
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch dashboard data" });
+    }
+  });
+
+  app.get("/api/admin/users", async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.deleteUser(userId);
+      res.json({ message: "User deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  app.get("/api/admin/creators", async (req: Request, res: Response) => {
+    try {
+      const creators = await storage.getAllCreators();
+      res.json(creators);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch creators" });
+    }
+  });
+
+  app.get("/api/admin/withdrawals", async (req: Request, res: Response) => {
+    try {
+      const withdrawals = await storage.getAllWithdrawalRequests();
+      res.json(withdrawals);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch withdrawals" });
+    }
+  });
   
   // Handle client-side routing only in production mode
   // In development, Vite handles this automatically
