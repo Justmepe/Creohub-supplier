@@ -253,23 +253,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { creatorId } = req.params;
       const { dropshippingProductId, sellingPrice, customName, customDescription } = req.body;
 
-      // Mock adding product to creator's store
-      const creatorProduct = {
-        id: Date.now(),
+      // Get the original dropshipping product details
+      const dropshippingProducts = [
+        {
+          id: 1,
+          name: "Bluetooth Wireless Earbuds",
+          description: "High-quality wireless earbuds with noise cancellation",
+          category: "Electronics",
+          wholesalePrice: "2500.00",
+          images: ["/uploads/earbuds1.jpg"],
+          stock: 150
+        },
+        {
+          id: 2,
+          name: "Premium Skincare Set",
+          description: "Natural skincare products made in Kenya",
+          category: "Beauty & Health",
+          wholesalePrice: "1800.00",
+          images: ["/uploads/skincare1.jpg"],
+          stock: 75
+        },
+        {
+          id: 3,
+          name: "African Print Laptop Bag",
+          description: "Stylish laptop bag with authentic African designs",
+          category: "Fashion & Accessories", 
+          wholesalePrice: "1200.00",
+          images: ["/uploads/laptop-bag.jpg"],
+          stock: 100
+        }
+      ];
+
+      const originalProduct = dropshippingProducts.find(p => p.id === dropshippingProductId);
+      if (!originalProduct) {
+        return res.status(404).json({ error: "Dropshipping product not found" });
+      }
+
+      // Create a regular product for the creator's store
+      const productData = {
         creatorId: parseInt(creatorId),
-        dropshippingProductId,
-        customName,
-        customDescription,
-        sellingPrice,
-        markup: parseFloat(sellingPrice) - 2500, // Mock wholesale price
-        commissionRate: "15.00",
-        isActive: true,
-        salesCount: 0,
-        revenue: "0.00",
-        addedAt: new Date()
+        name: customName || originalProduct.name,
+        description: customDescription || originalProduct.description,
+        price: sellingPrice,
+        currency: "KES",
+        category: originalProduct.category,
+        images: originalProduct.images,
+        isDropshipping: true,
+        dropshippingProductId: dropshippingProductId,
+        wholesalePrice: originalProduct.wholesalePrice,
+        stock: originalProduct.stock
       };
 
-      res.json({ success: true, product: creatorProduct });
+      // Add the product to the creator's store
+      const newProduct = await storage.createProduct(productData);
+
+      res.json({ 
+        success: true, 
+        product: newProduct,
+        message: "Product added to your store successfully" 
+      });
     } catch (error) {
       console.error("Add dropshipping product error:", error);
       res.status(500).json({ error: "Failed to add product" });

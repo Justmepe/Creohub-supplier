@@ -19,6 +19,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DropshippingProduct {
   id: number;
@@ -49,6 +50,7 @@ interface AddProductForm {
 export default function DropshippingMarketplace() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { creator } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<DropshippingProduct | null>(null);
@@ -81,7 +83,8 @@ export default function DropshippingMarketplace() {
 
   const addProductMutation = useMutation({
     mutationFn: async (data: AddProductForm) => {
-      const response = await apiRequest("POST", `/api/creators/1/dropshipping/add-product`, data);
+      if (!creator?.id) throw new Error("Creator not found");
+      const response = await apiRequest("POST", `/api/creators/${creator.id}/dropshipping/add-product`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -96,7 +99,10 @@ export default function DropshippingMarketplace() {
         customName: "",
         customDescription: "",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/creators/1/dropshipping/products"] });
+      if (creator?.id) {
+        queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator.id}/dropshipping/products`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/creators/${creator.id}/products`] });
+      }
     },
     onError: () => {
       toast({
