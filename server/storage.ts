@@ -767,18 +767,19 @@ export class MemStorage implements IStorage {
   async getWithdrawalRequest(id: number): Promise<WithdrawalRequest | undefined> {
     return this.withdrawalRequests.get(id);
   }
-
-  async createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
-    const newRequest: WithdrawalRequest = {
-      id: this.currentAnalyticsId++,
+  
+async createWithdrawalRequest(request: InsertWithdrawalRequest): Promise<WithdrawalRequest> {
+  const [newRequest] = await db
+    .insert(withdrawalRequests)
+    .values({
       ...request,
       status: "pending",
       createdAt: new Date(),
       updatedAt: new Date()
-    };
-    this.withdrawalRequests.set(newRequest.id, newRequest);
-    return newRequest;
-  }
+    })
+    .returning(); // Optional, returns inserted row
+  return newRequest;
+}
 
   async updateWithdrawalStatus(id: number, status: string, notes?: string, transactionId?: string): Promise<void> {
     const existing = this.withdrawalRequests.get(id);
@@ -1690,11 +1691,6 @@ export class DatabaseStorage implements IStorage {
 
   async getAllWithdrawalRequests(): Promise<WithdrawalRequest[]> {
     return await db.select().from(withdrawalRequests);
-  }
-
-  // Customer orders by email
-  async getOrdersByCustomerEmail(email: string): Promise<Order[]> {
-    return await db.select().from(orders).where(eq(orders.customerEmail, email));
   }
 
   // Dropshipping Partners
