@@ -2,6 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getSocialProofData } from "./services/socialProof";
+import { registerSupplierRoutes } from "./supplier-routes";
+import "./storage-extensions"; // Load storage extensions
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -28,6 +30,9 @@ const requireAuth = (req: any, res: Response, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Register supplier routes
+  registerSupplierRoutes(app);
   
   // Authentication routes
   app.post("/api/auth/login", async (req: Request, res: Response) => {
